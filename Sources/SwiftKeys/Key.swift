@@ -245,7 +245,7 @@ extension KeyEvent {
     /// The Kana key that is available on JIS keyboards.
     case jisKana
     
-    // MARK: - Raw Value
+    // MARK: - Properties
     
     /// The raw value of the key.
     public var rawValue: Int {
@@ -360,8 +360,6 @@ extension KeyEvent {
       case .jisKana: return kVK_JIS_Kana
       }
     }
-    
-    // MARK: - String Value
     
     /// A string representation of the key.
     public var stringValue: String {

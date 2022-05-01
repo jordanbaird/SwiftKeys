@@ -85,6 +85,9 @@ public struct KeyEvent {
   static var keyEventStorage = [Name: KeyEvent]()
   static var proxyStorage = [Name: EventProxy]()
   
+  /// The name that is be used to store this key event.
+  public let name: Name
+  
   /// The key associated with this key event.
   public var key: Key? {
     proxy.key
@@ -94,9 +97,6 @@ public struct KeyEvent {
   public var modifiers: [Modifier] {
     proxy.modifiers
   }
-  
-  /// The name that is be used to store this key event.
-  public let name: Name
   
   var proxy: EventProxy {
     if let proxy = Self.proxyStorage[name] {
@@ -108,7 +108,7 @@ public struct KeyEvent {
     }
   }
   
-  // Implementation detail:
+  // Implementation.
   private init?(_name: Name) {
     if
       let data = UserDefaults.standard.data(forKey: _name.combinedValue),
