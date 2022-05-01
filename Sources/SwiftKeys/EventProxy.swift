@@ -198,8 +198,10 @@ final class EventProxy {
   
   func mutateWithoutChangingRegistrationState(_ handler: (EventProxy) throws -> Void) rethrows {
     blockRegistrationChanges = true
+    defer {
+      blockRegistrationChanges = false
+    }
     try handler(self)
-    blockRegistrationChanges = false
   }
   
   deinit {
