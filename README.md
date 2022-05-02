@@ -30,9 +30,10 @@ let package = Package(
 
 ## Usage
 
-Start by creating an instance of `KeyEvent` You then use it to initialize a `KeyRecorder` instance, 
-which will update the event's value whenever a new key combination is recorded. You can also observe 
-the event, and perform actions on both key-down and key-up.
+Start by creating an instance of `KeyEvent`. Then, use it to initialize a `KeyRecorder` instance.
+The recorder will stay synchronized with the key event, so that when it records a new key combination 
+the key event will update in accordance to the new value. You can also observe the event and perform 
+actions on both key-down and key-up.
 
 ```swift
 let event = KeyEvent(name: "SomeEvent")
