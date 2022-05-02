@@ -27,8 +27,8 @@ import AppKit
 /// }
 /// ```
 public final class KeyRecorder: NSView {
-  private let cornerRadius = 5.5
-  private let segmentedControl: SegmentedControl
+  let cornerRadius = 5.5
+  let segmentedControl: SegmentedControl
   
   @available(macOS 10.11, *)
   private lazy var backingView: NSVisualEffectView = {
@@ -48,6 +48,7 @@ public final class KeyRecorder: NSView {
   public var hasBackingView: Bool {
     get { _hasBackingView }
     set {
+      _hasBackingView = newValue
       removeBackingView()
       if newValue {
         addBackingView()
@@ -70,8 +71,8 @@ public final class KeyRecorder: NSView {
   public init(keyEvent: KeyEvent) {
     segmentedControl = .init(keyEvent: keyEvent)
     super.init(frame: segmentedControl.frame)
-    Constraint(widthOf: self, constant: segmentedControl.frame.width).activate()
-    Constraint(heightOf: self, constant: segmentedControl.frame.height).activate()
+    Constraint(.width, of: self, constant: segmentedControl.frame.width).activate()
+    Constraint(.height, of: self, constant: segmentedControl.frame.height).activate()
     addSubview(segmentedControl)
   }
   
@@ -95,10 +96,10 @@ public final class KeyRecorder: NSView {
       return
     }
     superview.addSubview(backingView, positioned: .below, relativeTo: self)
-    Constraint(centerXOf: backingView, to: .centerX, of: self).activate()
-    Constraint(centerYOf: backingView, to: .centerY, of: self).activate()
-    Constraint(widthOf: backingView, to: .width, of: self, constant: -2).activate()
-    Constraint(heightOf: backingView, to: .height, of: self, constant: -2).activate()
+    Constraint(.centerX, of: backingView, to: .centerX, of: self).activate()
+    Constraint(.centerY, of: backingView, to: .centerY, of: self).activate()
+    Constraint(.width, of: backingView, to: .width, of: self, constant: -2).activate()
+    Constraint(.height, of: backingView, to: .height, of: self, constant: -2).activate()
   }
   
   @available(macOS 10.11, *)
@@ -119,18 +120,18 @@ public final class KeyRecorder: NSView {
 
 extension KeyRecorder {
   class SegmentedControl: NSSegmentedControl {
-    private enum RecordingState {
+    enum RecordingState {
       case recording
       case idle
     }
     
-    private enum Label: String {
+    enum Label: String {
       case typeShortcut = "Type shortcut"
       case recordShortcut = "Record shortcut"
       case keyEvent = "*****"
     }
     
-    private struct FailureReason: Equatable {
+    struct FailureReason: Equatable {
       static let noFailure = Self(message: "There is nothing wrong.")
       
       static let needsModifiers = Self(message: """
@@ -166,7 +167,7 @@ extension KeyRecorder {
     
     let proxy: EventProxy
     
-    private var failureReason = FailureReason.noFailure {
+    var failureReason = FailureReason.noFailure {
       didSet {
         if failureReason.failureCount >= 3 {
           let alert = NSAlert()
@@ -178,7 +179,7 @@ extension KeyRecorder {
       }
     }
     
-    private lazy var keyDownMonitor = EventMonitor(mask: .keyDown) { [weak self] event in
+    lazy var keyDownMonitor = EventMonitor(mask: .keyDown) { [weak self] event in
       guard let self = self else {
         return event
       }
@@ -205,13 +206,13 @@ extension KeyRecorder {
       return nil
     }
     
-    private let imageDelete: NSImage = {
+    let imageDelete: NSImage = {
       let image = NSImage(named: NSImage.stopProgressFreestandingTemplateName)!
       image.isTemplate = true
       return image
     }()
     
-    private let imageEscape: NSImage = {
+    let imageEscape: NSImage = {
       let escapeKeyCode = 0x238B
       let string = NSString(format: "%C", escapeKeyCode)
       var attributes: [NSAttributedString.Key: Any] = [.foregroundColor: NSColor.white]
@@ -234,7 +235,7 @@ extension KeyRecorder {
       return image
     }()
     
-    private var imageRecord: NSImage {
+    var imageRecord: NSImage {
       let size = NSSize(width: 13, height: 13)
       let image = NSImage(size: size, flipped: false) {
         NSBezierPath(ovalIn: $0.insetBy(dx: 2.5, dy: 2.5)).fill()
@@ -245,7 +246,7 @@ extension KeyRecorder {
       return image
     }
     
-    private var recordingState = RecordingState.idle {
+    var recordingState = RecordingState.idle {
       didSet {
         updateVisualAppearance()
         if recordingState == .recording {
@@ -271,7 +272,7 @@ extension KeyRecorder {
       fatalError("KeyRecorder must be created programmatically.")
     }
     
-    private func sharedInit() {
+    func sharedInit() {
       target = self
       action = #selector(controlWasPressed(_:))
       segmentCount = 2
@@ -284,7 +285,7 @@ extension KeyRecorder {
     }
     
     @objc
-    private func controlWasPressed(_ sender: SegmentedControl) {
+    func controlWasPressed(_ sender: SegmentedControl) {
       switch recordingState {
       case .recording:
         if sender.selectedSegment == 1 {
@@ -307,7 +308,7 @@ extension KeyRecorder {
       updateVisualAppearance()
     }
     
-    private func record(key: KeyEvent.Key, modifiers: [KeyEvent.Modifier]) {
+    func record(key: KeyEvent.Key, modifiers: [KeyEvent.Modifier]) {
       proxy.mutateWithoutChangingRegistrationState {
         $0.key = key
         $0.modifiers = modifiers
@@ -316,12 +317,12 @@ extension KeyRecorder {
       recordingState = .idle
     }
     
-    private func updateVisualAppearance() {
+    func updateVisualAppearance() {
       setLabel(forState: recordingState)
       setImage(forState: recordingState)
     }
     
-    private func setLabel(_ label: Label) {
+    func setLabel(_ label: Label) {
       var string = ""
       if
         label == .keyEvent,
@@ -336,7 +337,7 @@ extension KeyRecorder {
       setLabel(string, forSegment: 0)
     }
     
-    private func setLabel(forState state: RecordingState) {
+    func setLabel(forState state: RecordingState) {
       switch state {
       case .recording:
         setLabel(.typeShortcut)
@@ -349,7 +350,7 @@ extension KeyRecorder {
       }
     }
     
-    private func setImage(forState state: RecordingState) {
+    func setImage(forState state: RecordingState) {
       switch state {
       case .recording:
         setImage(imageEscape, forSegment: 1)
@@ -362,19 +363,19 @@ extension KeyRecorder {
       }
     }
     
-    private func deselectAll() {
+    func deselectAll() {
       for n in 0..<segmentCount {
         setSelected(false, forSegment: n)
       }
     }
     
-    private func setFailureReason(_ failureReason: FailureReason) {
+    func setFailureReason(_ failureReason: FailureReason) {
       if self.failureReason != failureReason {
         self.failureReason = failureReason
       }
     }
     
-    public override func viewDidMoveToWindow() {
+    override func viewDidMoveToWindow() {
       super.viewDidMoveToWindow()
       updateVisualAppearance()
     }
