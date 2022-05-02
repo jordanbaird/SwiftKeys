@@ -42,6 +42,29 @@ final class PrefixTests: XCTestCase {
     
     XCTAssert(event2.key == .return)
     XCTAssert(event2.modifiers == [.command, .shift, .option])
+    
+    let stringLiteralPrefix: KeyEvent.Name.Prefix = "Prefix2"
+    XCTAssertEqual(stringLiteralPrefix.sharedPrefix, stringLiteralPrefix)
+  }
+  
+  func testEqual() {
+    let prefix1 = KeyEvent.Name.Prefix("Hello")
+    let prefix2: KeyEvent.Name.Prefix = "Hello"
+    XCTAssertEqual(prefix1, prefix2)
+  }
+  
+  func testNotEqual() {
+    let prefix1 = KeyEvent.Name.Prefix("Hello")
+    let prefix2 = KeyEvent.Name.Prefix("Goodbye")
+    XCTAssertNotEqual(prefix1, prefix2)
+  }
+  
+  func testHashValue() {
+    let prefix1 = KeyEvent.Name.Prefix("Hello")
+    let prefix2: KeyEvent.Name.Prefix = "Hello"
+    let prefix3 = KeyEvent.Name.Prefix("Goodbye")
+    XCTAssertEqual(prefix1.hashValue, prefix2.hashValue)
+    XCTAssertNotEqual(prefix2.hashValue, prefix3.hashValue)
   }
 }
 

@@ -29,4 +29,22 @@ final class KeyEventTests: XCTestCase {
     XCTAssert(event1.proxy.modifiers == [.option])
     XCTAssertEqual(event1, event2)
   }
+  
+  func testEnable() {
+    let event = KeyEvent(name: "Soup", key: .a, modifiers: .option, .shift)
+    
+    XCTAssert(!event.isEnabled)
+    event.observe(.keyDown) { }
+    XCTAssert(event.isEnabled)
+    event.disable()
+    XCTAssert(!event.isEnabled)
+    
+    XCTAssertNotNil(event.key)
+    XCTAssert(!event.modifiers.isEmpty)
+    
+    event.remove()
+    
+    XCTAssertNil(event.key)
+    XCTAssert(event.modifiers.isEmpty)
+  }
 }
