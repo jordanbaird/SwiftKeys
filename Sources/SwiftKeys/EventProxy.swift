@@ -9,8 +9,6 @@
 import Carbon.HIToolbox
 
 final class EventProxy {
-  static var all = [UInt32: EventProxy]()
-  
   private static var eventHandlerRef: EventHandlerRef?
   private static let eventTypes = [
     EventTypeSpec(
@@ -107,7 +105,7 @@ final class EventProxy {
         // with our signature), and that we have a stored proxy for the event.
         guard
           identifier.signature == EventProxy.signature,
-          let proxy = EventProxy.all[identifier.id]
+          let proxy = ProxyStorage.proxy(with: identifier.id)
         else {
           return OSStatus(eventNotHandledErr)
         }
@@ -157,10 +155,10 @@ final class EventProxy {
     
     // We need to retain a reference to each proxy instance. The C function
     // inside of the `install()` method can't deal with objects, so we can't
-    // inject or reference `self`. We _do_ have a way to access the event's
+    // inject or reference `self`. We _do_ have a way to access the proxy's
     // identifier, so we can use that to store the proxy, then access the
     // storage from inside the C function.
-    Self.all[identifier.id] = self
+    ProxyStorage.store(self)
     if status != noErr {
       logError(.registrationFailed(code: status))
     }
@@ -183,7 +181,6 @@ final class EventProxy {
       return
     }
     let status = UnregisterEventHotKey(hotKeyRef)
-    Self.all.removeValue(forKey: identifier.id)
     hotKeyRef = nil
     if status != noErr {
       logError(.unregistrationFailed(code: status))

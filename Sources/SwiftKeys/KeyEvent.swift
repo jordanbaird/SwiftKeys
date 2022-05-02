@@ -83,10 +83,25 @@ public struct KeyEvent {
   }
   
   static var keyEventStorage = [Name: KeyEvent]()
-  static var proxyStorage = [Name: EventProxy]()
+//  static var proxyStorage = [Name: EventProxy]()
   
   /// The name that is be used to store this key event.
   public let name: Name
+  
+  /// A Boolean value that indicates whether the key event is currently
+  /// enabled and active.
+  ///
+  /// When enabled, the event's handlers will be executed whenever the
+  /// event is triggered.
+  ///
+  /// - Note: If the event does not have a key or modifiers, it will not be
+  /// possible to enable it, even when calling the `enable()` method. If you
+  /// have created an event without these, and wish to enable it, you can
+  /// create a new event with the same name, and it will take the place of
+  /// the old event.
+  public var isEnabled: Bool {
+    proxy.isRegistered
+  }
   
   /// The key associated with this key event.
   public var key: Key? {
@@ -99,11 +114,11 @@ public struct KeyEvent {
   }
   
   var proxy: EventProxy {
-    if let proxy = Self.proxyStorage[name] {
+    if let proxy = ProxyStorage.proxy(with: name) {
       return proxy
     } else {
       let proxy = EventProxy(name: name)
-      Self.proxyStorage[name] = proxy
+      ProxyStorage.store(proxy)
       return proxy
     }
   }
@@ -169,6 +184,33 @@ public struct KeyEvent {
   public func observe(_ type: EventType, handler: @escaping () -> Void) {
     proxy.observations.append((type: type, handler: handler))
     proxy.register()
+  }
+  
+  /// Enables the key event.
+  ///
+  /// When enabled, the key event's observation handlers become active, and will
+  /// execute whenever the event is triggered.
+  public func enable() {
+    proxy.register()
+  }
+  
+  /// Disables the key event.
+  ///
+  /// When disabled, the key event's observation handlers become dormant, but are
+  /// still retained, so that the event can be re-enabled later. If you wish to
+  /// completely remove the event and its handlers, use the `remove()` method instead.
+  public func disable() {
+    proxy.unregister()
+  }
+  
+  /// Completely removes the key event and its handlers.
+  ///
+  /// Once this method has been called, the key event should be considered invalid.
+  /// The `enable()` method will have no effect. If you wish to re-enable the event,
+  /// you will need to call `observe(_:handler:)` and provide a new handler.
+  public func remove() {
+    proxy.unregister()
+    ProxyStorage.remove(proxy)
   }
 }
 
