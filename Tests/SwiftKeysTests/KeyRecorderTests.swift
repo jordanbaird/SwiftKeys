@@ -49,4 +49,35 @@ final class KeyRecorderTests: XCTestCase {
     XCTAssert(event.key == .return)
     XCTAssert(event.modifiers == [.command, .control])
   }
+  
+  func testHighlight() {
+    for style in KeyRecorder.HighlightStyle.allCases {
+      recorder.isHighlighted = false
+      XCTAssert(!recorder.subviews.contains(recorder.highlightView))
+      
+      recorder.highlightStyle = style
+      recorder.isHighlighted = true
+      XCTAssert(recorder.subviews.contains(recorder.highlightView))
+      
+      XCTAssertEqual(recorder.highlightView.layer?.backgroundColor, style.highlightColor.cgColor)
+      XCTAssertEqual(recorder.highlightView.material, style.material)
+    }
+  }
+  
+  func testAppearance() {
+    let allAppearances: [NSAppearance] = [
+      .init(named: .aqua)!,
+      .init(named: .darkAqua)!,
+      .init(named: .vibrantLight)!,
+      .init(named: .vibrantDark)!,
+    ]
+    
+    XCTAssertEqual(recorder.appearance, recorder.segmentedControl.appearance)
+    
+    for appearance in allAppearances {
+      recorder.appearance = appearance
+      XCTAssertEqual(recorder.appearance, recorder.segmentedControl.appearance)
+      XCTAssertEqual(recorder.segmentedControl.appearance, appearance)
+    }
+  }
 }

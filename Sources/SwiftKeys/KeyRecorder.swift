@@ -26,25 +26,98 @@ import AppKit
 ///     print("UP")
 /// }
 /// ```
-public final class KeyRecorder: NSView {
+public final class KeyRecorder: NSControl {
+  /// Styles that affect the highlighted appearance of a key recorder.
+  public enum HighlightStyle: CaseIterable {
+    /// A light highlight style.
+    case light
+    /// A medium-light highlight style.
+    case mediumLight
+    
+    /// A dark highlight style.
+    case dark
+    /// An ultra-dark highlight style.
+    case ultraDark
+    
+    var highlightColor: NSColor {
+      var color: NSColor
+      switch self {
+      case .light:
+        color = .white
+      case .mediumLight:
+        color = .white.blended(withFraction: 0.5, of: .black)!
+      case .dark:
+        color = .black.blended(withFraction: 0.5, of: .white)!
+      case .ultraDark:
+        color = .black
+      }
+      return color.withAlphaComponent(0.75)
+    }
+    
+    var material: NSVisualEffectView.Material {
+      switch self {
+      case .light:
+        if #unavailable(macOS 10.14) {
+          return .light
+        } else {
+          return .selection
+        }
+      case .mediumLight:
+        if #available(macOS 10.11, *) {
+          if #unavailable(macOS 10.14) {
+            return .mediumLight
+          }
+        }
+        return .titlebar
+      case .dark:
+        if #unavailable(macOS 10.14) {
+          return .dark
+        } else {
+          return .windowBackground
+        }
+      case .ultraDark:
+        if #available(macOS 10.11, *) {
+          if #unavailable(macOS 10.14) {
+            return .ultraDark
+          } else {
+            return .underPageBackground
+          }
+        } else {
+          return .titlebar
+        }
+      }
+    }
+  }
+  
   let cornerRadius = 5.5
   let segmentedControl: SegmentedControl
   
-  @available(macOS 10.11, *)
-  private lazy var backingView: NSVisualEffectView = {
+  lazy var backingView: NSVisualEffectView = {
     let view = NSVisualEffectView(frame: frame)
     view.blendingMode = .behindWindow
-    view.material = .sidebar
+    if #available(macOS 10.11, *) {
+      view.material = .sidebar
+    } else {
+      view.material = .titlebar
+    }
     view.wantsLayer = true
     view.layer?.cornerRadius = cornerRadius
     return view
   }()
   
+  lazy var highlightView: NSVisualEffectView = {
+    let view = NSVisualEffectView(frame: frame)
+    view.blendingMode = .behindWindow
+    view.wantsLayer = true
+    view.layer?.cornerRadius = cornerRadius
+    view.alphaValue = 0.75
+    return view
+  }()
+  
   private var _hasBackingView = true
   
-  /// A Boolean value that indicates whether the recorder is drawn with
-  /// a backing visual effect view.
-  @available(macOS 10.11, *)
+  /// A Boolean value that indicates whether the recorder is drawn
+  /// with a backing visual effect view.
   public var hasBackingView: Bool {
     get { _hasBackingView }
     set {
@@ -56,18 +129,99 @@ public final class KeyRecorder: NSView {
     }
   }
   
-  /// A Boolean value that indicates whether the recorder reacts to mouse events.
+  /// A Boolean value that indicates whether the recorder reacts to
+  /// mouse events.
   ///
-  /// The value of this property is true if the recorder responds to mouse events;
-  /// otherwise, false.
-  public var isEnabled: Bool {
+  /// The value of this property is true if the recorder responds to
+  /// mouse events; otherwise, false.
+  public override var isEnabled: Bool {
     get { segmentedControl.isEnabled }
     set { segmentedControl.isEnabled = newValue }
   }
   
+  private var _isHighlighted = false
+  
+  /// A Boolean value that indicates whether the recorder is highlighted.
+  ///
+  /// Setting this value programmatically will immediately update the
+  /// appearance of the recorder.
+  public override var isHighlighted: Bool {
+    get { _isHighlighted }
+    set {
+      _isHighlighted = newValue
+      removeHighlightView()
+      if newValue {
+        addHighlightView()
+      }
+    }
+  }
+  
+  /// The appearance of the recorder when it is highlighted.
+  ///
+  /// If the recorder is already highlighted, and this value is set, the
+  /// appearance will update in real time to match the new value.
+  public var highlightStyle = HighlightStyle.light {
+    didSet {
+      if isHighlighted {
+        isHighlighted.toggle()
+        isHighlighted.toggle()
+      }
+    }
+  }
+  
+  /// The string value of the recorder.
+  ///
+  /// Setting this value allows you to customize the label that is
+  /// displayed to the user.
+  public override var stringValue: String {
+    get { segmentedControl.label(forSegment: 0) ?? attributedStringValue.string }
+    set { segmentedControl.setLabel(newValue, forSegment: 0) }
+  }
+  
+  /// The attributed string value of the recorder.
+  ///
+  /// Setting this value allows you to customize the label that is
+  /// displayed to the user.
+  public override var attributedStringValue: NSAttributedString {
+    get { segmentedControl.attributedLabel }
+    set { segmentedControl.attributedLabel = newValue }
+  }
+  
+  /// The font of the recorder's label.
+  public override var font: NSFont? {
+    get { segmentedControl.font }
+    set { segmentedControl.font = newValue }
+  }
+  
+  /// The alignment of the recorder's label.
+  /// - Note: Prior to macOS 10.13, the behavior of setting this value is undefined.
+  public override var alignment: NSTextAlignment {
+    get {
+      if #available(macOS 10.13, *) {
+        return segmentedControl.alignment(forSegment: 0)
+      } else {
+        return segmentedControl.alignment
+      }
+    }
+    set {
+      if #available(macOS 10.13, *) {
+        segmentedControl.setAlignment(newValue, forSegment: 0)
+      } else {
+        segmentedControl.alignment = newValue
+      }
+    }
+  }
+  
+  /// The appearance of the recorder.
+  public override var appearance: NSAppearance? {
+    get { segmentedControl.appearance }
+    set { segmentedControl.appearance = newValue }
+  }
+  
   /// Creates a recorder for the given key event.
   ///
-  /// Whenever the event records a key combination, the event will update its value.
+  /// Whenever the event records a key combination, the key and modifiers of the
+  /// recorder's event will be updated to match.
   public init(keyEvent: KeyEvent) {
     segmentedControl = .init(keyEvent: keyEvent)
     super.init(frame: segmentedControl.frame)
@@ -90,30 +244,51 @@ public final class KeyRecorder: NSView {
     fatalError("KeyRecorder must be created programmatically.")
   }
   
-  @available(macOS 10.11, *)
   private func addBackingView() {
-    guard let superview = superview else {
-      return
-    }
-    superview.addSubview(backingView, positioned: .below, relativeTo: self)
+    addSubview(backingView, positioned: .below, relativeTo: self)
     Constraint(.centerX, of: backingView, to: .centerX, of: self).activate()
     Constraint(.centerY, of: backingView, to: .centerY, of: self).activate()
-    Constraint(.width, of: backingView, to: .width, of: self, constant: -2).activate()
+    Constraint(.width, of: backingView, to: .width, of: self, constant: -4).activate()
     Constraint(.height, of: backingView, to: .height, of: self, constant: -2).activate()
   }
   
-  @available(macOS 10.11, *)
   private func removeBackingView() {
     backingView.removeFromSuperview()
   }
   
+  private func addHighlightView() {
+    if hasBackingView {
+      addSubview(highlightView, positioned: .above, relativeTo: backingView)
+    } else {
+      addSubview(highlightView, positioned: .below, relativeTo: self)
+    }
+    highlightView.material = highlightStyle.material
+    highlightView.layer?.backgroundColor = highlightStyle.highlightColor.cgColor
+    Constraint(.centerX, of: highlightView, to: .centerX, of: self).activate()
+    Constraint(.centerY, of: highlightView, to: .centerY, of: self).activate()
+    Constraint(.width, of: highlightView, to: .width, of: self, constant: -4).activate()
+    Constraint(.height, of: highlightView, to: .height, of: self, constant: -2).activate()
+  }
+  
+  private func removeHighlightView() {
+    highlightView.removeFromSuperview()
+  }
+  
+  /// Informs the view that it has been added to a new view hierarchy.
+  ///
+  /// If you override this method, you _must_ call `super` for the recorder
+  /// to maintain its correct behavior.
   public override func viewDidMoveToWindow() {
     super.viewDidMoveToWindow()
-    if
-      #available(macOS 10.11, *),
-      hasBackingView
-    {
+    if hasBackingView {
       addBackingView()
+    } else {
+      removeBackingView()
+    }
+    if isHighlighted {
+      addHighlightView()
+    } else {
+      removeHighlightView()
     }
   }
 }
@@ -166,6 +341,39 @@ extension KeyRecorder {
     }
     
     let proxy: EventProxy
+    
+    var _attributedLabel: NSAttributedString?
+    var attributedLabel: NSAttributedString {
+      get {
+        _attributedLabel ?? .init(string: label(forSegment: 0) ?? "")
+      }
+      set {
+        _attributedLabel = newValue
+        
+        setLabel("", forSegment: 0)
+        setImage(nil, forSegment: 0)
+        
+        let attStr = NSMutableAttributedString(attributedString: newValue)
+        let fontSize = font?.pointSize ?? NSFont.systemFontSize
+        
+        for n in 0..<attStr.length {
+          var attributes = attStr.attributes(at: n, effectiveRange: nil)
+          if let font = attributes[.font] as? NSFont {
+            attributes[.font] = NSFont(descriptor: font.fontDescriptor, size: fontSize)
+          } else {
+            attributes[.font] = self.font ?? NSFont.systemFont(ofSize: fontSize)
+          }
+          attStr.setAttributes(attributes, range: .init(location: n, length: 1))
+        }
+        
+        let image = NSImage(size: attStr.size(), flipped: false) {
+          attStr.draw(in: $0)
+          return true
+        }
+        
+        setImage(image, forSegment: 0)
+      }
+    }
     
     var failureReason = FailureReason.noFailure {
       didSet {
