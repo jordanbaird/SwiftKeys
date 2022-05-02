@@ -83,14 +83,4 @@ extension Array where Element == KeyEvent.Modifier {
     }
     return .init(converted)
   }
-  
-  /// Gets the `CGEventFlags` for the given modifiers joined together
-  /// into a single instance.
-  var cgEventFlags: CGEventFlags {
-    var flags = CGEventFlags()
-    for modifier in self {
-      flags.insert(modifier.flag)
-    }
-    return flags
-  }
 }
