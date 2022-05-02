@@ -126,8 +126,9 @@ struct Constraint {
   }
   
   init(
-    widthOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
+    _ attribute1: NSLayoutConstraint.Attribute,
+    of view1: NSView,
+    to attribute2: NSLayoutConstraint.Attribute,
     of view2: NSView,
     relation: NSLayoutConstraint.Relation = .equal,
     multiplier: CGFloat = 1,
@@ -135,354 +136,31 @@ struct Constraint {
   ) {
     let constraint = NSLayoutConstraint(
       item: view1,
-      attribute: .width,
+      attribute: attribute1,
       relatedBy: relation,
       toItem: view2,
-      attribute: .width,
+      attribute: attribute2,
       multiplier: multiplier,
       constant: constant)
     self.init(constraint, view1)
   }
   
   init(
-    widthOf view1: NSView,
+    _ attribute: NSLayoutConstraint.Attribute,
+    of view: NSView,
     relation: NSLayoutConstraint.Relation = .equal,
     multiplier: CGFloat = 1,
     constant: CGFloat = 0
   ) {
     let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .width,
+      item: view,
+      attribute: attribute,
       relatedBy: relation,
       toItem: nil,
-      attribute: .width,
+      attribute: attribute,
       multiplier: multiplier,
       constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    heightOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .height,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .height,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    heightOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .height,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .height,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    centerXOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .centerX,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .centerX,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    centerXOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .centerX,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .centerX,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    centerYOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .centerY,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .centerY,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    centerYOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .centerY,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .centerY,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    leadingOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .leading,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .leading,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    leadingOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .leading,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .leading,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    trailingOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .trailing,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .trailing,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    trailingOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .trailing,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .trailing,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    leftOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .left,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .left,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    leftOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .left,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .left,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    rightOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .right,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .right,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    rightOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .right,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .right,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    topOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .top,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .top,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    topOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .top,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .top,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    bottomOf view1: NSView,
-    to attribute: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .bottom,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: .bottom,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    bottomOf view1: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: .bottom,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: .bottom,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
+    self.init(constraint, view)
   }
   
   func activate() {
