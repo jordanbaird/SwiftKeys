@@ -17,7 +17,7 @@ import PackageDescription
 let package = Package(
     name: "PackageName",
     dependencies: [
-        .package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.2")
+        .package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.3")
     ],
     targets: [
         .target(
