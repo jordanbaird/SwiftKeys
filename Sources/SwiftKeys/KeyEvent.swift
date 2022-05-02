@@ -83,7 +83,6 @@ public struct KeyEvent {
   }
   
   static var keyEventStorage = [Name: KeyEvent]()
-//  static var proxyStorage = [Name: EventProxy]()
   
   /// The name that is be used to store this key event.
   public let name: Name

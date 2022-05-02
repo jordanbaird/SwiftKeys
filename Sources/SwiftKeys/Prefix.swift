@@ -115,7 +115,7 @@ extension KeyEvent.Name {
 extension KeyEvent.Name {
   /// This type exists so we don't have to retain a `Prefix` instance for the entirety
   /// of the app's lifetime. We need `Prefix` to be a class so that `sharedPrefix` can
-  /// be overridden, but it seems a little overkill to have it stick around for longer
+  /// be overridden, but it seems kind of overkill to have it stick around for longer
   /// than it needs to. The only "real" information that a `Prefix` instance holds is
   /// its raw value, so this is essentially the "real" prefix type that `Prefix` just
   /// serves as an interface to. As soon as the `Prefix` instance that is passed in is

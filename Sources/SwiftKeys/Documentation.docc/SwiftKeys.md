@@ -4,12 +4,12 @@ A straightforward global hotkey API for macOS.
 
 ## Overview
 
-``SwiftKeys`` allows you to create, observe, and record global hotkeys in the form of the
+`SwiftKeys` allows you to create, observe, and record global hotkeys in the form of the
 ``KeyEvent`` type.
 
 Start by creating an instance of ``KeyEvent``. Then, use it to initialize a ``KeyRecorder`` 
 instance. The recorder will stay synchronized with the key event, so that when it records a 
-new key combination the key event will update in accordance to the new value. You can also 
+new key combination, the key event will update in accordance to the new value. You can also 
 observe the event and perform actions on both key-down and key-up.
 
 ```swift
@@ -33,8 +33,9 @@ extension KeyEvent.Name {
 let event = KeyEvent(name: .showPreferences)
 ```
 
-Key events are automatically stored in the `UserDefaults` system, using their names as keys. 
-You can provide a custom prefix that will be combined with each name to create the keys.
+Key events are automatically stored `UserDefaults`. The name of the key event serves as
+its key. You can provide a custom prefix that will be combined with each name to create 
+the keys.
 
 ```swift
 extension KeyEvent.Name.Prefix {
@@ -42,10 +43,14 @@ extension KeyEvent.Name.Prefix {
         Self("SK") 
     }
 }
+
+extension KeyEvent.Name {
+    static let showPreferences = Self("ShowPreferences")
+}
+// The name above will become "SKShowPreferences" when used as a defaults key.
 ```
 
-The `showPreferences` name from above would become "SKShowPreferences" when used as a 
-`UserDefaults` key.
+You can find `SwiftKeys` [on GitHub](https://github.com/jordanbaird/SwiftKeys)
 
 ## Topics
 

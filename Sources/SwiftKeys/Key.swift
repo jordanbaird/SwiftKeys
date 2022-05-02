@@ -475,7 +475,7 @@ extension KeyEvent {
       }
     }
     
-    /// An unsigned version of the key raw value.
+    /// An unsigned version of the key's raw value.
     var unsigned: UInt32 {
       .init(rawValue)
     }
