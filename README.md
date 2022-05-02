@@ -17,7 +17,7 @@ import PackageDescription
 let package = Package(
     name: "PackageName",
     dependencies: [
-        .package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.1")
+        .package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.2")
     ],
     targets: [
         .target(
@@ -53,7 +53,6 @@ For improved type safety, you can create hard-coded key event names that can be 
 extension KeyEvent.Name {
     static let showPreferences = Self("ShowPreferences")
 }
-
 let event = KeyEvent(name: .showPreferences)
 ```
 
@@ -62,10 +61,17 @@ a custom prefix that will be combined with each name to create the keys.
 
 ```swift
 extension KeyEvent.Name.Prefix {
-    public override var sharedPrefix: Self { "SK" }
+    public override var sharedPrefix: Self { 
+        Self("SK")
+    }
 }
 ```
 
 The `showPreferences` name from above would become "SKShowPreferences" when used as a `UserDefaults` key.
 
 [Read full documentation here](https://jordanbaird.github.io/SwiftKeys/documentation/swiftkeys)
+
+## License
+
+SwiftKeys is licensed under the [MIT license](http://www.opensource.org/licenses/mit-license). 
+See the LICENSE file for details.
