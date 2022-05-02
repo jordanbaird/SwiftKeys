@@ -30,7 +30,7 @@ final class EventProxy {
   let identifier = EventHotKeyID(signature: signature, id: proxyCount)
   
   let name: KeyEvent.Name
-  var observations = [(type: EventType, handler: () -> Void)]()
+  var observations = [(type: KeyEvent.EventType, handler: () -> Void)]()
   
   var blockRegistrationChanges = false
   
@@ -67,7 +67,7 @@ final class EventProxy {
   }
   
   private func executeHandlers(for ref: EventRef) {
-    let type = EventType(ref)
+    let type = KeyEvent.EventType(ref)
     for observation in observations where observation.type == type {
       observation.handler()
     }
