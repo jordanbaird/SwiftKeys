@@ -4,13 +4,9 @@ A straightforward global hotkey API for macOS.
 
 ## Overview
 
-`SwiftKeys` allows you to create, observe, and record global hotkeys in the form of the
-``KeyEvent`` type.
+`SwiftKeys` allows you to create, observe, and record global hotkeys.
 
-Start by creating an instance of ``KeyEvent``. Then, use it to initialize a ``KeyRecorder`` 
-instance. The recorder will stay synchronized with the key event, so that when it records a 
-new key combination, the key event will update in accordance to the new value. You can also 
-observe the event and perform actions on both key-down and key-up.
+Start by creating an instance of ``KeyEvent``. Then, use it to initialize a ``KeyRecorder`` instance. The key recorder's state is bound to the key event, so when it records a new key combination, the key event will be updated. You can also observe the event and perform actions on both key-down and key-up.
 
 ```swift
 let event = KeyEvent(name: "SomeEvent")
@@ -23,8 +19,8 @@ event.observe(.keyUp) {
     print("UP")
 }
 ```
-For improved type safety, you can create hard-coded key event names that can be referenced 
-across your app.
+
+For improved type safety, you can create hard-coded key event names that can be referenced across your app.
 
 ```swift
 extension KeyEvent.Name {
@@ -33,9 +29,7 @@ extension KeyEvent.Name {
 let event = KeyEvent(name: .showPreferences)
 ```
 
-Key events are automatically stored `UserDefaults`. The name of the key event serves as
-its key. You can provide a custom prefix that will be combined with each name to create 
-the keys.
+Key events are automatically stored `UserDefaults`. The name of the key event serves as its key. You can provide a custom prefix that will be combined with each name to create the keys.
 
 ```swift
 extension KeyEvent.Name.Prefix {
@@ -54,12 +48,8 @@ You can find `SwiftKeys` [on GitHub](https://github.com/jordanbaird/SwiftKeys)
 
 ## Topics
 
-### Creating and Observing Key Events
+### Essentials
 
+- <doc:GettingStarted>
 - ``KeyEvent``
-- ``KeyEvent/Name-swift.struct``
-- ``KeyEvent/Name-swift.struct/Prefix-swift.class``
-
-### Recording Key Events
-
 - ``KeyRecorder``
