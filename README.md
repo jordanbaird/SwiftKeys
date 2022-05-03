@@ -17,7 +17,7 @@ import PackageDescription
 let package = Package(
     name: "PackageName",
     dependencies: [
-        .package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.3")
+        .package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.4")
     ],
     targets: [
         .target(
@@ -30,20 +30,23 @@ let package = Package(
 
 ## Usage
 
-Start by creating an instance of `KeyEvent`. Then, use it to initialize a `KeyRecorder` instance.
-The recorder will stay synchronized with the key event, so that when it records a new key combination 
-the key event will update in accordance to the new value. You can also observe the event and perform 
-actions on both key-down and key-up.
+[Read the full documentation here](https://jordanbaird.github.io/SwiftKeys/documentation/swiftkeys)
+
+Start by creating an instance of `KeyEvent`. Then, use it to initialize a `KeyRecorder`.
 
 ```swift
 let event = KeyEvent(name: "SomeEvent")
 let recorder = KeyRecorder(keyEvent: event)
+```
 
-event.observe(.keyDown) {
-    print("DOWN")
-}
+The recorder and the event will stay synchronized with each other, so when the user records a new key combination, the event will update to the new value. You can also observe the event and perform actions on both key-up and key-down.
+
+```swift
 event.observe(.keyUp) {
     print("UP")
+}
+event.observe(.keyDown) {
+    print("DOWN")
 }
 ```
 
@@ -56,8 +59,7 @@ extension KeyEvent.Name {
 let event = KeyEvent(name: .showPreferences)
 ```
 
-Key events are automatically stored in the `UserDefaults` system, using their names as keys. You can provide
-a custom prefix that will be combined with each name to create the keys.
+Key events are automatically stored in the `UserDefaults` system, using their names as keys. You can provide a custom prefix that will be combined with each name to create the keys.
 
 ```swift
 extension KeyEvent.Name.Prefix {
@@ -67,11 +69,31 @@ extension KeyEvent.Name.Prefix {
 }
 ```
 
-The `showPreferences` name from above would become "SKShowPreferences" when used as a `UserDefaults` key.
+- The name "ShowPreferences" would become "SKShowPreferences" when used as a defaults key.
 
-[Read full documentation here](https://jordanbaird.github.io/SwiftKeys/documentation/swiftkeys)
+The following pseudo-code is what a typical view controller that utilizes `SwiftKeys` might look like:
+
+```swift
+import SwiftKeys
+
+class ViewController: NSViewController {
+    let event = KeyEvent(name: "SomeEvent")
+    let recorder = KeyRecorder(keyEvent: event)
+    
+    override fund viewDidLoad() {
+        super.viewDidLoad()
+        view.addSubview(recorder)
+        
+        event.observe(.keyUp) {
+            print("UP")
+        }
+        event.observe(.keyDown) {
+            print("DOWN")
+        }
+    }
+}
+```
 
 ## License
 
-SwiftKeys is licensed under the [MIT license](http://www.opensource.org/licenses/mit-license). 
-See the LICENSE file for details.
+SwiftKeys is licensed under the [MIT license](http://www.opensource.org/licenses/mit-license).
