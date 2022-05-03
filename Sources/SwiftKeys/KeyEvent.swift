@@ -10,14 +10,11 @@ import Cocoa
 
 /// An observable key event.
 ///
-/// Create a key event by calling one of its initializers. You can then use it
-/// to initialize a `KeyRecorder` instance, which will update the event whenever
-/// a new key combination is recorded. You can also observe the event, and
-/// perform actions on both key-down _and_ key-up.
+/// Create a key event by calling one of its initializers. You can then observe
+/// the event, and perform actions on both key-down and key-up.
 ///
 /// ```swift
 /// let event = KeyEvent(name: "SomeEvent")
-/// let recorder = KeyRecorder(keyEvent: event)
 ///
 /// event.observe(.keyDown) {
 ///     print("DOWN")
@@ -28,16 +25,14 @@ import Cocoa
 /// ```
 ///
 /// You can also initialize an event with a predefined key and modifiers. In
-/// the following example, the key recorder that is created will have starting
-/// value of "⇧⌥␣" (Shift-Option-Space).
+/// the following example, the key event's observations will be triggered when
+/// the key combination "⇧⌥␣" (Shift-Option-Space) is pressed.
 ///
 /// ```swift
 /// let event = KeyEvent(
 ///     name: "SomeEvent",
 ///     key: .space,
 ///     modifiers: [.shift, .option])
-///
-/// let recorder = KeyRecorder(keyEvent: event)
 /// ```
 ///
 /// If a key event is created with the same name as one that has been created
@@ -51,14 +46,18 @@ import Cocoa
 ///
 /// let duplicateEvent = KeyEvent(name: "SomeEvent")
 ///
-/// print(originalEvent == duplicateEvent) // Prints: "true".
-/// print(duplicateEvent.key) // Prints: "space".
-/// print(duplicateEvent.modifiers) // Prints: "shift, option".
+/// print(originalEvent == duplicateEvent)
+/// // Prints: "true"
+///
+/// print(duplicateEvent.key)
+/// // Prints: "space"
+///
+/// print(duplicateEvent.modifiers)
+/// // Prints: "shift, option"
 /// ```
 ///
-/// If the example above were to provide a new key and new modifiers in
-/// `duplicateEvent`'s initializer, both `duplicateEvent` _and_ `originalEvent`
-/// have those values.
+/// If the example above were to provide a new key and new modifiers in `duplicateEvent`'s
+/// initializer, both `duplicateEvent` _and_ `originalEvent` have those values.
 ///
 /// ```swift
 /// let originalEvent = KeyEvent(
@@ -71,9 +70,14 @@ import Cocoa
 ///     key: .leftArrow,
 ///     modifiers: [.control, .command])
 ///
-/// print(originalEvent == duplicateEvent) // Prints: "true".
-/// print(originalEvent.key) // Prints: "leftArrow".
-/// print(originalEvent.modifiers) // Prints: "control, command".
+/// print(originalEvent == duplicateEvent)
+/// // Prints: "true"
+///
+/// print(originalEvent.key)
+/// // Prints: "leftArrow"
+/// 
+/// print(originalEvent.modifiers)
+/// // Prints: "control, command"
 /// ```
 public struct KeyEvent {
   enum CodingKeys: CodingKey {
@@ -94,7 +98,7 @@ public struct KeyEvent {
   /// event is triggered.
   ///
   /// - Note: If the event does not have a key or modifiers, it will not be
-  /// possible to enable it, even when calling the `enable()` method. If you
+  /// possible to enable it, even when calling the ``enable()`` method. If you
   /// have created an event without these, and wish to enable it, you can
   /// create a new event with the same name, and it will take the place of
   /// the old event.
@@ -160,6 +164,7 @@ public struct KeyEvent {
     self.init(name: name, key: key, modifiers: modifiers)
   }
   
+  /// Creates a key event from the given decoder.
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     name = try container.decode(Name.self, forKey: .name)
@@ -169,6 +174,7 @@ public struct KeyEvent {
     }
   }
   
+  /// Encodes a key event to the given encoder.
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(key, forKey: .key)
@@ -177,12 +183,55 @@ public struct KeyEvent {
   }
   
   /// Observes the key event, and executes the provided handler when the event
-  /// is triggered. This method can be called multiple times. Each handler that
-  /// is added to the event will be executed synchronously in the order in which
-  /// they were added.
-  public func observe(_ type: EventType, handler: @escaping () -> Void) {
-    proxy.observations.append((type: type, handler: handler))
+  /// is triggered.
+  ///
+  /// This method can be called multiple times. Each handler that is added to
+  /// the event will be executed synchronously in the order in which they were
+  /// added.
+  ///
+  /// You can pass the returned ``Observation`` instance into the ``removeObservation(_:)``
+  /// method, or similar, to remove it from the event. This will stop the execution of
+  /// the observation's handler.
+  @discardableResult
+  public func observe(_ type: EventType, handler: @escaping () -> Void) -> Observation {
+    let observation = Observation(eventType: type, value: handler)
+    proxy.observations.append(observation)
     proxy.register()
+    return observation
+  }
+  
+  /// Removes the given observation from the key event.
+  ///
+  /// Once an observation is removed, its handler will no longer be executed.
+  public func removeObservation(_ observation: Observation) {
+    proxy.observations.removeAll { $0 == observation }
+  }
+  
+  /// Removes the given observations from the key event.
+  ///
+  /// Once an observation is removed, its handler will no longer be executed.
+  public func removeObservations(_ observations: [Observation]) {
+    for observation in observations {
+      removeObservation(observation)
+    }
+  }
+  
+  /// Removes every observation that matches the given predicate from the key event.
+  ///
+  /// Once an observation is removed, its handler will no longer be executed.
+  public func removeObservations(where shouldRemove: (Observation) throws -> Bool) rethrows {
+    for observation in proxy.observations {
+      if try shouldRemove(observation) {
+        removeObservation(observation)
+      }
+    }
+  }
+  
+  /// Removes every observation from the key event.
+  ///
+  /// Once an observation is removed, its handler will no longer be executed.
+  public func removeAllObservations() {
+    proxy.observations.removeAll()
   }
   
   /// Enables the key event.
@@ -197,7 +246,7 @@ public struct KeyEvent {
   ///
   /// When disabled, the key event's observation handlers become dormant, but are
   /// still retained, so that the event can be re-enabled later. If you wish to
-  /// completely remove the event and its handlers, use the `remove()` method instead.
+  /// completely remove the event and its handlers, use the ``remove()`` method instead.
   public func disable() {
     proxy.unregister()
   }
@@ -205,8 +254,8 @@ public struct KeyEvent {
   /// Completely removes the key event and its handlers.
   ///
   /// Once this method has been called, the key event should be considered invalid.
-  /// The `enable()` method will have no effect. If you wish to re-enable the event,
-  /// you will need to call `observe(_:handler:)` and provide a new handler.
+  /// The ``enable()`` method will have no effect. If you wish to re-enable the event,
+  /// you will need to call ``observe(_:handler:)`` and provide a new handler.
   public func remove() {
     proxy.unregister()
     ProxyStorage.remove(proxy)

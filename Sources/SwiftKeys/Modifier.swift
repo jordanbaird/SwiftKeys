@@ -8,6 +8,7 @@
 
 import Carbon.HIToolbox
 import CoreGraphics
+import AppKit
 
 extension KeyEvent {
   /// Constants that represent modifier keys associated with a key event.
@@ -48,6 +49,19 @@ extension KeyEvent {
       }
     }
     
+    var cocoaFlag: NSEvent.ModifierFlags {
+      switch self {
+      case .command:
+        return .command
+      case .control:
+        return .control
+      case .option:
+        return .option
+      case .shift:
+        return .shift
+      }
+    }
+    
     var carbonValue: Int {
       switch self {
       case .command:
@@ -82,5 +96,13 @@ extension Array where Element == KeyEvent.Modifier {
       }
     }
     return .init(converted)
+  }
+  
+  var cocoaFlags: NSEvent.ModifierFlags {
+    var flags = NSEvent.ModifierFlags()
+    for modifier in self {
+      flags.insert(modifier.cocoaFlag)
+    }
+    return flags
   }
 }

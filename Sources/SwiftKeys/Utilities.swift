@@ -143,3 +143,32 @@ struct Constraint {
     view.translatesAutoresizingMaskIntoConstraints = originalTranslates
   }
 }
+
+private var rng = SystemRandomNumberGenerator()
+
+protocol IdentifiableWrapper: Hashable {
+  associatedtype Value
+  typealias IDGenerator = SystemRandomNumberGenerator
+  typealias Identifier = UInt64
+  var id: Identifier { get }
+  var value: Value { get }
+}
+
+extension IdentifiableWrapper {
+  static var idGenerator: IDGenerator {
+    get { rng }
+    set { rng = newValue }
+  }
+}
+
+extension IdentifiableWrapper {
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.id == rhs.id
+  }
+}
+
+extension IdentifiableWrapper {
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(id)
+  }
+}

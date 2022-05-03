@@ -9,6 +9,11 @@
 import Carbon.HIToolbox
 
 final class EventProxy {
+  struct Observation: IdentifiableObservation {
+    let id = idGenerator.next()
+    let value: () -> Void
+  }
+  
   private static var eventHandlerRef: EventHandlerRef?
   private static let eventTypes = [
     EventTypeSpec(
@@ -30,15 +35,17 @@ final class EventProxy {
   let identifier = EventHotKeyID(signature: signature, id: proxyCount)
   
   let name: KeyEvent.Name
-  var observations = [(type: KeyEvent.EventType, handler: () -> Void)]()
+  var observations = [KeyEvent.Observation]()
+  
+  var keyAndModifierChangeObservations = Set<Observation>()
+  var registrationStateObservations = Set<Observation>()
   
   var blockRegistrationChanges = false
   
-  var registrationStateHandlers = [() -> Void]()
   var isRegistered = false {
     didSet {
-      for handler in registrationStateHandlers {
-        handler()
+      for observation in registrationStateObservations {
+        observation.perform()
       }
     }
   }
@@ -49,6 +56,9 @@ final class EventProxy {
       if isRegistered {
         register()
       }
+      for observation in keyAndModifierChangeObservations {
+        observation.perform()
+      }
     }
   }
   
@@ -58,19 +68,15 @@ final class EventProxy {
       if isRegistered {
         register()
       }
+      for observation in keyAndModifierChangeObservations {
+        observation.perform()
+      }
     }
   }
   
   init(name: KeyEvent.Name) {
     self.name = name
     Self.proxyCount += 1
-  }
-  
-  private func executeHandlers(for ref: EventRef) {
-    let type = KeyEvent.EventType(ref)
-    for observation in observations where observation.type == type {
-      observation.handler()
-    }
   }
   
   func install() -> OSStatus {
@@ -111,7 +117,9 @@ final class EventProxy {
         }
         
         // Execute the proxy's stored handlers.
-        proxy.executeHandlers(for: event)
+        for observation in proxy.observations {
+          observation.tryToPerform(with: event)
+        }
         
         return noErr
       },
@@ -189,8 +197,24 @@ final class EventProxy {
     isRegistered = false
   }
   
-  func observeRegistrationState(_ handler: @escaping () -> Void) {
-    registrationStateHandlers.append(handler)
+  @discardableResult
+  func observeKeyAndModifierChanges(_ handler: @escaping () -> Void) -> Observation {
+    let observation = Observation(value: handler)
+    keyAndModifierChangeObservations.update(with: observation)
+    return observation
+  }
+  
+  @discardableResult
+  func removeObservation(_ observation: Observation) -> Observation? {
+    keyAndModifierChangeObservations.remove(observation) ??
+    registrationStateObservations.remove(observation)
+  }
+  
+  @discardableResult
+  func observeRegistrationState(_ handler: @escaping () -> Void) -> Observation {
+    let observation = Observation(value: handler)
+    registrationStateObservations.update(with: observation)
+    return observation
   }
   
   func mutateWithoutChangingRegistrationState(_ handler: (EventProxy) throws -> Void) rethrows {
