@@ -65,22 +65,24 @@ extension KeyEvent.Name {
   /// A prefix that will be applied to a `Name` when it is used as a key in
   /// `UserDefaults`.
   ///
-  /// An instance of this type can be initialized in a number of different ways:
+  /// There are two different ways to initialize a `Prefix`:
   ///
-  /// * 1\. Using the standard initializer.
+  /// 1\. Using the standard initializer.
   /// ```swift
   /// let prefix = KeyEvent.Name.Prefix("SomePrefix")
+  /// let name = KeyEvent.Name("SomeName", prefix: somePrefix)
   /// ```
   ///
-  /// * 2\. Using a string literal.
+  /// 2\. Using a string literal.
   /// ```swift
   /// let prefix: KeyEvent.Name.Prefix = "SomePrefix"
   /// ```
   ///
   /// This allows for a `Name` instance to be initialized like this:
+  ///
   /// ```swift
   /// let somePrefix = KeyEvent.Name.Prefix("SomePrefix")
-  /// let name = KeyEvent.Name("SomeName", prefix: somePrefix)
+  
   /// // Or...
   /// let name = KeyEvent.Name("SomeName", prefix: "SomePrefix")
   /// ```
@@ -100,7 +102,8 @@ extension KeyEvent.Name {
     ///
     /// This version of the property is mostly an implementation detail, and is here
     /// to allow for a more flexible API. For example, with this property, one could
-    /// initialize an `Name` like so:
+    /// initialize an `Name` like this:
+    ///
     /// ```swift
     /// let name = KeyEvent.Name("SomeName", prefix: .sharedPrefix)
     /// ```

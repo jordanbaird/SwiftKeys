@@ -10,10 +10,9 @@ import AppKit
 
 /// A view that can record key events.
 ///
-/// Start by creating a `KeyEvent`. You can then use it to initialize a
-/// `KeyRecorder` instance, which will update the event whenever a new key
-/// combination is recorded. You can also observe the event, and perform
-/// actions on both key-down _and_ key-up.
+/// Start by creating a ``KeyEvent``. You can then use it to initialize a key recorder,
+/// which will update the event whenever a new key combination is recorded. You can also
+/// observe the event, and perform actions on both key-down _and_ key-up.
 ///
 /// ```swift
 /// let event = KeyEvent(name: "SomeEvent")
@@ -27,6 +26,9 @@ import AppKit
 /// }
 /// ```
 public final class KeyRecorder: NSControl {
+  
+  // MARK: - Nested Types
+  
   /// Styles that affect the highlighted appearance of a key recorder.
   public enum HighlightStyle: CaseIterable {
     /// A light highlight style.
@@ -89,6 +91,8 @@ public final class KeyRecorder: NSControl {
     }
   }
   
+  // MARK: - Instance Properties
+  
   let cornerRadius = 5.5
   let segmentedControl: SegmentedControl
   
@@ -116,8 +120,10 @@ public final class KeyRecorder: NSControl {
   
   private var _hasBackingView = true
   
-  /// A Boolean value that indicates whether the recorder is drawn
+  /// A Boolean value that indicates whether the key recorder is drawn
   /// with a backing visual effect view.
+  ///
+  /// This property's default value is `true`.
   public var hasBackingView: Bool {
     get { _hasBackingView }
     set {
@@ -129,10 +135,10 @@ public final class KeyRecorder: NSControl {
     }
   }
   
-  /// A Boolean value that indicates whether the recorder reacts to
+  /// A Boolean value that indicates whether the key recorder reacts to
   /// mouse events.
   ///
-  /// The value of this property is true if the recorder responds to
+  /// The value of this property is true if the key recorder responds to
   /// mouse events; otherwise, false.
   public override var isEnabled: Bool {
     get { segmentedControl.isEnabled }
@@ -141,10 +147,12 @@ public final class KeyRecorder: NSControl {
   
   private var _isHighlighted = false
   
-  /// A Boolean value that indicates whether the recorder is highlighted.
+  /// A Boolean value that indicates whether the key recorder is highlighted.
   ///
   /// Setting this value programmatically will immediately update the
-  /// appearance of the recorder.
+  /// appearance of the key recorder.
+  ///
+  /// This property's default value is `false`.
   public override var isHighlighted: Bool {
     get { _isHighlighted }
     set {
@@ -156,10 +164,12 @@ public final class KeyRecorder: NSControl {
     }
   }
   
-  /// The appearance of the recorder when it is highlighted.
+  /// The appearance of the key recorder when it is highlighted.
   ///
-  /// If the recorder is already highlighted, and this value is set, the
+  /// If the key recorder is already highlighted, and this value is set, the
   /// appearance will update in real time to match the new value.
+  ///
+  /// This property's default value is ``HighlightStyle-swift.enum/light``.
   public var highlightStyle = HighlightStyle.light {
     didSet {
       if isHighlighted {
@@ -169,32 +179,32 @@ public final class KeyRecorder: NSControl {
     }
   }
   
-  /// The string value of the recorder.
+  /// The string value of the key recorder's label.
   ///
-  /// Setting this value allows you to customize the label that is
+  /// Setting this value allows you to customize the text that is
   /// displayed to the user.
   public override var stringValue: String {
     get { segmentedControl.label(forSegment: 0) ?? attributedStringValue.string }
     set { segmentedControl.setLabel(newValue, forSegment: 0) }
   }
   
-  /// The attributed string value of the recorder.
+  /// The attributed string value of the key recorder's label.
   ///
-  /// Setting this value allows you to customize the label that is
+  /// Setting this value allows you to customize the text that is
   /// displayed to the user.
   public override var attributedStringValue: NSAttributedString {
     get { segmentedControl.attributedLabel }
     set { segmentedControl.attributedLabel = newValue }
   }
   
-  /// The font of the recorder's label.
+  /// The font of the key recorder's label.
   public override var font: NSFont? {
     get { segmentedControl.font }
     set { segmentedControl.font = newValue }
   }
   
-  /// The alignment of the recorder's label.
-  /// - Note: Prior to macOS 10.13, the behavior of setting this value is undefined.
+  /// The alignment of the key recorder's label.
+  /// - Warning: Prior to macOS 10.13, the behavior of this property is undefined.
   public override var alignment: NSTextAlignment {
     get {
       if #available(macOS 10.13, *) {
@@ -212,16 +222,18 @@ public final class KeyRecorder: NSControl {
     }
   }
   
-  /// The appearance of the recorder.
+  /// The appearance of the key recorder.
   public override var appearance: NSAppearance? {
     get { segmentedControl.appearance }
     set { segmentedControl.appearance = newValue }
   }
   
-  /// Creates a recorder for the given key event.
+  // MARK: - Initializers
+  
+  /// Creates a key recorder for the given key event.
   ///
-  /// Whenever the event records a key combination, the key and modifiers of the
-  /// recorder's event will be updated to match.
+  /// Whenever the event records a key combination, the key and modifiers of
+  /// the key recorder's event will be updated to match.
   public init(keyEvent: KeyEvent) {
     segmentedControl = .init(keyEvent: keyEvent)
     super.init(frame: segmentedControl.frame)
@@ -230,13 +242,18 @@ public final class KeyRecorder: NSControl {
     addSubview(segmentedControl)
   }
   
-  /// Creates a recorder for the key event with the given name.
+  /// Creates a key recorder for the key event with the given name.
   ///
   /// If an event with the name does not exist, a blank event will be created.
-  /// As soon as the recorder records a key combination, the event will assume
+  /// As soon as the key recorder records a key combination, the event will assume
   /// that combination's value.
   public convenience init(name: KeyEvent.Name) {
     self.init(keyEvent: .init(name: name))
+  }
+  
+  @available(*, unavailable)
+  override init(frame frameRect: NSRect) {
+    fatalError("init(frame:) is unavailable.")
   }
   
   @available(*, unavailable)
@@ -276,7 +293,7 @@ public final class KeyRecorder: NSControl {
   
   /// Informs the view that it has been added to a new view hierarchy.
   ///
-  /// If you override this method, you _must_ call `super` for the recorder
+  /// If you override this method, you _must_ call `super` for the key recorder
   /// to maintain its correct behavior.
   public override func viewDidMoveToWindow() {
     super.viewDidMoveToWindow()
@@ -395,7 +412,7 @@ extension KeyRecorder {
         NSSound.beep()
         return nil
       }
-      let modifiers = KeyEvent.Modifier.fromFlags(event.modifierFlags)
+      let modifiers = event.modifierFlags.keyEventModifiers
       guard !modifiers.isEmpty else {
         NSSound.beep()
         self.setFailureReason(.needsModifiers)
@@ -434,8 +451,13 @@ extension KeyRecorder {
         size: .init(width: stringSize.height, height: stringSize.height),
         flipped: false
       ) {
+        let centeredRect = NSRect(
+          origin: .init(
+            x: $0.midX - stringSize.width / 2,
+            y: $0.midY - stringSize.height / 2),
+          size: stringSize)
         string.draw(
-          in: .init(origin: .zero, size: stringSize).centered(in: $0),
+          in: centeredRect,
           withAttributes: attributes)
         return true
       }
@@ -468,7 +490,6 @@ extension KeyRecorder {
       }
     }
     
-    /// Creates a recorder for the given key event.
     init(keyEvent: KeyEvent) {
       proxy = keyEvent.proxy
       super.init(frame: .init(origin: .zero, size: .init(width: 140, height: 24)))
@@ -590,34 +611,22 @@ extension KeyRecorder {
   }
 }
 
-extension KeyEvent.Modifier {
-  fileprivate static func fromFlags(_ flags: NSEvent.ModifierFlags) -> [Self] {
-    var modifiers = [Self]()
+extension NSEvent.ModifierFlags {
+  var keyEventModifiers: [KeyEvent.Modifier] {
+    var modifiers = [KeyEvent.Modifier]()
     // NOTE: Keep the order of these statements.
-    if flags.contains(.control) {
+    if contains(.control) {
       modifiers.append(.control)
     }
-    if flags.contains(.option) {
+    if contains(.option) {
       modifiers.append(.option)
     }
-    if flags.contains(.shift) {
+    if contains(.shift) {
       modifiers.append(.shift)
     }
-    if flags.contains(.command) {
+    if contains(.command) {
       modifiers.append(.command)
     }
     return modifiers
-  }
-}
-
-extension NSRect {
-  fileprivate mutating func center(in otherRect: NSRect) {
-    origin = .init(x: otherRect.midX - width / 2, y: otherRect.midY - height / 2)
-  }
-  
-  fileprivate func centered(in otherRect: NSRect) -> NSRect {
-    var copy = self
-    copy.center(in: otherRect)
-    return copy
   }
 }
