@@ -38,8 +38,8 @@ final class EventProxyTests: XCTestCase {
     // This makes sure that calling `observeRegistrationState(_:)`
     // stores the handler that is provided.
     let event = KeyEvent(name: "AnEvent")
-    XCTAssert(event.proxy.registrationStateHandlers.isEmpty)
+    XCTAssert(event.proxy.registrationStateObservations.isEmpty)
     event.proxy.observeRegistrationState { }
-    XCTAssert(event.proxy.registrationStateHandlers.count == 1)
+    XCTAssert(event.proxy.registrationStateObservations.count == 1)
   }
 }
