@@ -7,20 +7,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up Xcode
+      - name: Set Up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '13.3'
-      - name: Run tests and generate coverage
-        run: |
-          swift test --enable-code-coverage
-          ls ./.build
-          ls ./.build/debug
-          ls ./.build/debug/SwiftKeysPackageTests.xctest
-          ls ./.build/debug/SwiftKeysPackageTests.xctest/Contents
-          ls ./.build/debug/SwiftKeysPackageTests.xctest/Contents/MacOS
+      - name: Test
+        run: swift test --enable-code-coverage
+      - name: Generate
           xcrun llvm-cov export -format="lcov" ./.build/debug/SwiftKeysPackageTests.xctest/Contents/MacOS/SwiftKeysPackageTests -instr-profile ./.build/debug/codecov/default.profdata > ./info.lcov
-      - name: Upload coverage
+      - name: Upload
         uses: codecov/codecov-action@v3.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
