@@ -14,16 +14,11 @@ extension IdentifiableObservation {
   func perform() { value() }
 }
 
-/// A type-erasing wrapper for an identifiable observation.
 struct AnyIdentifiableObservation: IdentifiableObservation {
-  /// The type-erased observation at the base of this observation.
   let base: Any
-  /// The identifier of this observation.
   let id: Identifier
-  /// The value of this observation.
   let value: () -> Void
   
-  /// Creates a type-erased observation with the given observation as its base.
   init<T: IdentifiableObservation>(_ base: T) {
     self.base = base
     id = base.id
@@ -39,7 +34,6 @@ extension KeyEvent {
   /// remove the observation and stop the execution of its handler.
   public struct Observation: IdentifiableObservation {
     let id = idGenerator.next()
-    
     let eventType: KeyEvent.EventType
     let value: () -> Void
     
