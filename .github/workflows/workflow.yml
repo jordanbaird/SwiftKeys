@@ -19,7 +19,7 @@ jobs:
           ls ./.build/debug/SwiftKeysPackageTests.xctest
           ls ./.build/debug/SwiftKeysPackageTests.xctest/Contents
           ls ./.build/debug/SwiftKeysPackageTests.xctest/Contents/MacOS
-          xcrun llvm-cov export -format="lcov" ./.build/debug/SwiftKeysPackageTests.xctest -instr-profile ./.build/debug/codecov/default.profdata > ./info.lcov
+          xcrun llvm-cov export -format="lcov" ./.build/debug/SwiftKeysPackageTests.xctest/Contents/MacOS/SwiftKeysPackageTests -instr-profile ./.build/debug/codecov/default.profdata > ./info.lcov
       - name: Upload coverage
         uses: codecov/codecov-action@v3.1.0
         with:
