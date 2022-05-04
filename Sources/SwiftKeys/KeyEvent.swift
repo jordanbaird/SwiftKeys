@@ -8,77 +8,6 @@
 
 import Cocoa
 
-/// An observable key event.
-///
-/// Create a key event by calling one of its initializers. You can then observe
-/// the event, and perform actions on both key-down and key-up.
-///
-/// ```swift
-/// let event = KeyEvent(name: "SomeEvent")
-///
-/// event.observe(.keyDown) {
-///     print("DOWN")
-/// }
-/// event.observe(.keyUp) {
-///     print("UP")
-/// }
-/// ```
-///
-/// You can also initialize an event with a predefined key and modifiers. In
-/// the following example, the key event's observations will be triggered when
-/// the key combination "⇧⌥␣" (Shift-Option-Space) is pressed.
-///
-/// ```swift
-/// let event = KeyEvent(
-///     name: "SomeEvent",
-///     key: .space,
-///     modifiers: [.shift, .option])
-/// ```
-///
-/// If a key event is created with the same name as one that has been created
-/// previously, both events will now reference the same underlying object.
-///
-/// ```swift
-/// let originalEvent = KeyEvent(
-///     name: "SomeEvent",
-///     key: .space,
-///     modifiers: [.shift, .option])
-///
-/// let duplicateEvent = KeyEvent(name: "SomeEvent")
-///
-/// print(originalEvent == duplicateEvent)
-/// // Prints: "true"
-///
-/// print(duplicateEvent.key)
-/// // Prints: "space"
-///
-/// print(duplicateEvent.modifiers)
-/// // Prints: "shift, option"
-/// ```
-///
-/// If the example above were to provide a new key and new modifiers in `duplicateEvent`'s
-/// initializer, both `duplicateEvent` _and_ `originalEvent` have those values.
-///
-/// ```swift
-/// let originalEvent = KeyEvent(
-///     name: "SomeEvent",
-///     key: .space,
-///     modifiers: [.shift, .option])
-///
-/// let duplicateEvent = KeyEvent(
-///     name: "SomeEvent",
-///     key: .leftArrow,
-///     modifiers: [.control, .command])
-///
-/// print(originalEvent == duplicateEvent)
-/// // Prints: "true"
-///
-/// print(originalEvent.key)
-/// // Prints: "leftArrow"
-/// 
-/// print(originalEvent.modifiers)
-/// // Prints: "control, command"
-/// ```
 public struct KeyEvent {
   enum CodingKeys: CodingKey {
     case key
@@ -88,20 +17,17 @@ public struct KeyEvent {
   
   static var keyEventStorage = [Name: KeyEvent]()
   
-  /// The name that is be used to store this key event.
+  /// The name that is used to store this key event.
   public let name: Name
   
-  /// A Boolean value that indicates whether the key event is currently
-  /// enabled and active.
+  /// A Boolean value that indicates whether the key event is currently enabled and active.
   ///
-  /// When enabled, the event's handlers will be executed whenever the
-  /// event is triggered.
+  /// When enabled, the event's handlers will be executed whenever the event is triggered.
   ///
-  /// - Note: If the event does not have a key or modifiers, it will not be
-  /// possible to enable it, even when calling the ``enable()`` method. If you
-  /// have created an event without these, and wish to enable it, you can
-  /// create a new event with the same name, and it will take the place of
-  /// the old event.
+  /// - Note: If the event does not have a key or modifiers, it will not be possible to
+  /// enable it, even when calling ``enable()``. If you have created an event without these,
+  /// and wish to enable it, you can create a new event with the same name, and it will take
+  /// the place of the old event.
   public var isEnabled: Bool {
     proxy.isRegistered
   }

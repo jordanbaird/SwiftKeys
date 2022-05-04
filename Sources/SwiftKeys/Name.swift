@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 extension KeyEvent {
-  /// A type that corresponds to the name of a key event.
+  /// A type that represents the name of a key event.
   ///
   /// Key events are automatically stored in the `UserDefaults` system once they have been
   /// registered. The value of the event's `name` property (an instance of this type) is
@@ -42,6 +42,7 @@ extension KeyEvent {
     private var truePrefix: PrefixValueType
     
     /// A prefix that will be applied to the name when it is stored in `UserDefaults`.
+    /// 
     /// By default, this value is set to the `sharedPrefix` property -- an empty string.
     /// However, it can be set to any value desired.
     ///

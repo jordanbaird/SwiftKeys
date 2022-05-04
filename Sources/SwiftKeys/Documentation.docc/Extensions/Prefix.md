@@ -1,6 +1,6 @@
 # ``SwiftKeys/KeyEvent/Name-swift.struct/Prefix-swift.class``
 
-A prefix that will be applied to a name when it is used as a key in `UserDefaults`.
+A prefix that will be applied to a name when it is stored in `UserDefaults`.
 
 ## Overview
 
