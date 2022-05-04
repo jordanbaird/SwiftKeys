@@ -16,9 +16,9 @@ jobs:
           swift test --enable-code-coverage
           ls ./.build
           ls ./.build/debug
-#          xcrun llvm-cov export -format="lcov" ./.build/x86_64-apple-macosx/debug/SwiftKeysPackageTests.xctest/**/SwiftKeysPackageTests -instr-profile ./.build/x86_64-apple-macosx/debug/codecov/default.profdata > ./info.lcov
-#      - name: Upload coverage
-#        uses: codecov/codecov-action@v3.1.0
-#        with:
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          files: ./info.lcov
+          xcrun llvm-cov export -format="lcov" ./.build/debug/SwiftKeysPackageTests.xctest -instr-profile ./.build/debug/codecov/default.profdata > ./info.lcov
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3.1.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./info.lcov
