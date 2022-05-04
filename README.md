@@ -1,6 +1,7 @@
 # SwiftKeys
 
 ![Continuous Integration](https://img.shields.io/circleci/build/github/jordanbaird/SwiftKeys/main)
+[![Code Coverage](https://codecov.io/gh/jordanbaird/SwiftKeys/branch/main/graph/badge.svg?token=PARNSVMN0H)](https://codecov.io/gh/jordanbaird/SwiftKeys)
 ![Release](https://img.shields.io/github/v/release/jordanbaird/SwiftKeys)
 ![Swift](https://img.shields.io/badge/dynamic/json?color=orange&label=Swift&query=Swift&suffix=%2B&url=https%3A%2F%2Fraw.githubusercontent.com%2Fjordanbaird%2FSwiftKeys%2Fmain%2Fswift-version)
 ![License](https://img.shields.io/github/license/jordanbaird/SwiftKeys)
