@@ -77,6 +77,6 @@ In addition to operating on the key event itself, you can perform similar change
 
 ``KeyRecorder`` is a subclass of `NSControl` that enables you to record new keys and modifiers for a key event. Passing an event into ``KeyRecorder/init(keyEvent:)`` creates a key recorder whose state is bound to that event. You can also create a key recorder using ``KeyRecorder/init(name:)``, a convenience initializer which automatically creates a key event based on the name you provide.
 
-![A window containing a KeyRecorder.](recorder_window.png)
+![A window containing a KeyRecorder.](recorder-window.png)
 
 Using a key recorder is extremely simple. Clicking inside puts it into "recording" mode, where it awaits a key-down message. As soon as a key combination is pressed, the recorder updates its key event and enters "idle" mode. In idle mode, a "clear" button appears, which resets the key event to an empty state.
