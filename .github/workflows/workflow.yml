@@ -13,10 +13,10 @@ jobs:
           xcode-version: '13.3'
       - name: Run tests
         run: swift test --enable-code-coverage
-      - name: Generate correct coverage file
-        run: xcrun llvm-cov export -format="lcov" .build/debug/SwiftKeysPackageTests.xctest/**/SwiftKeysPackageTests -instr-profile .build/debug/codecov/default.profdata > info.lcov
-      - name: Codecov
+      - name: Generate coverage file
+        run: xcrun llvm-cov export -format="lcov" ./.build/debug/SwiftKeysPackageTests.xctest/**/SwiftKeysPackageTests -instr-profile ./.build/debug/codecov/default.profdata > ./info.lcov
+      - name: Upload coverage
         uses: codecov/codecov-action@v3.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: info.lcov
+          files: ./info.lcov
