@@ -1,2 +1,4 @@
+ignore:
+  - "docs/"
 fixes:
-  - "/Users/runner/work/SwiftKeys/SwiftKeys/::"
+  - "/Users/runner/work/::"
