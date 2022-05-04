@@ -95,27 +95,16 @@ extension KeyEvent.Name {
 
 // MARK: - PrefixValueType
 
-extension KeyEvent.Name {
-  /// **INTERNAL IMPLEMENTATION ONLY**
-  ///
-  /// This type exists so we don't have to retain a `Prefix` instance for the entirety
-  /// of the app's lifetime. We need `Prefix` to be a class so that `sharedPrefix` can
-  /// be overridden, but it seems kind of overkill for an instance to stick around for
-  /// longer than it needs to. The only "real" information that a `Prefix` instance
-  /// holds is its raw value, so this is essentially the "real" prefix type that `Prefix`
-  /// just serves as an interface to. As soon as the `Prefix` instance that is passed
-  /// in is no longer needed, it will be deallocated.
-  struct PrefixValueType {
-    let rawValue: String
-    
-    init(prefix: Prefix) {
-      self.rawValue = prefix.rawValue
-    }
+struct PrefixValueType {
+  let rawValue: String
+  
+  init(prefix: KeyEvent.Name.Prefix) {
+    self.rawValue = prefix.rawValue
   }
 }
 
-extension KeyEvent.Name.PrefixValueType: Codable { }
+extension PrefixValueType: Codable { }
 
-extension KeyEvent.Name.PrefixValueType: Equatable { }
+extension PrefixValueType: Equatable { }
 
-extension KeyEvent.Name.PrefixValueType: Hashable { }
+extension PrefixValueType: Hashable { }
