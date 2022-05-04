@@ -17,3 +17,4 @@ jobs:
         uses: codecov/codecov-action@v3.1.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./.build/x86_64-apple-macosx/debug/codecov/SwiftKeys.json
