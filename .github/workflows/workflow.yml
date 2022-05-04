@@ -12,7 +12,7 @@ jobs:
         with:
           xcode-version: '13.3'
       - name: Run tests
-        run: swift test --enable-code-coverage --show-codecov-path
+        run: swift test --enable-code-coverage
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
         with:
