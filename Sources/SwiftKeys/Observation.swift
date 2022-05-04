@@ -33,9 +33,15 @@ extension KeyEvent {
   /// ``KeyEvent/removeObservation(_:)`` method, or similar, to permanently
   /// remove the observation and stop the execution of its handler.
   public struct Observation: IdentifiableObservation {
-    let id = idGenerator.next()
-    let eventType: KeyEvent.EventType
+    /// The identifying value of this observation.
+    public let id = idGenerator.next()
+    /// The type of the event that this observation reacts to.
+    public let eventType: KeyEvent.EventType
+    
     let value: () -> Void
+    
+    /// An action that is performed when this observation is triggered.
+    public var handler: () -> Void { value }
     
     func tryToPerform(with eventRef: EventRef) {
       if KeyEvent.EventType(eventRef) == eventType {
