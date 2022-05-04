@@ -229,3 +229,48 @@ final class EventProxy {
     unregister()
   }
 }
+
+// MARK: - ProxyStorage
+
+struct ProxyStorage: Hashable {
+  private static var all = Set<Self>()
+  
+  private let proxy: EventProxy
+  
+  private init(_ proxy: EventProxy) {
+    self.proxy = proxy
+  }
+  
+  static func proxy(with identifier: UInt32) -> EventProxy? {
+    all.first { $0.proxy.identifier.id == identifier }?.proxy
+  }
+  
+  static func proxy(with name: KeyEvent.Name) -> EventProxy? {
+    all.first { $0.proxy.name == name }?.proxy
+  }
+  
+  static func store(_ proxy: EventProxy) {
+    all.update(with: .init(proxy))
+  }
+  
+  static func remove(_ proxy: EventProxy) {
+    if let storage = all.first(where: { $0 ~= proxy }) {
+      all.remove(storage)
+    }
+  }
+  
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(proxy.identifier.id)
+    hasher.combine(proxy.name)
+  }
+  
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.proxy.identifier.id == rhs.proxy.identifier.id &&
+    lhs.proxy.name == rhs.proxy.name
+  }
+  
+  static func ~= (lhs: Self, rhs: EventProxy) -> Bool {
+    lhs.proxy.identifier.id == rhs.identifier.id &&
+    lhs.proxy.name == rhs.name
+  }
+}
