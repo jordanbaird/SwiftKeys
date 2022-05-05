@@ -14,7 +14,7 @@ jobs:
       - name: Test
         run: swift test --enable-code-coverage
       - name: Generate
-        run: ../scripts/generate-code-coverage.sh
+        run: ./.github/scripts/generate-code-coverage.sh
       - name: Upload
         uses: codecov/codecov-action@v3.1.0
         with:
