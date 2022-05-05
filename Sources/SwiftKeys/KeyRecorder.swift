@@ -10,9 +10,10 @@ import AppKit
 
 /// A view that can record key events.
 ///
-/// Start by creating a ``KeyEvent``. You can then use it to initialize a key recorder,
-/// which will update the event whenever a new key combination is recorded. You can also
-/// observe the event, and perform actions on both key-down _and_ key-up.
+/// Start by creating a ``KeyEvent``. You can then use it to initialize a key
+/// recorder, which will update the event whenever a new key combination is
+/// recorded. You can also observe the event, and perform actions on both
+/// key-down and key-up.
 ///
 /// ```swift
 /// let event = KeyEvent(name: "SomeEvent")
@@ -29,13 +30,75 @@ public final class KeyRecorder: NSControl {
   
   // MARK: - Nested Types
   
+  /// Styles that a key recorder's bezel can be drawn in.
+  public enum BezelStyle: CaseIterable {
+    /// Styles available for a key recorder's border.
+    /// - Note: These constants are not available for all bezel styles.
+    public enum BorderStyle {
+      /// The bezel is drawn with a solid border.
+      case solid
+      /// The bezel is drawn with a dashed border.
+      case dashed
+      /// The bezel style is drawn without a border.
+      case noBorder
+    }
+    
+    /// The default style.
+    case rounded
+    /// A rounded, rectangular style with a flat appearance and a solid line border.
+    case flatBordered
+    /// A style where the individual segments of the recorder do not touch, optionally drawn with a solid line border.
+    case separated(_ style: BorderStyle)
+    /// A square style.
+    case square
+    
+    public static var allCases: [Self] = [
+      .rounded,
+      .flatBordered,
+      .separated(.solid),
+      .separated(.dashed),
+      .separated(.noBorder),
+      .square
+    ]
+    
+    var rawValue: NSSegmentedControl.Style {
+      switch self {
+      case .rounded: return .rounded
+      case .flatBordered: return .roundRect
+      case .separated: return .separated
+      case .square: return .smallSquare
+      }
+    }
+    
+    var widthConstant: CGFloat {
+      switch self {
+      case .rounded: return -4
+      case .flatBordered: return -4
+      case .separated: return -2
+      case .square: return -2
+      }
+    }
+    
+    var heightConstant: CGFloat {
+      switch self {
+      case .rounded: return -2
+      case .flatBordered: return -6
+      case .separated: return 0
+      case .square: return -4
+      }
+    }
+    
+    init(_ rawValue: NSSegmentedControl.Style) {
+      self = Self.allCases.first { $0.rawValue == rawValue } ?? .rounded
+    }
+  }
+  
   /// Styles that affect the highlighted appearance of a key recorder.
   public enum HighlightStyle: CaseIterable {
     /// A light highlight style.
     case light
     /// A medium-light highlight style.
     case mediumLight
-    
     /// A dark highlight style.
     case dark
     /// An ultra-dark highlight style.
@@ -44,57 +107,110 @@ public final class KeyRecorder: NSControl {
     var highlightColor: NSColor {
       var color: NSColor
       switch self {
-      case .light:
-        color = .white
-      case .mediumLight:
-        color = .white.blended(withFraction: 0.5, of: .black)!
-      case .dark:
-        color = .black.blended(withFraction: 0.5, of: .white)!
-      case .ultraDark:
-        color = .black
+      case .light: color = .white
+      case .mediumLight: color = .white.blended(withFraction: 0.5, of: .black)!
+      case .dark: color = .black.blended(withFraction: 0.5, of: .white)!
+      case .ultraDark: color = .black
       }
       return color.withAlphaComponent(0.75)
     }
     
     var material: NSVisualEffectView.Material {
-      switch self {
-      case .light:
+      if #available(macOS 10.11, *) {
         if #unavailable(macOS 10.14) {
-          return .light
-        } else {
-          return .selection
-        }
-      case .mediumLight:
-        if #available(macOS 10.11, *) {
-          if #unavailable(macOS 10.14) {
-            return .mediumLight
-          }
-        }
-        return .titlebar
-      case .dark:
-        if #unavailable(macOS 10.14) {
-          return .dark
-        } else {
-          return .windowBackground
-        }
-      case .ultraDark:
-        if #available(macOS 10.11, *) {
-          if #unavailable(macOS 10.14) {
-            return .ultraDark
-          } else {
-            return .underPageBackground
+          switch self {
+          case .light: return .light
+          case .mediumLight: return .mediumLight
+          case .dark: return .dark
+          case .ultraDark: return .ultraDark
           }
         } else {
-          return .titlebar
+          switch self {
+          case .light: return .selection
+          case .mediumLight: return .titlebar
+          case .dark: return .windowBackground
+          case .ultraDark: return .underPageBackground
+          }
         }
       }
+      return .titlebar
+    }
+  }
+  
+  class BorderView: NSView {
+    var borderColor: NSColor {
+      didSet { display() }
+    }
+    var borderStyle: BezelStyle.BorderStyle {
+      didSet { display() }
+    }
+    var borderThickness: CGFloat {
+      didSet { display() }
+    }
+    var cornerRadius: CGFloat {
+      didSet { display() }
+    }
+    
+    init(
+      frame: NSRect,
+      borderColor: NSColor,
+      borderStyle: BezelStyle.BorderStyle,
+      borderThickness: CGFloat,
+      cornerRadius: CGFloat
+    ) {
+      self.borderColor = borderColor
+      self.borderStyle = borderStyle
+      self.borderThickness = borderThickness
+      self.cornerRadius = cornerRadius
+      super.init(frame: frame)
+    }
+    
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+      fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func draw(_ dirtyRect: NSRect) {
+      super.draw(dirtyRect)
+      
+      let path = CGMutablePath(
+        roundedRect: bounds.insetBy(dx: borderThickness, dy: borderThickness),
+        cornerWidth: cornerRadius,
+        cornerHeight: cornerRadius,
+        transform: nil)
+      
+      let shapeLayer = CAShapeLayer()
+      
+      switch borderStyle {
+      case .solid: break
+      case .dashed: shapeLayer.lineDashPattern = [4, 4]
+      case .noBorder: return
+      }
+      
+      shapeLayer.lineWidth = borderThickness
+      shapeLayer.strokeColor = borderColor.cgColor
+      shapeLayer.fillColor = .clear
+      shapeLayer.anchorPoint = .zero
+      shapeLayer.path = path
+      
+      wantsLayer = true
+      layer?.addSublayer(shapeLayer)
+      layer?.backgroundColor = .clear
     }
   }
   
   // MARK: - Instance Properties
   
-  let cornerRadius = 5.5
   let segmentedControl: SegmentedControl
+  
+  var cornerRadius: CGFloat {
+    switch bezelStyle {
+    case .rounded: return 5.5
+    case .flatBordered: return 5.5
+    case .separated: return 6
+    case .square: return 0
+    }
+  }
   
   lazy var backingView: NSVisualEffectView = {
     let view = NSVisualEffectView(frame: frame)
@@ -104,19 +220,28 @@ public final class KeyRecorder: NSControl {
     } else {
       view.material = .titlebar
     }
-    view.wantsLayer = true
-    view.layer?.cornerRadius = cornerRadius
+    view.set(\.cornerRadius, to: cornerRadius)
     return view
   }()
   
   lazy var highlightView: NSVisualEffectView = {
     let view = NSVisualEffectView(frame: frame)
     view.blendingMode = .behindWindow
-    view.wantsLayer = true
-    view.layer?.cornerRadius = cornerRadius
+    view.set(\.cornerRadius, to: cornerRadius)
     view.alphaValue = 0.75
     return view
   }()
+  
+  private var _borderViewPrototype: BorderView {
+    .init(
+      frame: frame,
+      borderColor: .highlightColor,
+      borderStyle: .solid,
+      borderThickness: 1,
+      cornerRadius: cornerRadius)
+  }
+  
+  lazy var borderView: BorderView = _borderViewPrototype
   
   private var _hasBackingView = true
   
@@ -176,6 +301,26 @@ public final class KeyRecorder: NSControl {
         isHighlighted.toggle()
         isHighlighted.toggle()
       }
+    }
+  }
+  
+  private lazy var _bezelStyle = BezelStyle(segmentedControl.segmentStyle) {
+    didSet { segmentedControl.segmentStyle = _bezelStyle.rawValue }
+  }
+  
+  /// The style of the key recorder's bezel.
+  ///
+  /// Settings this value will immediately change bezel. The property's default
+  /// value is ``BezelStyle-swift.enum/rounded``.
+  public var bezelStyle: BezelStyle {
+    get { _bezelStyle }
+    set {
+      _bezelStyle = newValue
+      removeBackingView()
+      if hasBackingView {
+        addBackingView()
+      }
+      performCustomActions(for: newValue)
     }
   }
   
@@ -265,12 +410,25 @@ public final class KeyRecorder: NSControl {
     addSubview(backingView, positioned: .below, relativeTo: self)
     Constraint(.centerX, of: backingView, to: .centerX, of: self).activate()
     Constraint(.centerY, of: backingView, to: .centerY, of: self).activate()
-    Constraint(.width, of: backingView, to: .width, of: self, constant: -4).activate()
-    Constraint(.height, of: backingView, to: .height, of: self, constant: -2).activate()
+    Constraint(.width, of: backingView, to: .width, of: self, constant: bezelStyle.widthConstant).activate()
+    Constraint(.height, of: backingView, to: .height, of: self, constant: bezelStyle.heightConstant).activate()
   }
   
   private func removeBackingView() {
     backingView.removeFromSuperview()
+  }
+  
+  private func addBorderView() {
+    addSubview(borderView, positioned: .below, relativeTo: segmentedControl)
+    Constraint(.centerX, of: borderView, to: .centerX, of: self).activate()
+    Constraint(.centerY, of: borderView, to: .centerY, of: self).activate()
+    Constraint(.width, of: borderView, to: .width, of: self, constant: bezelStyle.widthConstant).activate()
+    Constraint(.height, of: borderView, to: .height, of: self, constant: bezelStyle.heightConstant).activate()
+  }
+  
+  private func removeAndResetBorderView() {
+    borderView.removeFromSuperview()
+    borderView = _borderViewPrototype
   }
   
   private func addHighlightView() {
@@ -289,6 +447,41 @@ public final class KeyRecorder: NSControl {
   
   private func removeHighlightView() {
     highlightView.removeFromSuperview()
+  }
+  
+  private func performCustomActions(for style: BezelStyle) {
+    removeAndResetBorderView()
+    removeBackingView()
+    removeHighlightView()
+    
+    if hasBackingView {
+      addBackingView()
+    }
+    if isHighlighted {
+      addHighlightView()
+    }
+    
+    set(\.cornerRadius, to: cornerRadius)
+    backingView.set(\.cornerRadius, to: cornerRadius)
+    highlightView.set(\.cornerRadius, to: cornerRadius)
+    
+    switch style {
+    case .rounded:
+      break
+    case .flatBordered:
+      break
+    case .separated(.solid):
+      borderView.borderStyle = .solid
+      addBorderView()
+    case .separated(.dashed):
+      borderView.borderStyle = .dashed
+      addBorderView()
+    case .separated(.noBorder):
+      removeBackingView()
+      removeHighlightView()
+    case .square:
+      break
+    }
   }
   
   /// Informs the view that it has been added to a new view hierarchy.
