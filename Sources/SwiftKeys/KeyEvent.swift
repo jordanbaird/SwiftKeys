@@ -10,7 +10,7 @@ import Carbon.HIToolbox
 import Cocoa
 
 public struct KeyEvent {
-  enum CodingKeys: CodingKey {
+  private enum CodingKeys: CodingKey {
     case key
     case modifiers
     case name
