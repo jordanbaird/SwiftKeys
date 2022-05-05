@@ -11,8 +11,6 @@ import OSLog
 
 // MARK: - Functions
 
-/// Logs an error to the console using (if applicable) the `OSLog` unified logging
-/// system. If `OSLog` is not supported, the error will be logged using `NSLog`.
 @discardableResult
 func logError(_ error: EventError) -> String {
   let message = "[Error code \(error.code)] \(error.message)"
@@ -26,57 +24,36 @@ func logError(_ error: EventError) -> String {
   return message
 }
 
-/// An error that can be thrown during the internal operations of a `KeyEvent`.
 enum EventError: Error {
-  /// A custom error.
   case custom(code: OSStatus, message: String)
   
-  /// Decoding of the event has failed.
   case decodingFailed(code: OSStatus)
-  /// Encoding of the event has failed.
   case encodingFailed(code: OSStatus)
   
-  /// Installation of the event has failed.
   case installationFailed(code: OSStatus)
   
-  /// Registration of the event has failed.
   case registrationFailed(code: OSStatus)
-  /// Unregistration of the event has failed.
   case unregistrationFailed(code: OSStatus)
   
-  /// The message associated with the error.
   var message: String {
     switch self {
-    case .installationFailed:
-      return "An error occurred while installing event handler."
-    case .registrationFailed:
-      return "An error occurred while registering a key event."
-    case .unregistrationFailed:
-      return "An error occurred while unregistering a key event."
-    case .encodingFailed:
-      return "An error occurred while encoding a key event."
-    case .decodingFailed:
-      return "An error occurred while decoding a key event."
-    case .custom(_, let message):
-      return message
+    case .installationFailed: return "An error occurred while installing event handler."
+    case .registrationFailed: return "An error occurred while registering a key event."
+    case .unregistrationFailed: return "An error occurred while unregistering a key event."
+    case .encodingFailed: return "An error occurred while encoding a key event."
+    case .decodingFailed: return "An error occurred while decoding a key event."
+    case .custom(_, let message): return message
     }
   }
   
-  /// The `OSStatus` code associated with the error.
   var code: OSStatus {
     switch self {
-    case .installationFailed(let code):
-      return code
-    case .registrationFailed(let code):
-      return code
-    case .unregistrationFailed(let code):
-      return code
-    case .encodingFailed(let code):
-      return code
-    case .decodingFailed(let code):
-      return code
-    case .custom(let code, _):
-      return code
+    case .installationFailed(let code): return code
+    case .registrationFailed(let code): return code
+    case .unregistrationFailed(let code): return code
+    case .encodingFailed(let code): return code
+    case .decodingFailed(let code): return code
+    case .custom(let code, _): return code
     }
   }
 }

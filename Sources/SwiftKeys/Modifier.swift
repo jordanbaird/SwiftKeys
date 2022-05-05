@@ -25,53 +25,37 @@ extension KeyEvent {
     /// A string representation of the modifier.
     public var stringValue: String {
       switch self {
-      case .command:
-        return "⌘"
-      case .control:
-        return "⌃"
-      case .option:
-        return "⌥"
-      case .shift:
-        return "⇧"
+      case .command: return "⌘"
+      case .control: return "⌃"
+      case .option: return "⌥"
+      case .shift: return "⇧"
       }
     }
     
     var flag: CGEventFlags {
       switch self {
-      case .command:
-        return .maskCommand
-      case .control:
-        return .maskControl
-      case .option:
-        return .maskAlternate
-      case .shift:
-        return .maskShift
+      case .command: return .maskCommand
+      case .control: return .maskControl
+      case .option: return .maskAlternate
+      case .shift: return .maskShift
       }
     }
     
     var cocoaFlag: NSEvent.ModifierFlags {
       switch self {
-      case .command:
-        return .command
-      case .control:
-        return .control
-      case .option:
-        return .option
-      case .shift:
-        return .shift
+      case .command: return .command
+      case .control: return .control
+      case .option: return .option
+      case .shift: return .shift
       }
     }
     
     var carbonValue: Int {
       switch self {
-      case .command:
-        return cmdKey
-      case .control:
-        return controlKey
-      case .option:
-        return optionKey
-      case .shift:
-        return shiftKey
+      case .command: return cmdKey
+      case .control: return controlKey
+      case .option: return optionKey
+      case .shift: return shiftKey
       }
     }
   }
