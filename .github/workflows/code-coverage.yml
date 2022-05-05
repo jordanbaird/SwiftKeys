@@ -14,7 +14,7 @@ jobs:
       - name: Test
         run: swift test --enable-code-coverage
       - name: Generate
-        run: xcrun llvm-cov export -format="lcov" ./.build/debug/SwiftKeysPackageTests.xctest/Contents/MacOS/SwiftKeysPackageTests -instr-profile ./.build/debug/codecov/default.profdata > ./info.lcov
+        run: ../scripts/generate-code-coverage.sh
       - name: Upload
         uses: codecov/codecov-action@v3.1.0
         with:
