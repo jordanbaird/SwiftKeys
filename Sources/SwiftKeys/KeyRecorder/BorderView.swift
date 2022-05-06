@@ -11,16 +11,16 @@ import AppKit
 extension KeyRecorder {
   class BorderView: NSView {
     var borderColor: NSColor {
-      didSet { display() }
+      didSet { needsDisplay = true }
     }
     var borderStyle: BezelStyle.BorderStyle {
-      didSet { display() }
+      didSet { needsDisplay = true }
     }
     var borderThickness: CGFloat {
-      didSet { display() }
+      didSet { needsDisplay = true }
     }
     var cornerRadius: CGFloat {
-      didSet { display() }
+      didSet { needsDisplay = true }
     }
     
     init(
