@@ -6,6 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Carbon.HIToolbox
 import XCTest
 @testable import SwiftKeys
 
@@ -46,5 +47,31 @@ final class KeyEventTests: XCTestCase {
     
     XCTAssertNil(event.key)
     XCTAssert(event.modifiers.isEmpty)
+  }
+  
+  func testObservation() {
+    var didRunObservation = false
+    let observation = KeyEvent.Observation(eventType: .keyDown) {
+      didRunObservation = true
+    }
+    
+    // Create an arbitrary CGEvent that we know won't be key up or key down.
+    let cgEvent = CGEvent(
+      scrollWheelEvent2Source: .init(stateID: .hidSystemState),
+      units: .pixel,
+      wheelCount: 1,
+      wheel1: 0,
+      wheel2: 0,
+      wheel3: 0)!
+    
+    // Get its NSEvent equivalent.
+    let nsEvent = NSEvent(cgEvent: cgEvent)!
+    
+    // Use it to create an EventRef.
+    let ref = EventRef(nsEvent.eventRef)!
+    
+    observation.tryToPerform(with: ref)
+    
+    XCTAssertFalse(didRunObservation)
   }
 }

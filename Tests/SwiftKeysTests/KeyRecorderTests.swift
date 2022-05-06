@@ -80,4 +80,28 @@ final class KeyRecorderTests: XCTestCase {
       XCTAssertEqual(recorder.segmentedControl.appearance, appearance)
     }
   }
+  
+  func testBezelStyle() {
+    XCTAssert(recorder.bezelStyle == .rounded)
+    recorder.bezelStyle = .flatBordered
+    XCTAssert(recorder.bezelStyle == .flatBordered)
+    XCTAssert(recorder.segmentedControl.segmentStyle == .roundRect)
+  }
+  
+  func testStringValue() {
+    let label = KeyRecorder.SegmentedControl.Label.recordShortcut
+    let newStringValue = "New String Value"
+    XCTAssert(recorder.stringValue == label.rawValue)
+    recorder.stringValue = newStringValue
+    XCTAssert(recorder.stringValue == newStringValue)
+    XCTAssert(recorder.segmentedControl.label(forSegment: 0) == newStringValue)
+  }
+  
+  func testAlignment() {
+    XCTAssert(recorder.alignment == .center)
+    XCTAssert(recorder.segmentedControl.alignment(forSegment: 0) == .center)
+    recorder.alignment = .left
+    XCTAssert(recorder.alignment == .left)
+    XCTAssert(recorder.segmentedControl.alignment(forSegment: 0) == .left)
+  }
 }
