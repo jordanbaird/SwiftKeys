@@ -10,7 +10,7 @@ import AppKit
 
 extension KeyRecorder {
   /// Styles that a key recorder's bezel can be drawn in.
-  public enum BezelStyle: CaseIterable {
+  public enum BezelStyle: CaseIterable, Hashable {
     /// Styles available for a key recorder's border.
     /// - Note: These constants are not available for all bezel styles.
     public enum BorderStyle {
