@@ -49,14 +49,16 @@ public final class KeyRecorder: NSControl {
     } else {
       view.material = .titlebar
     }
-    view.set(\.cornerRadius, to: cornerRadius)
+    view.wantsLayer = true
+    view.layer?.cornerRadius = cornerRadius
     return view
   }()
   
   lazy var highlightView: NSVisualEffectView = {
     let view = NSVisualEffectView(frame: frame)
     view.blendingMode = .behindWindow
-    view.set(\.cornerRadius, to: cornerRadius)
+    view.wantsLayer = true
+    view.layer?.cornerRadius = cornerRadius
     view.alphaValue = 0.75
     return view
   }()
@@ -290,9 +292,10 @@ public final class KeyRecorder: NSControl {
       addHighlightView()
     }
     
-    set(\.cornerRadius, to: cornerRadius)
-    backingView.set(\.cornerRadius, to: cornerRadius)
-    highlightView.set(\.cornerRadius, to: cornerRadius)
+    wantsLayer = true
+    layer?.cornerRadius = cornerRadius
+    backingView.layer?.cornerRadius = cornerRadius
+    highlightView.layer?.cornerRadius = cornerRadius
     
     switch style {
     case .rounded:

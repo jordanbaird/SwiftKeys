@@ -178,14 +178,3 @@ extension IdentifiableWrapper {
     hasher.combine(id)
   }
 }
-
-extension NSView {
-  func set<T>(_ property: ReferenceWritableKeyPath<CALayer, T>, to value: T) {
-    wantsLayer = true
-    layer?[keyPath: property] = value
-  }
-  
-  func set<T>(_ property: ReferenceWritableKeyPath<NSView, T>, to value: T) {
-    self[keyPath: property] = value
-  }
-}
