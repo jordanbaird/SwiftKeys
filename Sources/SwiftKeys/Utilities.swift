@@ -24,40 +24,6 @@ func logError(_ error: EventError) -> String {
   return message
 }
 
-enum EventError: Error {
-  case custom(code: OSStatus, message: String)
-  
-  case decodingFailed(code: OSStatus)
-  case encodingFailed(code: OSStatus)
-  
-  case installationFailed(code: OSStatus)
-  
-  case registrationFailed(code: OSStatus)
-  case unregistrationFailed(code: OSStatus)
-  
-  var message: String {
-    switch self {
-    case .installationFailed: return "An error occurred while installing event handler."
-    case .registrationFailed: return "An error occurred while registering a key event."
-    case .unregistrationFailed: return "An error occurred while unregistering a key event."
-    case .encodingFailed: return "An error occurred while encoding a key event."
-    case .decodingFailed: return "An error occurred while decoding a key event."
-    case .custom(_, let message): return message
-    }
-  }
-  
-  var code: OSStatus {
-    switch self {
-    case .installationFailed(let code): return code
-    case .registrationFailed(let code): return code
-    case .unregistrationFailed(let code): return code
-    case .encodingFailed(let code): return code
-    case .decodingFailed(let code): return code
-    case .custom(let code, _): return code
-    }
-  }
-}
-
 // MARK: - Constraint
 
 struct Constraint {
@@ -121,8 +87,71 @@ struct Constraint {
   }
 }
 
-private var rng = SystemRandomNumberGenerator()
+// MARK: - EventError
 
+enum EventError: Error {
+  case custom(code: OSStatus, message: String)
+  
+  case decodingFailed(code: OSStatus)
+  case encodingFailed(code: OSStatus)
+  
+  case installationFailed(code: OSStatus)
+  
+  case registrationFailed(code: OSStatus)
+  case unregistrationFailed(code: OSStatus)
+  
+  var message: String {
+    switch self {
+    case .installationFailed: return "An error occurred while installing event handler."
+    case .registrationFailed: return "An error occurred while registering a key event."
+    case .unregistrationFailed: return "An error occurred while unregistering a key event."
+    case .encodingFailed: return "An error occurred while encoding a key event."
+    case .decodingFailed: return "An error occurred while decoding a key event."
+    case .custom(_, let message): return message
+    }
+  }
+  
+  var code: OSStatus {
+    switch self {
+    case .installationFailed(let code): return code
+    case .registrationFailed(let code): return code
+    case .unregistrationFailed(let code): return code
+    case .encodingFailed(let code): return code
+    case .decodingFailed(let code): return code
+    case .custom(let code, _): return code
+    }
+  }
+}
+
+// MARK: - EventMonitor
+
+struct EventMonitor {
+  var handler: (NSEvent) -> NSEvent?
+  
+  var mask: NSEvent.EventTypeMask
+  
+  var monitor: Any?
+  
+  init(mask: NSEvent.EventTypeMask, handler: @escaping (NSEvent) -> NSEvent?) {
+    self.handler = handler
+    self.mask = mask
+  }
+  
+  mutating func start() {
+    guard monitor == nil else { return }
+    monitor = NSEvent.addLocalMonitorForEvents(matching: mask, handler: handler)
+  }
+  
+  mutating func stop() {
+    guard monitor != nil else { return }
+    NSEvent.removeMonitor(monitor as Any)
+    monitor = nil
+  }
+}
+
+// MARK: - IdentifiableWrapper
+
+private var rng = SystemRandomNumberGenerator()
 protocol IdentifiableWrapper: Hashable {
   associatedtype Value
   typealias IDGenerator = SystemRandomNumberGenerator
