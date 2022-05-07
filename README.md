@@ -81,7 +81,7 @@ class ViewController: NSViewController {
     let event = KeyEvent(name: "SomeEvent")
     let recorder = KeyRecorder(keyEvent: event)
     
-    override fund viewDidLoad() {
+    override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(recorder)
         
