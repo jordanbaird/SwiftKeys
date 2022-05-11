@@ -140,8 +140,8 @@ final class EventProxy {
     guard !isRegistered else {
       // This method might have been called because the key or
       // modifiers have changed, and need to be re-registered.
-      unregister()
-      return register()
+      resetRegistration(shouldReregister: true)
+      return
     }
     
     // Always try to install. The first thing that happens in that method
@@ -195,6 +195,13 @@ final class EventProxy {
     }
     UserDefaults.standard.removeObject(forKey: name.combinedValue)
     isRegistered = false
+  }
+  
+  func resetRegistration(shouldReregister: Bool) {
+    unregister()
+    if shouldReregister {
+      register()
+    }
   }
   
   @discardableResult
