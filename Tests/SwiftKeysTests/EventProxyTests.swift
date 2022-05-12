@@ -42,4 +42,15 @@ final class EventProxyTests: XCTestCase {
     event.proxy.observeRegistrationState { }
     XCTAssert(event.proxy.registrationStateObservations.count == 1)
   }
+  
+  func testResetRegistration() {
+    let event = KeyEvent(name: "AnEvent", key: .comma, modifiers: [.option])
+    XCTAssert(!event.proxy.isRegistered)
+    event.proxy.register()
+    XCTAssert(event.proxy.isRegistered)
+    event.proxy.resetRegistration(shouldReregister: true)
+    XCTAssert(event.proxy.isRegistered)
+    event.proxy.resetRegistration(shouldReregister: false)
+    XCTAssert(!event.proxy.isRegistered)
+  }
 }
