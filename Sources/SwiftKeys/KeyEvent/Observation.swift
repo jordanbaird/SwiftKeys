@@ -36,7 +36,7 @@ extension KeyEvent {
     /// The identifying value of this observation.
     public let id = idGenerator.next()
     /// The type of the event that this observation reacts to.
-    public let eventType: KeyEvent.EventType
+    public let eventType: EventType
     
     let value: () -> Void
     
@@ -44,8 +44,8 @@ extension KeyEvent {
     public var handler: () -> Void { value }
     
     func tryToPerform(with eventRef: EventRef) {
-      if KeyEvent.EventType(eventRef) == eventType {
-        value()
+      if EventType(eventRef) == eventType {
+        handler()
       }
     }
   }
