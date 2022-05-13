@@ -10,23 +10,10 @@ A Swifty API for global macOS hotkeys.
 
 ## Install
 
-Add the following to your `Package.swift` file:
+Add the following dependency to your `Package.swift` file:
 
 ```swift
-import PackageDescription
-
-let package = Package(
-    name: "PackageName",
-    dependencies: [
-        .package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.5")
-    ],
-    targets: [
-        .target(
-            name: "PackageName",
-            dependencies: ["SwiftKeys"]
-        )
-    ]
-)
+.package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.5")
 ```
 
 ## Usage
