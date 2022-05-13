@@ -11,46 +11,47 @@ import XCTest
 
 final class EventProxyTests: XCTestCase {
   func testInstall() {
-    // This tests to ensure that events are installed properly,
-    // and that if the `install()` method returns an error, it
-    // is accurate in that it truly did not install.
-    let event = KeyEvent(name: "AnEvent", key: .space, modifiers: .command)
-    XCTAssert(!EventProxy.isInstalled)
-    if event.proxy.install() == noErr {
-      XCTAssert(EventProxy.isInstalled)
-    } else {
-      XCTAssert(!EventProxy.isInstalled)
-    }
+    let event = KeyEvent(name: "Event1")
+    XCTAssertFalse(EventProxy.isInstalled)
+    XCTAssertEqual(event.proxy.install(), noErr)
+    XCTAssertTrue(EventProxy.isInstalled)
   }
   
   func testRegisterAndUnregister() {
-    // This tests to ensure that proxies are registered and
-    // unregistered properly.
-    let event = KeyEvent(name: "AnEvent", key: .comma, modifiers: [.option])
-    XCTAssert(!event.proxy.isRegistered)
+    var event = KeyEvent(name: "Event2")
+    XCTAssertFalse(event.proxy.isRegistered)
     event.proxy.register()
-    XCTAssert(event.proxy.isRegistered)
+    XCTAssertFalse(event.proxy.isRegistered, """
+                   Events with no key or modifiers should not be able \
+                   to be registered.
+                   """)
+    event = KeyEvent(name: "Event2", key: .return, modifiers: .option)
+    event.proxy.register()
+    XCTAssertTrue(event.proxy.isRegistered, """
+                  Calling register() when an event has a key and \
+                  modifiers should register the event.
+                  """)
     event.proxy.unregister()
-    XCTAssert(!event.proxy.isRegistered)
+    XCTAssertFalse(event.proxy.isRegistered,
+                   "Calling unregister() should unregister the event.")
   }
   
   func testObserveRegistrationState() {
-    // This makes sure that calling `observeRegistrationState(_:)`
-    // stores the handler that is provided.
-    let event = KeyEvent(name: "AnEvent")
+    let event = KeyEvent(name: "Event3")
     XCTAssert(event.proxy.registrationStateObservations.isEmpty)
     event.proxy.observeRegistrationState { }
-    XCTAssert(event.proxy.registrationStateObservations.count == 1)
+    XCTAssert(event.proxy.registrationStateObservations.count == 1,
+              "Calling observeRegistrationState(_:) should store a handler.")
   }
   
   func testResetRegistration() {
-    let event = KeyEvent(name: "AnEvent", key: .comma, modifiers: [.option])
-    XCTAssert(!event.proxy.isRegistered)
+    let event = KeyEvent(name: "Event4", key: .comma, modifiers: [.option])
+    XCTAssertFalse(event.proxy.isRegistered)
     event.proxy.register()
-    XCTAssert(event.proxy.isRegistered)
+    XCTAssertTrue(event.proxy.isRegistered)
     event.proxy.resetRegistration(shouldReregister: true)
-    XCTAssert(event.proxy.isRegistered)
+    XCTAssertTrue(event.proxy.isRegistered)
     event.proxy.resetRegistration(shouldReregister: false)
-    XCTAssert(!event.proxy.isRegistered)
+    XCTAssertFalse(event.proxy.isRegistered)
   }
 }

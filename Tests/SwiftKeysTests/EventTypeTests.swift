@@ -11,7 +11,7 @@ import XCTest
 @testable import SwiftKeys
 
 final class EventTypeTests: XCTestCase {
-  func testInitWithInt() {
+  func testInitWithInteger() {
     let typePressed = KeyEvent.EventType(kEventHotKeyPressed)
     let typeReleased = KeyEvent.EventType(kEventHotKeyReleased)
     let typeNone = KeyEvent.EventType(kEventHotKeyNoOptions)

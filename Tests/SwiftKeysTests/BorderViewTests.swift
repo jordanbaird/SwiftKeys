@@ -14,27 +14,27 @@ final class BorderViewTests: XCTestCase {
   private let borderView = MockBorderView()
   
   func testCornerRadius() {
-    XCTAssert(borderView.cornerRadius == 5.5)
+    XCTAssertEqual(borderView.cornerRadius, 5.5)
     borderView.cornerRadius = 10
-    XCTAssert(borderView.cornerRadius == 10)
+    XCTAssertEqual(borderView.cornerRadius, 10)
   }
   
   func testBorderStyle() {
-    XCTAssert(borderView.borderStyle == .solid)
+    XCTAssertEqual(borderView.borderStyle, .solid)
     borderView.borderStyle = .dashed
-    XCTAssert(borderView.borderStyle == .dashed)
+    XCTAssertEqual(borderView.borderStyle, .dashed)
   }
   
   func testBorderColor() {
-    XCTAssert(borderView.borderColor == .highlightColor)
+    XCTAssertEqual(borderView.borderColor, .highlightColor)
     borderView.borderColor = .orange
-    XCTAssert(borderView.borderColor == .orange)
+    XCTAssertEqual(borderView.borderColor, .orange)
   }
   
   func testBorderThickness() {
-    XCTAssert(borderView.borderThickness == 1)
+    XCTAssertEqual(borderView.borderThickness, 1)
     borderView.borderThickness = 10
-    XCTAssert(borderView.borderThickness == 10)
+    XCTAssertEqual(borderView.borderThickness, 10)
   }
   
   func testDraw() {

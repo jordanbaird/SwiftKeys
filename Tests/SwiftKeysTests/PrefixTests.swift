@@ -12,59 +12,48 @@ import XCTest
 final class PrefixTests: XCTestCase {
   override func setUp() {
     // Ensures that the defaults domain is wiped before every test.
-    do {
-      UserDefaults.standard.set("Test", forKey: "Test")
-      let name = kCFPreferencesCurrentApplication as String
-      XCTAssert(UserDefaults.standard.persistentDomain(forName: name) != nil)
-      for def in UserDefaults.standard.persistentDomain(forName: name) ?? [:] {
-        UserDefaults.standard.removeObject(forKey: def.key)
-      }
-      XCTAssert(UserDefaults.standard.persistentDomain(forName: name) == nil)
+    UserDefaults.standard.set("Value", forKey: "Key")
+    let name = kCFPreferencesCurrentApplication as String
+    XCTAssertNotNil(UserDefaults.standard.persistentDomain(forName: name))
+    for def in UserDefaults.standard.persistentDomain(forName: name) ?? [:] {
+      UserDefaults.standard.removeObject(forKey: def.key)
     }
+    XCTAssertNil(UserDefaults.standard.persistentDomain(forName: name))
   }
   
-  func testPrefix() throws {
+  func testPrefix() {
     prefix = "Prefix1"
-    let name1 = KeyEvent.Name("Name1")
-    
-    XCTAssert(name1.prefix.rawValue == "Prefix1")
+    let n1 = KeyEvent.Name("Name1")
+    XCTAssertEqual(n1.prefix.rawValue, "Prefix1")
     
     prefix = "Prefix2"
-    let name2 = KeyEvent.Name("Name2")
-    
-    XCTAssert(name2.prefix.rawValue == "Prefix2")
-    XCTAssert(name1.prefix.rawValue == "Prefix1")
-    
-    let event1 = KeyEvent(name: name1, key: .return, modifiers: .command, .shift, .option)
-    let event2 = KeyEvent(name: name1)
-    
-    XCTAssertEqual(event1, event2)
-    
-    XCTAssert(event2.key == .return)
-    XCTAssert(event2.modifiers == [.command, .shift, .option])
-    
-    let stringLiteralPrefix: KeyEvent.Name.Prefix = "Prefix2"
-    XCTAssertEqual(stringLiteralPrefix.sharedPrefix, stringLiteralPrefix)
+    let n2 = KeyEvent.Name("Name2")
+    XCTAssertEqual(n2.prefix.rawValue, "Prefix2")
   }
   
-  func testEqual() {
-    let prefix1 = KeyEvent.Name.Prefix("Hello")
-    let prefix2: KeyEvent.Name.Prefix = "Hello"
-    XCTAssertEqual(prefix1, prefix2)
+  func testStringLiteralPrefix() {
+    let p1 = KeyEvent.Name.Prefix("Prefix")
+    let p2: KeyEvent.Name.Prefix = "Prefix"
+    XCTAssertEqual(p1, p2, "String literals should function as valid prefixes.")
   }
   
-  func testNotEqual() {
-    let prefix1 = KeyEvent.Name.Prefix("Hello")
-    let prefix2 = KeyEvent.Name.Prefix("Goodbye")
-    XCTAssertNotEqual(prefix1, prefix2)
+  func testUnderlyingReference() {
+    let e1 = KeyEvent(name: "Name", key: .return, modifiers: .command, .shift, .option)
+    let e2 = KeyEvent(name: "Name")
+    XCTAssertEqual(e1, e2, "Events with the same name should be equal.")
+    XCTAssertEqual(e2.key, .return)
+    XCTAssertEqual(e2.modifiers, [.command, .shift, .option])
   }
   
   func testHashValue() {
-    let prefix1 = KeyEvent.Name.Prefix("Hello")
-    let prefix2: KeyEvent.Name.Prefix = "Hello"
-    let prefix3 = KeyEvent.Name.Prefix("Goodbye")
-    XCTAssertEqual(prefix1.hashValue, prefix2.hashValue)
-    XCTAssertNotEqual(prefix2.hashValue, prefix3.hashValue)
+    let p1 = KeyEvent.Name.Prefix("Hello")
+    let p2: KeyEvent.Name.Prefix = "Hello"
+    let p3 = KeyEvent.Name.Prefix("Goodbye")
+    
+    XCTAssert(p1.hashValue == p2.hashValue,
+              "Identical prefixes should have identical hash values.")
+    XCTAssert(p2.hashValue != p3.hashValue,
+              "Different prefixes should have different hash values.")
   }
 }
 
