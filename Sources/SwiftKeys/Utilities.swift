@@ -151,20 +151,12 @@ struct EventMonitor {
 
 // MARK: - IdentifiableWrapper
 
-private var rng = SystemRandomNumberGenerator()
+var rng = SystemRandomNumberGenerator()
 protocol IdentifiableWrapper: Hashable {
   associatedtype Value
-  typealias IDGenerator = SystemRandomNumberGenerator
   typealias Identifier = UInt64
   var id: Identifier { get }
   var value: Value { get }
-}
-
-extension IdentifiableWrapper {
-  static var idGenerator: IDGenerator {
-    get { rng }
-    set { rng = newValue }
-  }
 }
 
 extension IdentifiableWrapper {

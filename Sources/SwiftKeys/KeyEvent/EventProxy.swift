@@ -10,7 +10,7 @@ import Carbon.HIToolbox
 
 final class EventProxy {
   struct Observation: IdentifiableObservation {
-    let id = idGenerator.next()
+    let id = rng.next()
     let value: () -> Void
   }
   

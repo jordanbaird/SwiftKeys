@@ -34,7 +34,7 @@ extension KeyEvent {
   /// remove the observation and stop the execution of its handler.
   public struct Observation: IdentifiableObservation {
     /// The identifying value of this observation.
-    public let id = idGenerator.next()
+    public let id = rng.next()
     /// The type of the event that this observation reacts to.
     public let eventType: EventType
     
