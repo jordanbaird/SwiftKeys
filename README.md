@@ -57,7 +57,7 @@ extension KeyEvent.Name.Prefix {
 }
 ```
 
-- The name "ShowPreferences" would become "SKShowPreferences" when used as a defaults key.
+In the example above, the name "ShowPreferences" would become "SKShowPreferences" when used as a defaults key.
 
 The following pseudo-code is what a typical view controller that utilizes `SwiftKeys` might look like:
 
