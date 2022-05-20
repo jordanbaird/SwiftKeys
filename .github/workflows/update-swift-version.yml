@@ -1,0 +1,15 @@
+name: Update Swift Version
+on: [ push, pull_request ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Update
+        run: ./.github/scripts/update-swift-version.sh
+      - name: Commit
+        uses: EndBug/add-and-commit@v9.0.0
+        with:
+          author_name: Swift Version Bot
+          message: 'Update Swift version'
+          add: 'README.md'
