@@ -3,7 +3,7 @@
 ![Continuous Integration](https://img.shields.io/circleci/build/github/jordanbaird/SwiftKeys/main)
 [![Code Coverage](https://codecov.io/gh/jordanbaird/SwiftKeys/branch/main/graph/badge.svg?token=PARNSVMN0H)](https://codecov.io/gh/jordanbaird/SwiftKeys)
 ![Release](https://img.shields.io/github/v/release/jordanbaird/SwiftKeys)
-![Swift Version](https://img.shields.io/badge/Swift-5.5%2B-orange)
+![Swift Version](https://img.shields.io/badge/Swift-5.6%2B-orange)
 ![License](https://img.shields.io/github/license/jordanbaird/SwiftKeys)
 
 A Swifty API for global macOS hotkeys.
