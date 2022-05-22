@@ -1,5 +1,7 @@
 name: Upload Code Coverage
-on: push
+on:
+  push:
+    branches: [ main ]
 
 jobs:
   build:
