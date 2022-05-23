@@ -1,6 +1,7 @@
 <div align='center'>
     <img src='/media/header.svg'>
     <h2>A Swifty API for global macOS hotkeys.</h2>
+    <br/>
 </div>
 
 ![Continuous Integration](https://img.shields.io/circleci/build/github/jordanbaird/SwiftKeys/main)
