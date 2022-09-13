@@ -337,51 +337,6 @@ public final class KeyRecorder: NSControl {
 
 extension KeyRecorder {
   class SegmentedControl: NSSegmentedControl {
-    enum RecordingState {
-      case recording
-      case idle
-    }
-    
-    enum Label: String {
-      case typeShortcut = "Type shortcut"
-      case recordShortcut = "Record shortcut"
-      case keyEvent = "*****"
-    }
-    
-    struct FailureReason: Equatable {
-      static let noFailure = Self(message: "There is nothing wrong.")
-      
-      static let needsModifiers = Self(message: """
-        Please include at least one modifier key (Shift, Control, Option, Command).
-        """)
-      
-      static let onlyShift = Self(message: """
-        Shift by itself is not a valid modifier key. Please include at least one \
-        additional modifier key (Control, Option, Command).
-        """)
-      
-      let message: String
-      
-      var failureCount = 0 {
-        didSet {
-          if
-            self == .noFailure,
-            failureCount != 0
-          {
-            failureCount = 0
-          }
-        }
-      }
-      
-      static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.message == rhs.message
-      }
-      
-      mutating func incrementFailureCount() {
-        failureCount += 1
-      }
-    }
-    
     let proxy: EventProxy
     
     var _attributedLabel: NSAttributedString?
@@ -632,6 +587,53 @@ extension KeyRecorder {
     override func viewDidMoveToWindow() {
       super.viewDidMoveToWindow()
       updateVisualAppearance()
+    }
+  }
+}
+
+extension KeyRecorder.SegmentedControl {
+  enum RecordingState {
+    case recording
+    case idle
+  }
+  
+  enum Label: String {
+    case typeShortcut = "Type shortcut"
+    case recordShortcut = "Record shortcut"
+    case keyEvent = "*****"
+  }
+  
+  struct FailureReason: Equatable {
+    static let noFailure = Self(message: "There is nothing wrong.")
+    
+    static let needsModifiers = Self(message: """
+        Please include at least one modifier key (Shift, Control, Option, Command).
+        """)
+    
+    static let onlyShift = Self(message: """
+        Shift by itself is not a valid modifier key. Please include at least one \
+        additional modifier key (Control, Option, Command).
+        """)
+    
+    let message: String
+    
+    var failureCount = 0 {
+      didSet {
+        if
+          self == .noFailure,
+          failureCount != 0
+        {
+          failureCount = 0
+        }
+      }
+    }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+      lhs.message == rhs.message
+    }
+    
+    mutating func incrementFailureCount() {
+      failureCount += 1
     }
   }
 }
