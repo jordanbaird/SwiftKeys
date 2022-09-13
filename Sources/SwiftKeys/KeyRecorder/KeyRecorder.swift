@@ -335,6 +335,8 @@ extension KeyRecorder {
   class SegmentedControl: NSSegmentedControl {
     let proxy: EventProxy
     
+    var windowVisibilityObservation: NSKeyValueObservation?
+    
     var _attributedLabel: NSAttributedString?
     var attributedLabel: NSAttributedString {
       get {
@@ -460,8 +462,10 @@ extension KeyRecorder {
           setSelected(true, forSegment: 0)
           failureReason = .noFailure
           keyDownMonitor.start()
+          observeWindowVisibility()
         } else if recordingState == .idle {
           keyDownMonitor.stop()
+          windowVisibilityObservation = nil
         }
       }
     }
@@ -581,9 +585,27 @@ extension KeyRecorder {
       }
     }
     
+    func observeWindowVisibility() {
+      windowVisibilityObservation = window?.observe(
+        \.isVisible,
+         options: [.new]
+      ) { [weak self] _, change in
+        guard let newValue = change.newValue else {
+          return
+        }
+        if !newValue {
+          self?.keyDownMonitor.stop()
+        }
+      }
+    }
+    
     override func viewDidMoveToWindow() {
       super.viewDidMoveToWindow()
       updateVisualAppearance()
+    }
+    
+    deinit {
+      keyDownMonitor.stop()
     }
   }
 }
