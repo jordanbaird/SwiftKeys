@@ -298,9 +298,7 @@ public final class KeyRecorder: NSControl {
     highlightView.layer?.cornerRadius = cornerRadius
     
     switch style {
-    case .rounded:
-      break
-    case .flatBordered:
+    case .rounded, .flatBordered, .square:
       break
     case .separated(.solid):
       borderView.borderStyle = .solid
@@ -311,8 +309,6 @@ public final class KeyRecorder: NSControl {
     case .separated(.noBorder):
       removeBackingView()
       removeHighlightView()
-    case .square:
-      break
     }
   }
   
