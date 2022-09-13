@@ -491,6 +491,7 @@ extension KeyRecorder {
       setWidth(frame.width - frame.height, forSegment: 0)
       setWidth(frame.height, forSegment: 1)
       proxy.observeRegistrationState(updateVisualAppearance)
+      proxy.register()
     }
     
     @objc
