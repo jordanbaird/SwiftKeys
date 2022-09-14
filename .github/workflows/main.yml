@@ -15,7 +15,15 @@ jobs:
         run: swift build
       - name: Test
         run: swift test --enable-code-coverage
-      - name: Generate
+      - name: Generate Documentation
+        run: make generate_documentation
+      - name: Commit
+        uses: EndBug/add-and-commit@v9.0.0
+        with:
+          author_name: Documentation Bot
+          message: 'Update documentation'
+          add: 'docs/*'
+      - name: Generate Code Coverage
         run: ./.github/scripts/generate-code-coverage.sh
       - name: Upload Code Coverage
         uses: codecov/codecov-action@v3.1.0
