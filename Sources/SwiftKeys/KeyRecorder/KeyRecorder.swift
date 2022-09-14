@@ -96,6 +96,11 @@ public final class KeyRecorder: NSControl {
   ///
   /// The value of this property is true if the key recorder responds to
   /// mouse events; otherwise, false.
+  /// The key event associated with the recorder.
+  public var keyEvent: KeyEvent {
+    .init(name: segmentedControl.proxy.name)
+  }
+  
   public override var isEnabled: Bool {
     get { segmentedControl.isEnabled }
     set { segmentedControl.isEnabled = newValue }
