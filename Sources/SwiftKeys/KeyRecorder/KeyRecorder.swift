@@ -76,10 +76,10 @@ public final class KeyRecorder: NSControl {
   
   private var _hasBackingView = true
   
-  /// A Boolean value that indicates whether the key recorder is drawn
-  /// with a backing visual effect view.
+  /// A Boolean value that indicates whether the key recorder is
+  /// drawn with a backing visual effect view.
   ///
-  /// This property's default value is `true`.
+  /// > Default value: `true`
   public var hasBackingView: Bool {
     get { _hasBackingView }
     set {
@@ -91,16 +91,13 @@ public final class KeyRecorder: NSControl {
     }
   }
   
-  /// A Boolean value that indicates whether the key recorder reacts to
-  /// mouse events.
-  ///
-  /// The value of this property is true if the key recorder responds to
-  /// mouse events; otherwise, false.
   /// The key event associated with the recorder.
   public var keyEvent: KeyEvent {
     .init(name: segmentedControl.proxy.name)
   }
   
+  /// A Boolean value that indicates whether the key recorder reacts
+  /// to mouse events.
   public override var isEnabled: Bool {
     get { segmentedControl.isEnabled }
     set { segmentedControl.isEnabled = newValue }
@@ -108,12 +105,13 @@ public final class KeyRecorder: NSControl {
   
   private var _isHighlighted = false
   
-  /// A Boolean value that indicates whether the key recorder is highlighted.
+  /// A Boolean value that indicates whether the key recorder is
+  /// highlighted.
   ///
-  /// Setting this value programmatically will immediately update the
-  /// appearance of the key recorder.
+  /// Setting this value programmatically will immediately update
+  /// the appearance of the key recorder.
   ///
-  /// This property's default value is `false`.
+  /// > Default value: `false`
   public override var isHighlighted: Bool {
     get { _isHighlighted }
     set {
@@ -130,7 +128,7 @@ public final class KeyRecorder: NSControl {
   /// If the key recorder is already highlighted, and this value is set, the
   /// appearance will update in real time to match the new value.
   ///
-  /// This property's default value is ``HighlightStyle-swift.enum/light``.
+  /// > Default value: ``HighlightStyle-swift.enum/light``
   public var highlightStyle = HighlightStyle.light {
     didSet {
       if isHighlighted {
@@ -146,8 +144,8 @@ public final class KeyRecorder: NSControl {
   
   /// The style of the key recorder's bezel.
   ///
-  /// Settings this value will immediately change bezel. The property's default
-  /// value is ``BezelStyle-swift.enum/rounded``.
+  /// Settings this value will immediately change bezel.
+  /// > Default value: ``BezelStyle-swift.enum/rounded``
   public var bezelStyle: BezelStyle {
     get { _bezelStyle }
     set {
@@ -213,8 +211,8 @@ public final class KeyRecorder: NSControl {
   
   /// Creates a key recorder for the given key event.
   ///
-  /// Whenever the event records a key combination, the key and modifiers of
-  /// the key recorder's event will be updated to match.
+  /// Whenever the event records a key combination, the key and modifiers
+  /// of the key recorder's event will be updated to match.
   public init(keyEvent: KeyEvent) {
     segmentedControl = .init(keyEvent: keyEvent)
     super.init(frame: segmentedControl.frame)
@@ -226,8 +224,8 @@ public final class KeyRecorder: NSControl {
   /// Creates a key recorder for the key event with the given name.
   ///
   /// If an event with the name does not exist, a blank event will be created.
-  /// As soon as the key recorder records a key combination, the event will assume
-  /// that combination's value.
+  /// As soon as the key recorder records a key combination, the event will
+  /// assume that combination's value.
   public convenience init(name: KeyEvent.Name) {
     self.init(keyEvent: .init(name: name))
   }
@@ -319,8 +317,8 @@ public final class KeyRecorder: NSControl {
   
   /// Informs the view that it has been added to a new view hierarchy.
   ///
-  /// If you override this method, you _must_ call `super` for the key recorder
-  /// to maintain its correct behavior.
+  /// If you override this method, you _must_ call `super` for the key
+  /// recorder to maintain its correct behavior.
   public override func viewDidMoveToWindow() {
     super.viewDidMoveToWindow()
     if hasBackingView {
