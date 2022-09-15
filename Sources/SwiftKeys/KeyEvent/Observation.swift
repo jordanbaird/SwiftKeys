@@ -35,6 +35,7 @@ extension KeyEvent {
   public struct Observation: IdentifiableObservation {
     /// The identifying value of this observation.
     public let id = rng.next()
+    
     /// The type of the event that this observation reacts to.
     public let eventType: EventType
     
@@ -42,12 +43,6 @@ extension KeyEvent {
     
     /// An action that is performed when this observation is triggered.
     public var handler: () -> Void { value }
-    
-    func tryToPerform(with eventRef: EventRef) {
-      if EventType(eventRef) == eventType {
-        handler()
-      }
-    }
   }
 }
 
@@ -60,5 +55,13 @@ extension KeyEvent.Observation: Equatable {
 extension KeyEvent.Observation: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(id)
+  }
+}
+
+extension [KeyEvent.Observation] {
+  func tryToPerformEach(_ eventType: KeyEvent.EventType?) {
+    for observation in self where observation.eventType == eventType {
+      observation.handler()
+    }
   }
 }

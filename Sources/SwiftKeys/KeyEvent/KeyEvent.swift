@@ -186,6 +186,20 @@ public struct KeyEvent {
     proxy.unregister()
     ProxyStorage.remove(proxy)
   }
+  
+  /// Runs the key event's observation handlers that are stored for the given
+  /// event type, as though the actual event had been triggered.
+  public func runHandlers(for eventType: EventType) {
+    proxy.observations.tryToPerformEach(eventType)
+  }
+  
+  /// Runs the key event's observation handlers that match the given predicate,
+  /// as though the actual event had been triggered.
+  public func runHandlers(where predicate: (Observation) throws -> Bool) rethrows {
+    for observation in proxy.observations where try predicate(observation) {
+      observation.handler()
+    }
+  }
 }
 
 extension KeyEvent: Codable { }

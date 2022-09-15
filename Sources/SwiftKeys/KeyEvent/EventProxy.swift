@@ -117,9 +117,7 @@ final class EventProxy {
         }
         
         // Execute the proxy's stored handlers.
-        for observation in proxy.observations {
-          observation.tryToPerform(with: event)
-        }
+        proxy.observations.tryToPerformEach(.init(event))
         
         return noErr
       },
