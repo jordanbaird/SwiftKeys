@@ -70,7 +70,7 @@ final class KeyEventTests: XCTestCase {
     // Use it to create an EventRef.
     let ref = EventRef(nsEvent.eventRef)!
     
-    observation.tryToPerform(with: ref)
+    [observation].tryToPerformEach(.init(ref))
     
     XCTAssertFalse(didRunObservation)
   }
