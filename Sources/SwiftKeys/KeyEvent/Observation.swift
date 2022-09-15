@@ -58,7 +58,7 @@ extension KeyEvent.Observation: Hashable {
   }
 }
 
-extension [KeyEvent.Observation] {
+extension Array where Element == KeyEvent.Observation {
   func tryToPerformEach(_ eventType: KeyEvent.EventType?) {
     for observation in self where observation.eventType == eventType {
       observation.handler()
