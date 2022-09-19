@@ -32,7 +32,7 @@ extension KeyEvent {
       }
     }
     
-    var flag: CGEventFlags {
+    var cgEventFlag: CGEventFlags {
       switch self {
       case .command: return .maskCommand
       case .control: return .maskControl
@@ -50,7 +50,7 @@ extension KeyEvent {
       }
     }
     
-    var carbonValue: Int {
+    var carbonFlag: Int {
       switch self {
       case .command: return cmdKey
       case .control: return controlKey
@@ -74,9 +74,9 @@ extension Array where Element == KeyEvent.Modifier {
     var converted = 0
     for modifier in KeyEvent.Modifier.allCases {
       if contains(modifier)
-          || contains(where: { $0.flag.contains(modifier.flag) })
+          || contains(where: { $0.cgEventFlag.contains(modifier.cgEventFlag) })
       {
-        converted |= modifier.carbonValue
+        converted |= modifier.carbonFlag
       }
     }
     return .init(converted)
