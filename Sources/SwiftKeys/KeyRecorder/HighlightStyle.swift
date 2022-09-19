@@ -24,8 +24,7 @@ extension KeyRecorder {
       var color: NSColor
       switch self {
       case .light: color = .white
-      case .mediumLight: color = .white.blended(withFraction: 0.5, of: .black)!
-      case .dark: color = .black.blended(withFraction: 0.5, of: .white)!
+      case .mediumLight, .dark: color = .gray
       case .ultraDark: color = .black
       }
       return color.withAlphaComponent(0.75)
