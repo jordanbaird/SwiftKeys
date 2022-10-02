@@ -20,7 +20,7 @@ Add the following dependency to your `Package.swift` file:
 
 ## Usage
 
-[Read the full documentation here](https://jordanbaird.github.io/SwiftKeys/documentation/swiftkeys)
+[Read the full documentation here](https://swiftpackageindex.com/jordanbaird/SwiftKeys/main/documentation/swiftkeys)
 
 Start by creating an instance of `KeyEvent`. Then, use it to initialize a `KeyRecorder`.
 
