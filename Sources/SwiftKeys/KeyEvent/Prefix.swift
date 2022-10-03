@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation
+import Foundation // To enable `@objc dynamic` declarations
 
 // MARK: - _Prefix (Implementation)
 

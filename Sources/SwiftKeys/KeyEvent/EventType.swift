@@ -11,14 +11,16 @@ import Carbon.HIToolbox
 extension KeyEvent {
   /// Constants that specify the type of a key event.
   ///
-  /// Pass these constants into a key event's ``observe(_:handler:)`` method. The closure
-  /// you provide in that method will be called whenever an event of this type is posted.
+  /// Pass these constants into a key event's ``observe(_:handler:)`` method.
+  /// The closure you provide in that method will be called whenever an event
+  /// of this type is posted.
   ///
   /// ```swift
   /// let event = KeyEvent(
   ///     name: "Cheese",
   ///     key: .leftArrow,
-  ///     modifiers: [.command, .option])
+  ///     modifiers: [.command, .option]
+  /// )
   ///
   /// event.observe(.keyDown) {
   ///     print("KEY DOWN")
@@ -36,16 +38,19 @@ extension KeyEvent {
     /// The key is pressed.
     case keyDown
     
-    init?(_ eventRef: EventRef) {
-      self.init(Int(GetEventKind(eventRef)))
-    }
-    
     init?(_ eventKind: Int) {
       switch eventKind {
-      case kEventHotKeyPressed: self = .keyDown
-      case kEventHotKeyReleased: self = .keyUp
-      default: return nil
+      case kEventHotKeyPressed:
+        self = .keyDown
+      case kEventHotKeyReleased:
+        self = .keyUp
+      default:
+        return nil
       }
+    }
+    
+    init?(_ eventRef: EventRef) {
+      self.init(Int(GetEventKind(eventRef)))
     }
   }
 }

@@ -9,22 +9,24 @@
 extension KeyEvent {
   /// A type that represents the name of a key event.
   ///
-  /// Key events are automatically stored in the `UserDefaults` system once they have been
-  /// registered. The value of the event's `name` property (an instance of this type) is
-  /// used as the key. You can set the name's `prefix` property to help distinguish which
-  /// system, or part of the app the name is being used in. For example, you might use
-  /// "Key" to indicate that the name is associated with a key event.
+  /// Key events are automatically stored in the `UserDefaults` system once they
+  /// have been registered. The value of the event's `name` property (an instance
+  /// of this type) is used as the key. You can set the name's `prefix` property
+  /// to help distinguish which system, or part of the app the name is being used
+  /// in. For example, you might use "Event" to indicate that the name is
+  /// associated with a key event.
   ///
   /// ```swift
   /// extension KeyEvent.Name {
-  ///     // "KeyOpenPreferences" will be the full defaults key.
-  ///     static let openPreferences = Self("OpenPreferences", prefix: "Key")
+  ///     // "EventOpenPreferences" will be the full defaults key.
+  ///     static let openPreferences = Self("OpenPreferences", prefix: "Event")
   /// }
   /// ```
   ///
-  /// You can also provide a custom implementation of the `sharedPrefix` property of
-  /// the `Prefix` type. Every event name that is created will use this prefix unless
-  /// explicitly stated otherwise.
+  /// You can also provide a custom implementation of the static `sharedPrefix`
+  /// property of the ``Prefix`` type. Every event name that is created will
+  /// use this prefix unless explicitly stated otherwise. By default, the value
+  /// of `sharedPrefix` is an empty string.
   ///
   /// ```swift
   /// extension KeyEvent.Name.Prefix {
@@ -41,19 +43,29 @@ extension KeyEvent {
     
     private var truePrefix: PrefixValueType
     
-    /// A prefix that will be applied to the name when it is stored in `UserDefaults`.
+    /// A prefix that will be applied to the name when it is stored in
+    /// `UserDefaults`.
     /// 
-    /// By default, this value is set to the `sharedPrefix` property -- an empty string.
-    /// However, it can be set to any value desired.
+    /// By default, this value is set to the `sharedPrefix` property of the
+    /// ``Prefix`` type. However, it can be set to any value desired, either
+    /// through `Name`'s initializer, or by setting this property directly.
     ///
-    /// - Note: You can extend the `Prefix` type and provide a custom implementation of
-    /// the `sharedPrefix` property to automatically apply that prefix to every event
-    /// name that is created.
+    /// - Note: You can extend the ``Prefix`` type and override its `sharedPrefix`
+    /// property to automatically apply a custom prefix to every event name that
+    /// is created.
     public var prefix: Prefix {
-      .init(truePrefix.rawValue)
+      get { .init(truePrefix.rawValue) }
+      set { truePrefix = .init(prefix: newValue) }
     }
     
     /// The name's raw value, combined with its prefix.
+    ///
+    /// ```swift
+    /// let name = KeyEvent.Name("Toggle", prefix: "Trigger")
+    ///
+    /// print(name.combinedValue)
+    /// // Prints "TriggerToggle"
+    /// ```
     public var combinedValue: String {
       prefix.rawValue + rawValue
     }

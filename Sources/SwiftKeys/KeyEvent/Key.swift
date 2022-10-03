@@ -482,9 +482,9 @@ extension KeyEvent {
     
     // MARK: - Initializers
     
-    /// Runs a check against all the possible values of `Key`, and if a case is
-    /// found whose `rawValue` property matches the given integer, creates a
-    /// value initialized to that case.
+    /// Runs a check against all the possible values of `Key`, and if a
+    /// case is found whose `rawValue` property matches the given integer,
+    /// creates a value initialized to that case.
     init?(_ rawValue: Int) {
       let key = Self.allCases.first {
         $0.rawValue == rawValue
@@ -496,9 +496,9 @@ extension KeyEvent {
       }
     }
     
-    /// Runs a check against all the possible values of `Key`, and if a case is
-    /// found whose `stringValue` property matches the given string, creates a
-    /// value initialized to that case.
+    /// Runs a check against all the possible values of `Key`, and if a
+    /// case is found whose `stringValue` property matches the given string,
+    /// creates a value initialized to that case.
     init?(_ string: String) {
       let key = Self.allCases.first {
         $0.stringValue.lowercased() == string.lowercased()

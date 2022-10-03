@@ -30,18 +30,19 @@ extension KeyEvent {
   /// The result type of a call to ``KeyEvent/observe(_:handler:)``.
   ///
   /// You can pass an instance of this type into its key event's
-  /// ``KeyEvent/removeObservation(_:)`` method, or similar, to permanently
-  /// remove the observation and stop the execution of its handler.
+  /// ``KeyEvent/removeObservation(_:)`` method, or similar, to
+  /// permanently remove the observation and stop the execution of
+  /// its handler.
   public struct Observation: IdentifiableObservation {
-    /// The identifying value of this observation.
+    /// The identifying value of the observation.
     public let id = rng.next()
     
-    /// The type of the event that this observation reacts to.
+    /// The type of the event that the observation reacts to.
     public let eventType: EventType
     
     let value: () -> Void
     
-    /// An action that is performed when this observation is triggered.
+    /// An action that is performed when the observation is triggered.
     public var handler: () -> Void { value }
   }
 }

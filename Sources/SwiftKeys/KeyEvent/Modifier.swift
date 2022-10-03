@@ -6,9 +6,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+import AppKit
 import Carbon.HIToolbox
 import CoreGraphics
-import AppKit
 
 extension KeyEvent {
   /// Constants that represent modifier keys associated with a key event.
@@ -25,37 +25,57 @@ extension KeyEvent {
     /// A string representation of the modifier.
     public var stringValue: String {
       switch self {
-      case .command: return "⌘"
-      case .control: return "⌃"
-      case .option: return "⌥"
-      case .shift: return "⇧"
+      case .command:
+        return "⌘"
+      case .control:
+        return "⌃"
+      case .option:
+        return "⌥"
+      case .shift:
+        return "⇧"
       }
     }
     
+    /// The `CGEventFlags` value associated with the modifier.
     var cgEventFlag: CGEventFlags {
       switch self {
-      case .command: return .maskCommand
-      case .control: return .maskControl
-      case .option: return .maskAlternate
-      case .shift: return .maskShift
+      case .command:
+        return .maskCommand
+      case .control:
+        return .maskControl
+      case .option:
+        return .maskAlternate
+      case .shift:
+        return .maskShift
       }
     }
     
+    /// The `NSEvent.ModifierFlags` value associated with the modifier.
     var cocoaFlag: NSEvent.ModifierFlags {
       switch self {
-      case .command: return .command
-      case .control: return .control
-      case .option: return .option
-      case .shift: return .shift
+      case .command:
+        return .command
+      case .control:
+        return .control
+      case .option:
+        return .option
+      case .shift:
+        return .shift
       }
     }
     
+    /// An integer value associated with the modifier, as defined by
+    /// the `Carbon` framework.
     var carbonFlag: Int {
       switch self {
-      case .command: return cmdKey
-      case .control: return controlKey
-      case .option: return optionKey
-      case .shift: return shiftKey
+      case .command:
+        return cmdKey
+      case .control:
+        return controlKey
+      case .option:
+        return optionKey
+      case .shift:
+        return shiftKey
       }
     }
   }
@@ -68,25 +88,37 @@ extension KeyEvent.Modifier: Equatable { }
 extension KeyEvent.Modifier: Hashable { }
 
 extension Array where Element == KeyEvent.Modifier {
-  /// Gets the Carbon flags for the given modifiers, or'd together into
-  /// a single unsigned integer.
+  /// Returns a Boolean value indicating whether the array contains the
+  /// given modifier, evaluated fuzzily.
+  ///
+  /// If the array does not directly contain the given modifier, another
+  /// check is run to determine if the array instead contains a modifier
+  /// whose associated `cgEventFlag` value matches that of the modifier.
+  func fuzzyContains(_ modifier: KeyEvent.Modifier) -> Bool {
+    contains(modifier)
+    ||
+    contains {
+      $0.cgEventFlag.contains(modifier.cgEventFlag)
+    }
+  }
+}
+
+extension Array where Element == KeyEvent.Modifier {
+  /// The flags for the given modifiers, as defined by the `Carbon` framework,
+  /// or'd together into a single unsigned integer.
   var carbonFlags: UInt32 {
     var converted = 0
-    for modifier in KeyEvent.Modifier.allCases {
-      if contains(modifier)
-          || contains(where: { $0.cgEventFlag.contains(modifier.cgEventFlag) })
-      {
-        converted |= modifier.carbonFlag
-      }
+    for modifier in KeyEvent.Modifier.allCases where fuzzyContains(modifier) {
+      converted |= modifier.carbonFlag
     }
     return .init(converted)
   }
   
+  /// The `NSEvent.ModifierFlags` value for the given modifiers, reduced
+  /// into a single value.
   var cocoaFlags: NSEvent.ModifierFlags {
-    var flags = NSEvent.ModifierFlags()
-    for modifier in self {
-      flags.insert(modifier.cocoaFlag)
+    reduce(into: .init()) {
+      $0.insert($1.cocoaFlag)
     }
-    return flags
   }
 }

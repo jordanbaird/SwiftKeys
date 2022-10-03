@@ -142,12 +142,12 @@ extension NSMenuItem {
   
   // MARK: - Public Methods
   
-  /// Sets the value of the `keyEvent` property, while allowing you to provide an
-  /// additional change handler that will execute immediately after the menu item's
-  /// action has been performed.
+  /// Sets the value of the menu item's `keyEvent` property, while allowing
+  /// you to provide an additional change handler that will execute immediately
+  /// after the menu item's action has been performed.
   ///
-  /// If you don't need to provide a change handler, you can simply set the value of
-  /// the `keyEvent` property instead.
+  /// If you don't need to provide a change handler, you can simply set the
+  /// value of the menu item's `keyEvent` property instead.
   public func setKeyEvent(_ keyEvent: KeyEvent, handler: @escaping () -> Void) {
     self.handler = handler
     self.keyEvent = keyEvent

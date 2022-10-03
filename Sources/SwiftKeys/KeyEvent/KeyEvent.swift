@@ -17,31 +17,10 @@ public struct KeyEvent {
   
   static var keyEventStorage = [Name: KeyEvent]()
   
-  /// The name that is used to store this key event.
+  /// The name that is used to store the event.
   public let name: Name
   
-  /// A Boolean value that indicates whether the key event is currently enabled and active.
-  ///
-  /// When enabled, the event's handlers will be executed whenever the event is triggered.
-  ///
-  /// - Note: If the event does not have a key or modifiers, it will not be possible to
-  /// enable it, even when calling ``enable()``. If you have created an event without these,
-  /// and wish to enable it, you can create a new event with the same name, and it will take
-  /// the place of the old event.
-  public var isEnabled: Bool {
-    proxy.isRegistered
-  }
-  
-  /// The key associated with this key event.
-  public var key: Key? {
-    proxy.key
-  }
-  
-  /// The modifier keys associated with this key event.
-  public var modifiers: [Modifier] {
-    proxy.modifiers
-  }
-  
+  /// The underlying object associated with the event.
   var proxy: EventProxy {
     if let proxy = ProxyStorage.proxy(with: name) {
       return proxy
@@ -50,6 +29,31 @@ public struct KeyEvent {
       ProxyStorage.store(proxy)
       return proxy
     }
+  }
+  
+  /// A Boolean value that indicates whether the event is currently
+  /// enabled and active.
+  ///
+  /// When enabled, the event's handlers will be executed whenever the
+  /// event is triggered.
+  ///
+  /// - Note: If the event does not have a key or modifiers, it will not
+  /// be possible to enable it, even when calling ``enable()``. If you have
+  /// created an event without these, and wish to enable it, you can create
+  /// a new event with the same name, and it will take the place of the old
+  /// event.
+  public var isEnabled: Bool {
+    proxy.isRegistered
+  }
+  
+  /// The key associated with the event.
+  public var key: Key? {
+    proxy.key
+  }
+  
+  /// The modifier keys associated with the event.
+  public var modifiers: [Modifier] {
+    proxy.modifiers
   }
   
   // Implementation.
@@ -65,6 +69,10 @@ public struct KeyEvent {
   }
   
   /// Creates a key event with the given name.
+  ///
+  /// If an event has already been created with the same name, this event
+  /// will be set equal to the existing one, and both will reference the
+  /// same underlying object. This persists across app launches, as well.
   public init(name: Name) {
     if let event = Self.keyEventStorage[name] {
       self = event
@@ -77,6 +85,10 @@ public struct KeyEvent {
   }
   
   /// Creates a key event with the given name, keys, and modifiers.
+  ///
+  /// If an event has already been created with the same name, this event
+  /// will be set equal to the existing one, and both will reference the
+  /// same underlying object. This persists across app launches, as well.
   public init(name: Name, key: Key, modifiers: [Modifier]) {
     self.init(name: name)
     proxy.mutateWithoutChangingRegistrationState {
@@ -86,6 +98,10 @@ public struct KeyEvent {
   }
   
   /// Creates a key event with the given name, keys, and modifiers.
+  ///
+  /// If an event has already been created with the same name, this event
+  /// will be set equal to the existing one, and both will reference the
+  /// same underlying object. This persists across app launches, as well.
   public init(name: Name, key: Key, modifiers: Modifier...) {
     self.init(name: name, key: key, modifiers: modifiers)
   }
@@ -108,18 +124,21 @@ public struct KeyEvent {
     try container.encode(name, forKey: .name)
   }
   
-  /// Observes the key event, and executes the provided handler when the event
-  /// is triggered.
+  /// Observes the key event, and executes the provided handler when the
+  /// event is triggered.
   ///
-  /// This method can be called multiple times. Each handler that is added to
-  /// the event will be executed synchronously in the order in which they were
-  /// added.
+  /// This method can be called multiple times. Each handler that is added
+  /// to the event will be executed synchronously in the order in which they
+  /// were added.
   ///
-  /// You can pass the returned ``Observation`` instance into the ``removeObservation(_:)``
-  /// method, or similar, to remove it from the event. This will stop the execution of
-  /// the observation's handler.
+  /// You can pass the returned ``Observation`` instance into the
+  /// ``removeObservation(_:)`` method, or similar, to remove it from the
+  /// event. This will stop the execution of the observation's handler.
   @discardableResult
-  public func observe(_ type: EventType, handler: @escaping () -> Void) -> Observation {
+  public func observe(
+    _ type: EventType,
+    handler: @escaping () -> Void
+  ) -> Observation {
     let observation = Observation(eventType: type, value: handler)
     proxy.observations.append(observation)
     proxy.register()
@@ -128,74 +147,83 @@ public struct KeyEvent {
   
   /// Removes the given observation from the key event.
   ///
-  /// Once an observation is removed, its handler will no longer be executed.
+  /// Once an observation is removed, its handler will no longer be
+  /// executed.
   public func removeObservation(_ observation: Observation) {
     proxy.observations.removeAll { $0 == observation }
   }
   
   /// Removes the given observations from the key event.
   ///
-  /// Once an observation is removed, its handler will no longer be executed.
+  /// Once an observation is removed, its handler will no longer be
+  /// executed.
   public func removeObservations(_ observations: [Observation]) {
     for observation in observations {
       removeObservation(observation)
     }
   }
   
-  /// Removes every observation that matches the given predicate from the key event.
+  /// Removes every observation from the key event that matches the
+  /// given predicate.
   ///
-  /// Once an observation is removed, its handler will no longer be executed.
-  public func removeObservations(where shouldRemove: (Observation) throws -> Bool) rethrows {
-    for observation in proxy.observations {
-      if try shouldRemove(observation) {
-        removeObservation(observation)
-      }
+  /// Once an observation is removed, its handler will no longer be
+  /// executed.
+  public func removeObservations(
+    where shouldRemove: (Observation) throws -> Bool
+  ) rethrows {
+    for observation in proxy.observations where try shouldRemove(observation) {
+      removeObservation(observation)
     }
   }
   
   /// Removes every observation from the key event.
   ///
-  /// Once an observation is removed, its handler will no longer be executed.
+  /// Once an observation is removed, its handler will no longer be
+  /// executed.
   public func removeAllObservations() {
     proxy.observations.removeAll()
   }
   
   /// Enables the key event.
   ///
-  /// When enabled, the key event's observation handlers become active, and will
-  /// execute whenever the event is triggered.
+  /// When enabled, the key event's observation handlers become active,
+  /// and will execute whenever the event is triggered.
   public func enable() {
     proxy.register()
   }
   
   /// Disables the key event.
   ///
-  /// When disabled, the key event's observation handlers become dormant, but are
-  /// still retained, so that the event can be re-enabled later. If you wish to
-  /// completely remove the event and its handlers, use the ``remove()`` method instead.
+  /// When disabled, the key event's observation handlers become dormant,
+  /// but are still retained, so that the event can be re-enabled later.
+  /// If you wish to completely remove the event and its handlers, use
+  /// the ``remove()`` method instead.
   public func disable() {
     proxy.unregister()
   }
   
   /// Completely removes the key event and its handlers.
   ///
-  /// Once this method has been called, the key event should be considered invalid.
-  /// The ``enable()`` method will have no effect. If you wish to re-enable the event,
-  /// you will need to call ``observe(_:handler:)`` and provide a new handler.
+  /// Once this method has been called, the key event should be considered
+  /// invalid. The ``enable()`` method will have no effect. If you wish to
+  /// re-enable the event, you will need to call ``observe(_:handler:)``
+  /// and provide a new handler.
   public func remove() {
     proxy.unregister()
     ProxyStorage.remove(proxy)
   }
   
-  /// Runs the key event's observation handlers that are stored for the given
-  /// event type, as though the actual event had been triggered.
+  /// Runs the key event's observation handlers that are stored for the
+  /// given event type, as though the actual event had been triggered.
   public func runHandlers(for eventType: EventType) {
     proxy.observations.tryToPerformEach(eventType)
   }
   
-  /// Runs the key event's observation handlers that match the given predicate,
-  /// as though the actual event had been triggered.
-  public func runHandlers(where predicate: (Observation) throws -> Bool) rethrows {
+  /// Runs the key event's observation handlers that match the given
+  /// predicate, as though the actual event had been triggered.
+  public func runHandlers(
+    where predicate: (Observation) throws -> Bool
+  ) rethrows {
     for observation in proxy.observations where try predicate(observation) {
       observation.handler()
     }

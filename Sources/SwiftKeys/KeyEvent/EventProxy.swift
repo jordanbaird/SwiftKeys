@@ -25,7 +25,7 @@ final class EventProxy {
   ]
   
   private static var proxyCount: UInt32 = 0
-  private static let signature = OSType.random(in: OSType.min...OSType.max)
+  private static let signature = OSType.random(in: (.min)...(.max))
   
   static var isInstalled: Bool {
     eventHandlerRef != nil
@@ -52,7 +52,8 @@ final class EventProxy {
   
   var key: KeyEvent.Key? = nil {
     didSet {
-      // Re-register if necessary.
+      // If already registered, we need to re-register
+      // for the new key.
       if isRegistered {
         register()
       }
@@ -64,7 +65,8 @@ final class EventProxy {
   
   var modifiers = [KeyEvent.Modifier]() {
     didSet {
-      // Re-register if necessary.
+      // If already registered, we need to re-register
+      // for the new modifiers.
       if isRegistered {
         register()
       }
@@ -84,43 +86,46 @@ final class EventProxy {
       return noErr
     }
     
+    let handler: EventHandlerUPP = { callRef, event, userData in
+      guard let event = event else {
+        return OSStatus(eventNotHandledErr)
+      }
+      
+      // Create an identifier from the event.
+      var identifier = EventHotKeyID()
+      let status = GetEventParameter(
+        event,
+        EventParamName(kEventParamDirectObject),
+        EventParamType(typeEventHotKeyID),
+        nil,
+        MemoryLayout<EventHotKeyID>.size,
+        nil,
+        &identifier)
+      
+      // Make sure the creation was successful.
+      guard status == noErr else {
+        return status
+      }
+      
+      // Make sure the event is one of ours (a.k.a. if its signature
+      // lines up with our signature), and that we have a stored proxy
+      // for the event.
+      guard
+        identifier.signature == EventProxy.signature,
+        let proxy = ProxyStorage.proxy(with: identifier.id)
+      else {
+        return OSStatus(eventNotHandledErr)
+      }
+      
+      // Execute the proxy's stored handlers.
+      proxy.observations.tryToPerformEach(.init(event))
+      
+      return noErr
+    }
+    
     return InstallEventHandler(
       GetEventDispatcherTarget(),
-      { callRef, event, userData in
-        guard let event = event else {
-          return OSStatus(eventNotHandledErr)
-        }
-        
-        // Create an identifier from the event.
-        var identifier = EventHotKeyID()
-        let status = GetEventParameter(
-          event,
-          EventParamName(kEventParamDirectObject),
-          EventParamType(typeEventHotKeyID),
-          nil,
-          MemoryLayout<EventHotKeyID>.size,
-          nil,
-          &identifier)
-        
-        // Make sure the creation was successful.
-        guard status == noErr else {
-          return status
-        }
-        
-        // Make sure the event is one of ours (a.k.a. if its signature lines up
-        // with our signature), and that we have a stored proxy for the event.
-        guard
-          identifier.signature == EventProxy.signature,
-          let proxy = ProxyStorage.proxy(with: identifier.id)
-        else {
-          return OSStatus(eventNotHandledErr)
-        }
-        
-        // Execute the proxy's stored handlers.
-        proxy.observations.tryToPerformEach(.init(event))
-        
-        return noErr
-      },
+      handler,
       Self.eventTypes.count,
       Self.eventTypes,
       nil,
@@ -136,16 +141,15 @@ final class EventProxy {
       return
     }
     guard !isRegistered else {
-      // This method might have been called because the key or
-      // modifiers have changed, and need to be re-registered.
+      // This method might have been called because the key or modifiers have
+      // changed, and need to be re-registered.
       resetRegistration(shouldReregister: true)
       return
     }
     
-    // Always try to install. The first thing that happens in that method
-    // is to check whether we're already installed, so this will be quick.
-    // Note that if we're already installed, the method returns `noErr`,
-    // so we don't have to worry about accidental console logs.
+    // Always try to install. The first thing the `install()` method does
+    // is check whether we're already installed, so this will be quick. Note
+    // that if we're already installed, the `install()` method returns `noErr`.
     var status = install()
     if status != noErr {
       logError(.installationFailed(code: status))
@@ -160,19 +164,25 @@ final class EventProxy {
       &hotKeyRef)
     
     // We need to retain a reference to each proxy instance. The C function
-    // inside of the `install()` method can't deal with objects, so we can't
+    // inside of the `install()` method can't deal with context, so we can't
     // inject or reference `self`. We _do_ have a way to access the proxy's
     // identifier, so we can use that to store the proxy, then access the
     // storage from inside the C function.
     ProxyStorage.store(self)
+    
     if status != noErr {
       logError(.registrationFailed(code: status))
+      // FIXME: Should this return here?
     }
     
     do {
       let data = try JSONEncoder().encode(KeyEvent(name: name))
       UserDefaults.standard.set(data, forKey: name.combinedValue)
     } catch {
+      // Rather than return, just log the error. Everything else worked
+      // properly, the event just wasn't stored. All things considered,
+      // a relatively minor error, but one that the programmer should be
+      // made aware of nonetheless.
       logError(.encodingFailed(code: OSStatus(eventInternalErr)))
     }
     
@@ -203,7 +213,9 @@ final class EventProxy {
   }
   
   @discardableResult
-  func observeKeyAndModifierChanges(_ handler: @escaping () -> Void) -> Observation {
+  func observeKeyAndModifierChanges(
+    _ handler: @escaping () -> Void
+  ) -> Observation {
     let observation = Observation(value: handler)
     keyAndModifierChangeObservations.update(with: observation)
     return observation
@@ -216,13 +228,17 @@ final class EventProxy {
   }
   
   @discardableResult
-  func observeRegistrationState(_ handler: @escaping () -> Void) -> Observation {
+  func observeRegistrationState(
+    _ handler: @escaping () -> Void
+  ) -> Observation {
     let observation = Observation(value: handler)
     registrationStateObservations.update(with: observation)
     return observation
   }
   
-  func mutateWithoutChangingRegistrationState(_ handler: (EventProxy) throws -> Void) rethrows {
+  func mutateWithoutChangingRegistrationState(
+    _ handler: (EventProxy) throws -> Void
+  ) rethrows {
     blockRegistrationChanges = true
     defer {
       blockRegistrationChanges = false
