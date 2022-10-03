@@ -30,8 +30,8 @@ let recorder = KeyRecorder(keyEvent: event)
 ```
 
 <div align='center'>
-    <img src='docs/images/recorder-window.png', style='width:49%'>
-    <img src='docs/images/recorder-window~dark.png', style='width:49%'>
+    <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window.png', style='width:49%'>
+    <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png', style='width:49%'>
 </div>
 
 The recorder and the event will stay synchronized with each other, so when the user records a new key combination, the event will update to the new value. You can also observe the event and perform actions on both key-up and key-down.
