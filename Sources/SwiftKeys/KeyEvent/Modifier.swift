@@ -88,6 +88,18 @@ extension KeyEvent.Modifier: Equatable { }
 extension KeyEvent.Modifier: Hashable { }
 
 extension Array where Element == KeyEvent.Modifier {
+  init?(carbonModifiers: Int) {
+    self.init()
+    for modifier in KeyEvent.Modifier.allCases
+      where carbonModifiers.containsModifier(modifier)
+    {
+      append(modifier)
+    }
+    if isEmpty {
+      return nil
+    }
+  }
+  
   /// Returns a Boolean value indicating whether the array contains the
   /// given modifier, evaluated fuzzily.
   ///
@@ -120,5 +132,15 @@ extension Array where Element == KeyEvent.Modifier {
     reduce(into: .init()) {
       $0.insert($1.cocoaFlag)
     }
+  }
+}
+
+extension Int {
+  func bitwiseContains(_ other: Int) -> Bool {
+    other & self == other
+  }
+  
+  func containsModifier(_ modifier: KeyEvent.Modifier) -> Bool {
+    bitwiseContains(modifier.carbonFlag)
   }
 }

@@ -9,28 +9,13 @@
 import AppKit
 import OSLog
 
-// MARK: - Functions
-
-@discardableResult
-func logError(_ error: EventError) -> String {
-  let message = "[Error code \(error.code)] \(error.message)"
-  if #available(macOS 10.14, *) {
-    os_log(.error, "%@", message)
-  } else if #available(macOS 10.12, *) {
-    os_log("%@", type: .error, message)
-  } else {
-    NSLog("%@", message)
-  }
-  return message
-}
-
 // MARK: - Constraint
 
 struct Constraint {
-  fileprivate let base: NSLayoutConstraint
-  fileprivate let view: NSView
+  private let base: NSLayoutConstraint
+  private let view: NSView
   
-  fileprivate let originalTranslates: Bool
+  private let originalTranslates: Bool
   
   private init(_ base: NSLayoutConstraint, _ view: NSView) {
     self.base = base
@@ -89,48 +74,63 @@ struct Constraint {
 
 // MARK: - EventError
 
-enum EventError: Error {
-  case custom(code: OSStatus, message: String)
-  
-  case decodingFailed(code: OSStatus)
-  case encodingFailed(code: OSStatus)
-  
-  case installationFailed(code: OSStatus)
-  
-  case registrationFailed(code: OSStatus)
-  case unregistrationFailed(code: OSStatus)
-  
-  var message: String {
-    switch self {
-    case .installationFailed: return "An error occurred while installing event handler."
-    case .registrationFailed: return "An error occurred while registering a key event."
-    case .unregistrationFailed: return "An error occurred while unregistering a key event."
-    case .encodingFailed: return "An error occurred while encoding a key event."
-    case .decodingFailed: return "An error occurred while decoding a key event."
-    case .custom(_, let message): return message
-    }
+struct EventError: Error {
+  let code: OSStatus
+  let message: String
+}
+
+extension EventError {
+  @discardableResult
+  func log() -> String {
+    let message = "[Error code \(code)] \(message)"
+    Logger.error.send(message: message)
+    return message
+  }
+}
+
+extension EventError {
+  static func decodingFailed(code: OSStatus) -> Self {
+    .init(
+      code: code,
+      message: "An error occurred while decoding a key event.")
   }
   
-  var code: OSStatus {
-    switch self {
-    case .installationFailed(let code): return code
-    case .registrationFailed(let code): return code
-    case .unregistrationFailed(let code): return code
-    case .encodingFailed(let code): return code
-    case .decodingFailed(let code): return code
-    case .custom(let code, _): return code
-    }
+  static func encodingFailed(code: OSStatus) -> Self {
+    .init(
+      code: code,
+      message: "An error occurred while encoding a key event.")
+  }
+  
+  static func installationFailed(code: OSStatus) -> Self {
+    .init(
+      code: code,
+      message: "An error occurred while installing event handler.")
+  }
+  
+  static func registrationFailed(code: OSStatus) -> Self {
+    .init(
+      code: code,
+      message: "An error occurred while registering a key event.")
+  }
+  static func unregistrationFailed(code: OSStatus) -> Self {
+    .init(
+      code: code,
+      message: "An error occurred while unregistering a key event.")
+  }
+  
+  static func systemRetrievalFailed(code: OSStatus) -> Self {
+    .init(
+      code: code,
+      message: "An error occurred while retrieving system reserved key events.")
   }
 }
 
 // MARK: - EventMonitor
 
 struct EventMonitor {
-  var handler: (NSEvent) -> NSEvent?
-  
-  var mask: NSEvent.EventTypeMask
-  
-  var monitor: Any?
+  private var handler: (NSEvent) -> NSEvent?
+  private var mask: NSEvent.EventTypeMask
+  private var monitor: Any?
   
   init(mask: NSEvent.EventTypeMask, handler: @escaping (NSEvent) -> NSEvent?) {
     self.handler = handler
@@ -138,12 +138,18 @@ struct EventMonitor {
   }
   
   mutating func start() {
-    guard monitor == nil else { return }
-    monitor = NSEvent.addLocalMonitorForEvents(matching: mask, handler: handler)
+    guard monitor == nil else {
+      return
+    }
+    monitor = NSEvent.addLocalMonitorForEvents(
+      matching: mask,
+      handler: handler)
   }
   
   mutating func stop() {
-    guard monitor != nil else { return }
+    guard monitor != nil else {
+      return
+    }
     NSEvent.removeMonitor(monitor as Any)
     monitor = nil
   }
@@ -152,6 +158,7 @@ struct EventMonitor {
 // MARK: - IdentifiableWrapper
 
 var rng = SystemRandomNumberGenerator()
+
 protocol IdentifiableWrapper: Hashable {
   associatedtype Value
   typealias Identifier = UInt64
@@ -168,5 +175,68 @@ extension IdentifiableWrapper {
 extension IdentifiableWrapper {
   func hash(into hasher: inout Hasher) {
     hasher.combine(id)
+  }
+}
+
+// MARK: - Logger
+
+/// A wrapper for the unified logging system.
+struct Logger {
+  let log: OSLog
+  let level: OSLogType
+  
+  /// Sends a message to the logging system using the given logger.
+  public static func send(logger: Self = .default, message: String) {
+    logger.send(message: message)
+  }
+  
+  /// Sends a message to the logging system using the given logger.
+  public static func send(logger: Self = .default, @LogMessageBuilder message: () -> String) {
+    logger.send(message: message)
+  }
+  
+  /// Sends a message to the logging system using this logger's log object and level.
+  public func send(message: String) {
+    os_log("%@", log: log, type: level, message)
+  }
+  
+  /// Sends a message to the logging system using this logger's log object and level.
+  public func send(@LogMessageBuilder message: () -> String) {
+    send(message: message())
+  }
+  
+  public func callAsFunction(@LogMessageBuilder message: () -> String) {
+    send(message: message)
+  }
+  
+  public func callAsFunction(message: String) {
+    send(message: message)
+  }
+}
+
+extension Logger {
+  /// The default logger.
+  public static let `default` = Self(log: .default, level: .default)
+  
+  /// A logger for error messages.
+  public static let error = Self(log: .default, level: .error)
+  
+  /// A logger for debug messages.
+  public static let debug = Self(log: .default, level: .debug)
+  
+  /// A logger for faults.
+  public static let fault = Self(log: .default, level: .fault)
+  
+  /// A logger for informative messages.
+  public static let info = Self(log: .default, level: .info)
+}
+
+// MARK: - LogMessageBuilder
+
+/// A result builder for log messages.
+@resultBuilder
+struct LogMessageBuilder {
+  static func buildBlock(_ components: String...) -> String {
+    components.joined(separator: " ")
   }
 }

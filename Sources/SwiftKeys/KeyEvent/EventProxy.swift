@@ -9,6 +9,8 @@
 import Carbon.HIToolbox
 
 final class EventProxy {
+  typealias EventType = KeyEvent.EventType
+  
   struct Observation: IdentifiableObservation {
     let id = rng.next()
     let value: () -> Void
@@ -35,7 +37,7 @@ final class EventProxy {
   let identifier = EventHotKeyID(signature: signature, id: proxyCount)
   
   let name: KeyEvent.Name
-  var observations = [KeyEvent.Observation]()
+  var eventObservations = [KeyEvent.Observation]()
   
   var keyAndModifierChangeObservations = Set<Observation>()
   var registrationStateObservations = Set<Observation>()
@@ -74,6 +76,10 @@ final class EventProxy {
         observation.perform()
       }
     }
+  }
+  
+  var objectIdentifier: ObjectIdentifier {
+    .init(self)
   }
   
   init(name: KeyEvent.Name) {
@@ -118,7 +124,7 @@ final class EventProxy {
       }
       
       // Execute the proxy's stored handlers.
-      proxy.observations.tryToPerformEach(.init(event))
+      proxy.performObservations(matching: EventType(event))
       
       return noErr
     }
@@ -140,21 +146,25 @@ final class EventProxy {
     else {
       return
     }
+    
     guard !isRegistered else {
-      // This method might have been called because the key or modifiers have
-      // changed, and need to be re-registered.
-      resetRegistration(shouldReregister: true)
+      // This method might have been called because the key or
+      // modifiers have changed, and need to be re-registered.
+      unregister(shouldReregister: true)
       return
     }
     
-    // Always try to install. The first thing the `install()` method does
-    // is check whether we're already installed, so this will be quick. Note
-    // that if we're already installed, the `install()` method returns `noErr`.
+    // Always try to install. The first thing the install() method
+    // does is check whether we're already installed, so this will
+    // be quick. Note that if we're already installed, the install()
+    // method returns noErr.
     var status = install()
-    if status != noErr {
-      logError(.installationFailed(code: status))
+    
+    guard status == noErr else {
+      EventError.installationFailed(code: status).log()
       return
     }
+    
     status = RegisterEventHotKey(
       key.unsigned,
       modifiers.carbonFlags,
@@ -163,33 +173,34 @@ final class EventProxy {
       0,
       &hotKeyRef)
     
-    // We need to retain a reference to each proxy instance. The C function
-    // inside of the `install()` method can't deal with context, so we can't
-    // inject or reference `self`. We _do_ have a way to access the proxy's
-    // identifier, so we can use that to store the proxy, then access the
-    // storage from inside the C function.
+    // We need to retain a reference to each proxy instance. The C
+    // function inside of the `install()` method can't deal with
+    // context, so we can't inject or reference `self`. We _do_ have
+    // a way to access the proxy's identifier, so we can use that
+    // to store the proxy, then access the storage from inside the
+    // C function.
     ProxyStorage.store(self)
     
-    if status != noErr {
-      logError(.registrationFailed(code: status))
-      // FIXME: Should this return here?
+    guard status == noErr else {
+      EventError.registrationFailed(code: status).log()
+      return
     }
     
     do {
       let data = try JSONEncoder().encode(KeyEvent(name: name))
       UserDefaults.standard.set(data, forKey: name.combinedValue)
     } catch {
-      // Rather than return, just log the error. Everything else worked
-      // properly, the event just wasn't stored. All things considered,
-      // a relatively minor error, but one that the programmer should be
-      // made aware of nonetheless.
-      logError(.encodingFailed(code: OSStatus(eventInternalErr)))
+      // Rather than return, just log the error. Everything else
+      // worked properly, the event just wasn't stored. All things
+      // considered, a relatively minor error, but one that the
+      // programmer should be made aware of nonetheless.
+      EventError.encodingFailed(code: OSStatus(eventInternalErr)).log()
     }
     
     isRegistered = true
   }
   
-  func unregister() {
+  func unregister(shouldReregister: Bool = false) {
     guard
       !blockRegistrationChanges,
       isRegistered
@@ -199,23 +210,17 @@ final class EventProxy {
     let status = UnregisterEventHotKey(hotKeyRef)
     hotKeyRef = nil
     if status != noErr {
-      logError(.unregistrationFailed(code: status))
+      EventError.unregistrationFailed(code: status).log()
     }
     UserDefaults.standard.removeObject(forKey: name.combinedValue)
     isRegistered = false
-  }
-  
-  func resetRegistration(shouldReregister: Bool) {
-    unregister()
     if shouldReregister {
       register()
     }
   }
   
   @discardableResult
-  func observeKeyAndModifierChanges(
-    _ handler: @escaping () -> Void
-  ) -> Observation {
+  func observeKeyAndModifierChanges(_ handler: @escaping () -> Void) -> Observation {
     let observation = Observation(value: handler)
     keyAndModifierChangeObservations.update(with: observation)
     return observation
@@ -228,17 +233,13 @@ final class EventProxy {
   }
   
   @discardableResult
-  func observeRegistrationState(
-    _ handler: @escaping () -> Void
-  ) -> Observation {
+  func observeRegistrationState(_ handler: @escaping () -> Void) -> Observation {
     let observation = Observation(value: handler)
     registrationStateObservations.update(with: observation)
     return observation
   }
   
-  func mutateWithoutChangingRegistrationState(
-    _ handler: (EventProxy) throws -> Void
-  ) rethrows {
+  func mutateWithoutChangingRegistrationState(_ handler: (EventProxy) throws -> Void) rethrows {
     blockRegistrationChanges = true
     defer {
       blockRegistrationChanges = false
@@ -246,52 +247,47 @@ final class EventProxy {
     try handler(self)
   }
   
+  func performObservations(matching eventType: EventType?) {
+    eventObservations.performObservations(matching: eventType)
+  }
+  
   deinit {
     unregister()
   }
 }
 
+extension EventProxy: Hashable {
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(objectIdentifier)
+  }
+}
+
+extension EventProxy: Equatable {
+  static func == (lhs: EventProxy, rhs: EventProxy) -> Bool {
+    lhs.objectIdentifier == rhs.objectIdentifier
+  }
+}
+
 // MARK: - ProxyStorage
 
-struct ProxyStorage: Hashable {
-  private static var all = Set<Self>()
-  
-  private let proxy: EventProxy
-  
-  private init(_ proxy: EventProxy) {
-    self.proxy = proxy
-  }
+typealias ProxyStorage = Set<EventProxy>
+
+extension Set where Element == EventProxy {
+  private static var all = Self()
   
   static func proxy(with identifier: UInt32) -> EventProxy? {
-    all.first { $0.proxy.identifier.id == identifier }?.proxy
+    all.first { $0.identifier.id == identifier }
   }
   
   static func proxy(with name: KeyEvent.Name) -> EventProxy? {
-    all.first { $0.proxy.name == name }?.proxy
+    all.first { $0.name == name }
   }
   
   static func store(_ proxy: EventProxy) {
-    all.update(with: .init(proxy))
+    all.update(with: proxy)
   }
   
   static func remove(_ proxy: EventProxy) {
-    if let storage = all.first(where: { $0 ~= proxy }) {
-      all.remove(storage)
-    }
-  }
-  
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(proxy.identifier.id)
-    hasher.combine(proxy.name)
-  }
-  
-  static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.proxy.identifier.id == rhs.proxy.identifier.id &&
-    lhs.proxy.name == rhs.proxy.name
-  }
-  
-  static func ~= (lhs: Self, rhs: EventProxy) -> Bool {
-    lhs.proxy.identifier.id == rhs.identifier.id &&
-    lhs.proxy.name == rhs.name
+    all.remove(proxy)
   }
 }

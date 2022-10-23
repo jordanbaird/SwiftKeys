@@ -6,6 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import Carbon.HIToolbox
 import Foundation
 
 public struct KeyEvent {
@@ -15,7 +16,15 @@ public struct KeyEvent {
     case name
   }
   
-  static var keyEventStorage = [Name: KeyEvent]()
+  static var reservedHotKeys: [[String: Any]] {
+    var reservedHotKeys: Unmanaged<CFArray>?
+    let status = CopySymbolicHotKeys(&reservedHotKeys)
+    guard status == noErr else {
+      EventError.systemRetrievalFailed(code: status).log()
+      return []
+    }
+    return reservedHotKeys?.takeRetainedValue() as? [[String: Any]] ?? []
+  }
   
   /// The name that is used to store the event.
   public let name: Name
@@ -38,10 +47,10 @@ public struct KeyEvent {
   /// event is triggered.
   ///
   /// - Note: If the event does not have a key or modifiers, it will not
-  /// be possible to enable it, even when calling ``enable()``. If you have
-  /// created an event without these, and wish to enable it, you can create
-  /// a new event with the same name, and it will take the place of the old
-  /// event.
+  ///   be possible to enable it, even when calling ``enable()``. If you have
+  ///   created an event without these, and wish to enable it, you can create
+  ///   a new event with the same name, and it will take the place of the old
+  ///   event.
   public var isEnabled: Bool {
     proxy.isRegistered
   }
@@ -56,39 +65,30 @@ public struct KeyEvent {
     proxy.modifiers
   }
   
-  // Implementation.
-  private init?(_name: Name) {
+  /// Creates a key event with the given name.
+  ///
+  /// If an event has already been created with the same name, this event will
+  /// be initialized with a reference to the existing event's underlying object.
+  public init(name: Name) {
     if
-      let data = UserDefaults.standard.data(forKey: _name.combinedValue),
+      ProxyStorage.proxy(with: name) == nil,
+      let data = UserDefaults.standard.data(forKey: name.combinedValue),
       let event = try? JSONDecoder().decode(Self.self, from: data)
     {
       self = event
     } else {
-      return nil
-    }
-  }
-  
-  /// Creates a key event with the given name.
-  ///
-  /// If an event has already been created with the same name, this event
-  /// will be set equal to the existing one, and both will reference the
-  /// same underlying object. This persists across app launches, as well.
-  public init(name: Name) {
-    if let event = Self.keyEventStorage[name] {
-      self = event
-    } else if let event = Self(_name: name) {
-      self = event
-    } else {
       self.name = name
     }
-    Self.keyEventStorage[name] = self
   }
   
   /// Creates a key event with the given name, keys, and modifiers.
   ///
-  /// If an event has already been created with the same name, this event
-  /// will be set equal to the existing one, and both will reference the
-  /// same underlying object. This persists across app launches, as well.
+  /// If an event has already been created with the same name, this event will
+  /// be initialized with a reference to the existing event's underlying object.
+  ///
+  /// - Note: The underlying object's key and modifiers will be updated to
+  ///   match the ones provided in this initializer. If this behavior is undesired,
+  ///   use ``init(name:)`` instead.
   public init(name: Name, key: Key, modifiers: [Modifier]) {
     self.init(name: name)
     proxy.mutateWithoutChangingRegistrationState {
@@ -99,14 +99,16 @@ public struct KeyEvent {
   
   /// Creates a key event with the given name, keys, and modifiers.
   ///
-  /// If an event has already been created with the same name, this event
-  /// will be set equal to the existing one, and both will reference the
-  /// same underlying object. This persists across app launches, as well.
+  /// If an event has already been created with the same name, this event will
+  /// be initialized with a reference to the existing event's underlying object.
+  ///
+  /// - Note: The underlying object's key and modifiers will be updated to
+  ///   match the ones provided in this initializer. If this behavior is undesired,
+  ///   use ``init(name:)`` instead.
   public init(name: Name, key: Key, modifiers: Modifier...) {
     self.init(name: name, key: key, modifiers: modifiers)
   }
   
-  /// Creates a key event from the given decoder.
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     name = try container.decode(Name.self, forKey: .name)
@@ -116,7 +118,21 @@ public struct KeyEvent {
     }
   }
   
-  /// Encodes a key event to the given encoder.
+  static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
+    return reservedHotKeys.contains {
+      if
+        $0[kHISymbolicHotKeyEnabled] as? Bool == true,
+        let keyCode = $0[kHISymbolicHotKeyCode] as? Int,
+        let modifierCode = $0[kHISymbolicHotKeyModifiers] as? Int,
+        let reservedKey = Key(keyCode),
+        let reservedModifiers = [Modifier](carbonModifiers: modifierCode)
+      {
+        return key == reservedKey && modifiers == reservedModifiers
+      }
+      return false
+    }
+  }
+  
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(key, forKey: .key)
@@ -127,110 +143,182 @@ public struct KeyEvent {
   /// Observes the key event, and executes the provided handler when the
   /// event is triggered.
   ///
-  /// This method can be called multiple times. Each handler that is added
-  /// to the event will be executed synchronously in the order in which they
-  /// were added.
+  /// This method can be called multiple times. When the event is triggered,
+  /// the handlers that belong to the event will be executed synchronously
+  /// in the order they were added.
   ///
-  /// You can pass the returned ``Observation`` instance into the
-  /// ``removeObservation(_:)`` method, or similar, to remove it from the
-  /// event. This will stop the execution of the observation's handler.
+  /// You can pass the returned ``Observation`` instance into the ``removeObservation(_:)``
+  /// method or similar to remove the observation and stop the execution of its handler.
   @discardableResult
-  public func observe(
-    _ type: EventType,
-    handler: @escaping () -> Void
-  ) -> Observation {
+  public func observe(_ type: EventType, handler: @escaping () -> Void) -> Observation {
     let observation = Observation(eventType: type, value: handler)
-    proxy.observations.append(observation)
+    proxy.eventObservations.append(observation)
     proxy.register()
     return observation
   }
   
-  /// Removes the given observation from the key event.
+  /// Removes the given observation.
   ///
-  /// Once an observation is removed, its handler will no longer be
-  /// executed.
+  /// Pass an instance of ``Observation`` that you received from a call to
+  /// ``observe(_:handler:)``. The observation must belong to this key event.
+  /// Once the observation has been removed, its handler will no longer be executed.
   public func removeObservation(_ observation: Observation) {
-    proxy.observations.removeAll { $0 == observation }
+    proxy.eventObservations.removeAll { $0 == observation }
   }
   
-  /// Removes the given observations from the key event.
+  /// Removes the given observations.
   ///
-  /// Once an observation is removed, its handler will no longer be
-  /// executed.
+  /// Pass instances of ``Observation`` that you received from calls to
+  /// ``observe(_:handler:)``. The observation must belong to this key event.
+  /// Once the observations have been removed, their handlers will no longer be executed.
   public func removeObservations(_ observations: [Observation]) {
     for observation in observations {
       removeObservation(observation)
     }
   }
   
-  /// Removes every observation from the key event that matches the
-  /// given predicate.
+  /// Removes the first observation that matches the given predicate.
   ///
-  /// Once an observation is removed, its handler will no longer be
-  /// executed.
-  public func removeObservations(
-    where shouldRemove: (Observation) throws -> Bool
-  ) rethrows {
-    for observation in proxy.observations where try shouldRemove(observation) {
-      removeObservation(observation)
+  /// Use this method if you need to remove an instance of ``Observation``
+  /// that you don't have access to. This example removes the first observation
+  /// for the ``EventType/keyDown`` event type:
+  ///
+  /// ```swift
+  /// let event = KeyEvent(name: someName)
+  /// event.removeFirstObservation(where: { $0.eventType == .keyDown })
+  /// ```
+  ///
+  /// Only observations belonging to this key event will be considered for removal.
+  /// Once the observation has been removed, its handler will no longer be executed.
+  public func removeFirstObservation(where shouldRemove: (Observation) throws -> Bool) rethrows {
+    if let index = try proxy.eventObservations.firstIndex(where: shouldRemove) {
+      proxy.eventObservations.remove(at: index)
     }
   }
   
-  /// Removes every observation from the key event.
+  /// Removes every observation that matches the given predicate.
   ///
-  /// Once an observation is removed, its handler will no longer be
-  /// executed.
+  /// Use this method if you need to remove multiple ``Observation`` instances
+  /// that you don't have access to. This example removes all observations for
+  /// the ``EventType/keyDown`` event type:
+  ///
+  /// ```swift
+  /// let event = KeyEvent(name: someName)
+  /// event.removeObservations(where: { $0.eventType == .keyDown })
+  /// ```
+  ///
+  /// Only observations belonging to this key event will be considered for removal.
+  /// Once the observations have been removed, their handlers will no longer be executed.
+  public func removeObservations(where shouldRemove: (Observation) throws -> Bool) rethrows {
+    try proxy.eventObservations.removeAll(where: shouldRemove)
+  }
+  
+  /// Removes all observations from the key event.
+  ///
+  /// Once the observations have been removed, their handlers will no longer be executed.
   public func removeAllObservations() {
-    proxy.observations.removeAll()
+    proxy.eventObservations.removeAll()
   }
   
   /// Enables the key event.
   ///
-  /// When enabled, the key event's observation handlers become active,
-  /// and will execute whenever the event is triggered.
+  /// When enabled, the key event's observation handlers become active, and will
+  /// be executed whenever the event is triggered. Note that calling ``observe(_:handler:)``
+  /// automatically enables the event.
   public func enable() {
     proxy.register()
   }
   
   /// Disables the key event.
   ///
-  /// When disabled, the key event's observation handlers become dormant,
-  /// but are still retained, so that the event can be re-enabled later.
-  /// If you wish to completely remove the event and its handlers, use
-  /// the ``remove()`` method instead.
+  /// When disabled, the key event's observation handlers become dormant, but are
+  /// retained, so that the event can be re-enabled later. If you wish to completely
+  /// remove the event and its handlers, use the ``remove()`` method instead.
   public func disable() {
     proxy.unregister()
   }
   
   /// Completely removes the key event and its handlers.
   ///
-  /// Once this method has been called, the key event should be considered
-  /// invalid. The ``enable()`` method will have no effect. If you wish to
-  /// re-enable the event, you will need to call ``observe(_:handler:)``
-  /// and provide a new handler.
+  /// Once this method has been called, the key event should be considered invalid.
+  /// The ``enable()`` method will have no effect. If you wish to re-enable the event,
+  /// you will need to call ``observe(_:handler:)`` and provide a new handler.
   public func remove() {
     proxy.unregister()
     ProxyStorage.remove(proxy)
   }
   
-  /// Runs the key event's observation handlers that are stored for the
-  /// given event type, as though the actual event had been triggered.
+  /// Runs the key event's observation handlers for the given event type.
+  ///
+  /// ```swift
+  /// let event = KeyEvent(
+  ///     name: "SomeName",
+  ///     key: .space,
+  ///     modifiers: [.shift, .command]
+  /// )
+  ///
+  /// event.observe(.keyDown) {
+  ///     print("'Shift + Command + Space' was pressed.")
+  /// }
+  /// event.observe(.keyUp) {
+  ///     print("'Shift + Command + Space' was released.")
+  /// }
+  ///
+  /// event.runHandlers(for: .keyDown)
+  /// // Prints: 'Shift + Command + Space' was pressed.
+  ///
+  /// event.runHandlers(for: .keyUp)
+  /// // Prints: 'Shift + Command + Space' was released.
+  /// ```
   public func runHandlers(for eventType: EventType) {
-    proxy.observations.tryToPerformEach(eventType)
+    proxy.performObservations(matching: eventType)
   }
   
-  /// Runs the key event's observation handlers that match the given
-  /// predicate, as though the actual event had been triggered.
-  public func runHandlers(
-    where predicate: (Observation) throws -> Bool
-  ) rethrows {
-    for observation in proxy.observations where try predicate(observation) {
+  /// Runs the key event's observation handlers that match the given predicate.
+  ///
+  /// ```swift
+  /// let event = KeyEvent(
+  ///     name: "SomeName",
+  ///     key: .space,
+  ///     modifiers: [.shift, .command]
+  /// )
+  ///
+  /// event.observe(.keyDown) {
+  ///     print("'Shift + Command + Space' was pressed.")
+  /// }
+  /// event.observe(.keyUp) {
+  ///     print("'Shift + Command + Space' was released.")
+  /// }
+  ///
+  /// event.runHandlers {
+  ///     $0.eventType == .keyDown || $0.eventType == .keyUp
+  /// }
+  ///
+  /// // Prints:
+  /// //   'Shift + Command + Space' was pressed.
+  /// //   'Shift + Command + Space' was released.
+  /// ```
+  public func runHandlers(where predicate: (Observation) throws -> Bool) rethrows {
+    for observation in proxy.eventObservations where try predicate(observation) {
       observation.handler()
     }
   }
 }
 
 extension KeyEvent: Codable { }
+
+extension KeyEvent: CustomStringConvertible {
+  public var description: String {
+    var keyString = "nil"
+    if let key = key {
+      keyString = "\(key)"
+    }
+    return "\(Self.self)("
+    + "name: \(name), "
+    + "key: \(keyString), "
+    + "modifiers: \(modifiers))"
+  }
+}
 
 extension KeyEvent: Equatable { }
 

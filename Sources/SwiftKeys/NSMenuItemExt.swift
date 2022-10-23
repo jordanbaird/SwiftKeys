@@ -131,7 +131,9 @@ extension NSMenuItem {
   /// combination is pressed (or released), and when the menu item is clicked.
   public var keyEvent: KeyEvent? {
     get {
-      guard let name = name else { return nil }
+      guard let name = name else {
+        return nil
+      }
       return .init(name: name)
     }
     set {
@@ -237,7 +239,9 @@ extension NSMenuItem {
     observations.update(
       with: .init(
         keyEvent.observe(.keyDown) { [weak self] in
-          guard let self = self else { return }
+          guard let self = self else {
+            return
+          }
           self.performCombinedAction(self)
         }
       )

@@ -406,6 +406,19 @@ extension KeyRecorder {
         self.failureReason.incrementFailureCount()
         return nil
       }
+      guard !KeyEvent.isReservedBySystem(key: key, modifiers: modifiers) else {
+        NSSound.beep()
+        let alert = NSAlert()
+        alert.window.isMovable = false
+        alert.messageText = "Cannot record shortcut."
+        alert.informativeText = "\""
+        + modifiers.reduce("") { $0 + $1.stringValue }
+        + key.stringValue
+        + "\""
+        + " is reserved system-wide."
+        alert.runModal()
+        return nil
+      }
       self.record(key: key, modifiers: modifiers)
       self.setFailureReason(.noFailure)
       self.deselectAll()
@@ -542,7 +555,7 @@ extension KeyRecorder {
         proxy.isRegistered,
         let key = proxy.key
       {
-        string = proxy.modifiers.map(\.stringValue).joined()
+        string = proxy.modifiers.map { $0.stringValue }.joined()
         string.append(key.stringValue.uppercased(with: .current))
       } else {
         string = label.rawValue
@@ -591,13 +604,16 @@ extension KeyRecorder {
     func observeWindowVisibility() {
       windowVisibilityObservation = window?.observe(
         \.isVisible,
-         options: [.new]
+         options: .new
       ) { [weak self] _, change in
-        guard let newValue = change.newValue else {
+        guard
+          let self = self,
+          let newValue = change.newValue
+        else {
           return
         }
         if !newValue {
-          self?.keyDownMonitor.stop()
+          self.keyDownMonitor.stop()
         }
       }
     }
@@ -629,24 +645,25 @@ extension KeyRecorder.SegmentedControl {
     static let noFailure = Self(message: "There is nothing wrong.")
     
     static let needsModifiers = Self(message: """
-        Please include at least one modifier key (Shift, Control, Option, Command).
-        """)
+      Please include at least one modifier key (Shift, Control, Option, Command).
+      """)
     
     static let onlyShift = Self(message: """
-        Shift by itself is not a valid modifier key. Please include at least one \
-        additional modifier key (Control, Option, Command).
-        """)
+      Shift by itself is not a valid modifier key. Please include at least one \
+      additional modifier key (Control, Option, Command).
+      """)
     
     let message: String
     
     var failureCount = 0 {
       didSet {
-        if
+        guard
           self == .noFailure,
           failureCount != 0
-        {
-          failureCount = 0
+        else {
+          return
         }
+        failureCount = 0
       }
     }
     

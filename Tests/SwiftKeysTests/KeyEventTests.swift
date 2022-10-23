@@ -70,8 +70,146 @@ final class KeyEventTests: XCTestCase {
     // Use it to create an EventRef.
     let ref = EventRef(nsEvent.eventRef)!
     
-    [observation].tryToPerformEach(.init(ref))
+    [observation].performObservations(matching: .init(ref))
     
     XCTAssertFalse(didRunObservation)
+  }
+  
+  func testRemoveSpecificObservations() {
+    var lastRunEventType: KeyEvent.EventType?
+    let event = KeyEvent(name: "SomeName")
+    
+    let keyDownObservation = event.observe(.keyDown) {
+      lastRunEventType = .keyDown
+    }
+    
+    let keyUpObservation = event.observe(.keyUp) {
+      lastRunEventType = .keyUp
+    }
+    
+    XCTAssertNil(lastRunEventType)
+    
+    event.runHandlers(for: .keyDown)
+    XCTAssertEqual(lastRunEventType, .keyDown)
+    
+    event.runHandlers(for: .keyUp)
+    XCTAssertEqual(lastRunEventType, .keyUp)
+    
+    lastRunEventType = nil
+    
+    event.removeObservations([keyDownObservation, keyUpObservation])
+    
+    event.runHandlers(for: .keyDown)
+    event.runHandlers(for: .keyUp)
+    
+    XCTAssertNil(lastRunEventType)
+  }
+  
+  func testRemoveNonSpecificObservations() {
+    var lastRunEventType: KeyEvent.EventType?
+    let event = KeyEvent(name: "SomeName")
+    
+    event.observe(.keyDown) {
+      lastRunEventType = .keyDown
+    }
+    
+    event.observe(.keyUp) {
+      lastRunEventType = .keyUp
+    }
+    
+    XCTAssertNil(lastRunEventType)
+    
+    event.runHandlers { $0.eventType == .keyDown }
+    XCTAssertEqual(lastRunEventType, .keyDown)
+    
+    event.runHandlers { $0.eventType == .keyUp }
+    XCTAssertEqual(lastRunEventType, .keyUp)
+    
+    lastRunEventType = nil
+    
+    event.removeObservations { $0.eventType == .keyUp }
+    
+    event.runHandlers(for: .keyUp)
+    XCTAssertNil(lastRunEventType)
+    
+    event.runHandlers(for: .keyDown)
+    XCTAssertEqual(lastRunEventType, .keyDown)
+  }
+  
+  func testRemoveFirstObservation() {
+    enum RunInfo {
+      case firstKeyDown
+      case secondKeyDown
+      case firstKeyUp
+    }
+    
+    var runInfo = [RunInfo]()
+    let event = KeyEvent(name: "SomeName")
+    
+    event.observe(.keyDown) {
+      runInfo.append(.firstKeyDown)
+    }
+    
+    event.observe(.keyDown) {
+      runInfo.append(.secondKeyDown)
+    }
+    
+    event.observe(.keyUp) {
+      runInfo.append(.firstKeyUp)
+    }
+    
+    XCTAssertTrue(runInfo.isEmpty)
+    
+    event.runHandlers(for: .keyDown)
+    XCTAssertEqual(runInfo.count, 2)
+    XCTAssertEqual(runInfo[0], .firstKeyDown)
+    XCTAssertEqual(runInfo[1], .secondKeyDown)
+    
+    event.runHandlers(for: .keyUp)
+    XCTAssertEqual(runInfo.count, 3)
+    XCTAssertEqual(runInfo[2], .firstKeyUp)
+    
+    runInfo.removeAll()
+    
+    event.removeFirstObservation { $0.eventType == .keyDown }
+    
+    event.runHandlers(for: .keyDown)
+    XCTAssertEqual(runInfo.count, 1)
+    XCTAssertEqual(runInfo[0], .secondKeyDown)
+  }
+  
+  func testRemoveAllObservations() {
+    var lastRunEventType: KeyEvent.EventType?
+    let event = KeyEvent(name: "SomeName")
+    
+    event.observe(.keyDown) {
+      lastRunEventType = .keyDown
+    }
+    
+    event.observe(.keyUp) {
+      lastRunEventType = .keyUp
+    }
+    
+    XCTAssertNil(lastRunEventType)
+    
+    event.runHandlers(for: .keyDown)
+    XCTAssertEqual(lastRunEventType, .keyDown)
+    
+    event.runHandlers(for: .keyUp)
+    XCTAssertEqual(lastRunEventType, .keyUp)
+    
+    lastRunEventType = nil
+    
+    event.removeAllObservations()
+    
+    event.runHandlers(for: .keyDown)
+    event.runHandlers(for: .keyUp)
+    
+    XCTAssertNil(lastRunEventType)
+  }
+  
+  func testSystemReserved() {
+    XCTAssertTrue(KeyEvent.isReservedBySystem(key: .escape, modifiers: [.command]))
+    XCTAssertFalse(KeyEvent.isReservedBySystem(key: .space, modifiers: [.control]))
   }
 }

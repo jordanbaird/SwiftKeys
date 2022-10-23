@@ -49,9 +49,9 @@ final class EventProxyTests: XCTestCase {
     XCTAssertFalse(event.proxy.isRegistered)
     event.proxy.register()
     XCTAssertTrue(event.proxy.isRegistered)
-    event.proxy.resetRegistration(shouldReregister: true)
+    event.proxy.unregister(shouldReregister: true)
     XCTAssertTrue(event.proxy.isRegistered)
-    event.proxy.resetRegistration(shouldReregister: false)
+    event.proxy.unregister(shouldReregister: false)
     XCTAssertFalse(event.proxy.isRegistered)
   }
 }
