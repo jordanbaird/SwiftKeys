@@ -1,8 +1,11 @@
-<div align='center'>
-    <img src='/media/header.svg'>
-    <h2>Global macOS key commands.</h2>
-    <br/>
-</div>
+<h1 align='center'>
+    <br>
+    <img src='/media/header.png', style='width:60%'>
+    <br>
+    Global macOS key commands
+    <br>
+    <br>
+</h1>
 
 ![Continuous Integration](https://img.shields.io/circleci/build/github/jordanbaird/SwiftKeys/main)
 [![Code Coverage](https://codecov.io/gh/jordanbaird/SwiftKeys/branch/main/graph/badge.svg?token=PARNSVMN0H)](https://codecov.io/gh/jordanbaird/SwiftKeys)
