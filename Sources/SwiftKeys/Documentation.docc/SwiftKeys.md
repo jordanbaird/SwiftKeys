@@ -53,3 +53,4 @@ You can find `SwiftKeys` [on GitHub](https://github.com/jordanbaird/SwiftKeys)
 - <doc:GettingStarted>
 - ``KeyEvent``
 - ``KeyRecorder``
+- ``KeyRecorderView``

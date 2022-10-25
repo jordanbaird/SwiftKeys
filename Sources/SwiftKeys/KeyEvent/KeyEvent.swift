@@ -140,11 +140,23 @@ public struct KeyEvent {
     try container.encode(name, forKey: .name)
   }
   
+  /// Adds the given observation to the key event, if the event does not
+  /// already contain it.
+  ///
+  /// When the event is triggered, the observations that belong to the
+  /// event will be executed synchronously in the order they were added.
+  public func addObservation(_ observation: Observation) {
+    if !proxy.eventObservations.contains(observation) {
+      proxy.eventObservations.append(observation)
+      proxy.register()
+    }
+  }
+  
   /// Observes the key event, and executes the provided handler when the
   /// event is triggered.
   ///
   /// This method can be called multiple times. When the event is triggered,
-  /// the handlers that belong to the event will be executed synchronously
+  /// the observations that belong to the event will be executed synchronously
   /// in the order they were added.
   ///
   /// You can pass the returned ``Observation`` instance into the ``removeObservation(_:)``
@@ -152,8 +164,7 @@ public struct KeyEvent {
   @discardableResult
   public func observe(_ type: EventType, handler: @escaping () -> Void) -> Observation {
     let observation = Observation(eventType: type, value: handler)
-    proxy.eventObservations.append(observation)
-    proxy.register()
+    addObservation(observation)
     return observation
   }
   
