@@ -18,12 +18,12 @@
 Add the following dependency to your `Package.swift` file:
 
 ```swift
-.package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.8")
+.package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.0.9")
 ```
 
 ## Usage
 
-[Read the full documentation here](https://swiftpackageindex.com/jordanbaird/SwiftKeys/main/documentation/swiftkeys)
+[Read the full documentation here](https://swiftpackageindex.com/jordanbaird/SwiftKeys/documentation)
 
 Start by creating an instance of `KeyCommand`.
 
