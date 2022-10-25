@@ -10,7 +10,7 @@ import Foundation // To enable `@objc dynamic` declarations
 
 // MARK: - _Prefix (Implementation)
 
-public class _Prefix: Codable, ExpressibleByStringInterpolation, CustomStringConvertible {
+public class _Prefix: Codable, ExpressibleByStringInterpolation {
   
   // MARK: - Static Properties
   
@@ -19,7 +19,7 @@ public class _Prefix: Codable, ExpressibleByStringInterpolation, CustomStringCon
     .init("")
   }
   
-  /// The prefix that all ``KeyEvent/Name-swift.struct`` instances will
+  /// The prefix that all ``KeyCommand/Name-swift.struct`` instances will
   /// automatically use.
   ///
   /// This version of the property is mostly an implementation detail, and is here
@@ -27,7 +27,7 @@ public class _Prefix: Codable, ExpressibleByStringInterpolation, CustomStringCon
   /// initialize a name like this:
   ///
   /// ```swift
-  /// let name = KeyEvent.Name("SomeName", prefix: .sharedPrefix)
+  /// let name = KeyCommand.Name("SomeName", prefix: .sharedPrefix)
   /// ```
   public static var sharedPrefix: Self {
     emptyPrefix.sharedPrefix
@@ -38,12 +38,7 @@ public class _Prefix: Codable, ExpressibleByStringInterpolation, CustomStringCon
   /// The raw value of the prefix.
   public let rawValue: String
   
-  /// A string representation of the prefix.
-  public var description: String {
-    "\(Self.self)(" + rawValue + ")"
-  }
-  
-  /// The prefix that all ``KeyEvent/Name-swift.struct`` instances will
+  /// The prefix that all ``KeyCommand/Name-swift.struct`` instances will
   /// automatically use.
   ///
   /// The default implementation of this property returns an instance containing
@@ -51,16 +46,14 @@ public class _Prefix: Codable, ExpressibleByStringInterpolation, CustomStringCon
   /// your app.
   ///
   /// ```swift
-  /// public override var sharedPrefix: Self {
-  ///     Self("Watermelon")
+  /// extension KeyCommand.Name.Prefix {
+  ///     public override var sharedPrefix: Self {
+  ///         Self("MyAwesomeApp")
+  ///     }
   /// }
-  /// // Now, every instance of `KeyEvent.Name` will have the
-  /// // prefix "Watermelon".
   /// ```
   @objc dynamic
-  open var sharedPrefix: Self {
-    .init("")
-  }
+  open var sharedPrefix: Self { Self.emptyPrefix }
   
   // MARK: - Initializers
   
@@ -72,6 +65,12 @@ public class _Prefix: Codable, ExpressibleByStringInterpolation, CustomStringCon
   /// Creates a prefix using a string literal.
   public required convenience init(stringLiteral value: String) {
     self.init(value)
+  }
+}
+
+extension _Prefix: CustomStringConvertible {
+  public var description: String {
+    "\(Self.self)(" + rawValue + ")"
   }
 }
 
@@ -89,7 +88,7 @@ extension _Prefix: Hashable {
 
 // MARK: - Prefix
 
-extension KeyEvent.Name {
+extension KeyCommand.Name {
   public final class Prefix: _Prefix { }
 }
 
@@ -98,7 +97,7 @@ extension KeyEvent.Name {
 struct PrefixValueType {
   let rawValue: String
   
-  init(prefix: KeyEvent.Name.Prefix) {
+  init(prefix: KeyCommand.Name.Prefix) {
     self.rawValue = prefix.rawValue
   }
 }

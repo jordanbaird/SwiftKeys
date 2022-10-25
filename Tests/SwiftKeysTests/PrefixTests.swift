@@ -9,7 +9,7 @@
 import XCTest
 @testable import SwiftKeys
 
-final class PrefixTests: XCTestCase {
+final class PrefixTests: TestCase {
   override func setUp() {
     // Ensures that the defaults domain is wiped before every test.
     UserDefaults.standard.set("Value", forKey: "Key")
@@ -23,32 +23,32 @@ final class PrefixTests: XCTestCase {
   
   func testPrefix() {
     prefix = "Prefix1"
-    let n1 = KeyEvent.Name("Name1")
+    let n1 = KeyCommand.Name("Name1")
     XCTAssertEqual(n1.prefix.rawValue, "Prefix1")
     
     prefix = "Prefix2"
-    let n2 = KeyEvent.Name("Name2")
+    let n2 = KeyCommand.Name("Name2")
     XCTAssertEqual(n2.prefix.rawValue, "Prefix2")
   }
   
   func testStringLiteralPrefix() {
-    let p1 = KeyEvent.Name.Prefix("Prefix")
-    let p2: KeyEvent.Name.Prefix = "Prefix"
+    let p1 = KeyCommand.Name.Prefix("Prefix")
+    let p2: KeyCommand.Name.Prefix = "Prefix"
     XCTAssertEqual(p1, p2, "String literals should function as valid prefixes.")
   }
   
   func testUnderlyingReference() {
-    let e1 = KeyEvent(name: "Name", key: .return, modifiers: .command, .shift, .option)
-    let e2 = KeyEvent(name: "Name")
-    XCTAssertEqual(e1, e2, "Events with the same name should be equal.")
-    XCTAssertEqual(e2.key, .return)
-    XCTAssertEqual(e2.modifiers, [.command, .shift, .option])
+    let c1 = KeyCommand(name: "Name", key: .return, modifiers: .command, .shift, .option)
+    let c2 = KeyCommand(name: "Name")
+    XCTAssertEqual(c1, c2, "Commands with the same name should be equal.")
+    XCTAssertEqual(c2.key, .return)
+    XCTAssertEqual(c2.modifiers, [.command, .shift, .option])
   }
   
   func testHashValue() {
-    let p1 = KeyEvent.Name.Prefix("Hello")
-    let p2: KeyEvent.Name.Prefix = "Hello"
-    let p3 = KeyEvent.Name.Prefix("Goodbye")
+    let p1 = KeyCommand.Name.Prefix("Hello")
+    let p2: KeyCommand.Name.Prefix = "Hello"
+    let p3 = KeyCommand.Name.Prefix("Goodbye")
     
     XCTAssert(p1.hashValue == p2.hashValue,
               "Identical prefixes should have identical hash values.")
@@ -58,6 +58,6 @@ final class PrefixTests: XCTestCase {
 }
 
 var prefix = ""
-extension KeyEvent.Name.Prefix {
+extension KeyCommand.Name.Prefix {
   public override var sharedPrefix: Self { .init(prefix) }
 }

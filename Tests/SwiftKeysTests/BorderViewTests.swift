@@ -9,8 +9,8 @@
 import XCTest
 @testable import SwiftKeys
 
-final class BorderViewTests: XCTestCase {
-  private let recorder = KeyRecorder(name: "SomeEvent")
+final class BorderViewTests: TestCase {
+  private let recorder = KeyRecorder(name: "SomeCommand")
   private let borderView = MockBorderView()
   
   func testCornerRadius() {

@@ -8,7 +8,7 @@
 
 import Carbon.HIToolbox
 
-extension KeyEvent {
+extension KeyCommand {
   /// Constants that represent the various keys available on a keyboard.
   public enum Key: CaseIterable {
     
@@ -512,8 +512,8 @@ extension KeyEvent {
   }
 }
 
-extension KeyEvent.Key: Codable { }
+extension KeyCommand.Key: Codable { }
 
-extension KeyEvent.Key: Equatable { }
+extension KeyCommand.Key: Equatable { }
 
-extension KeyEvent.Key: Hashable { }
+extension KeyCommand.Key: Hashable { }

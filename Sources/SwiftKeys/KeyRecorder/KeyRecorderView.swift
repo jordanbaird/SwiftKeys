@@ -26,26 +26,26 @@ private struct _KeyRecorderView: NSViewRepresentable {
   }
 }
 
-/// A SwiftUI view that can record key events.
+/// A SwiftUI view that can record key commands.
 ///
-/// Start by creating a ``KeyEvent``. You can then use it to initialize a key
-/// recorder view, which will update the event whenever a new key combination is
-/// recorded. You can also observe the event, and perform actions on both
+/// Start by creating a ``KeyCommand``. You can then use it to initialize a key
+/// recorder view, which will update the command whenever a new key combination
+/// is recorded. You can also observe the command, and perform actions on both
 /// key-down and key-up.
 ///
 /// ```swift
 /// struct ContentView: View {
-///     let event = KeyEvent(name: "SomeEvent")
+///     let command = KeyCommand(name: "SomeCommand")
 ///
 ///     var body: some View {
-///         KeyRecorderView(keyEvent: event)
+///         KeyRecorderView(command: command)
 ///     }
 /// }
 ///
-/// event.observe(.keyDown) {
+/// command.observe(.keyDown) {
 ///     print("DOWN")
 /// }
-/// event.observe(.keyUp) {
+/// command.observe(.keyUp) {
 ///     print("UP")
 /// }
 /// ```
@@ -57,22 +57,22 @@ public struct KeyRecorderView: View {
   /// Styles that a key recorder view's bezel can be drawn in.
   public typealias BezelStyle = KeyRecorder.BezelStyle
   
-  let keyEvent: KeyEvent
+  let command: KeyCommand
   
   public var body: some View {
     _KeyRecorderView {
-      KeyRecorder(keyEvent: keyEvent)
+      KeyRecorder(command: command)
     }
   }
   
-  /// Creates a key recorder view for the given key event.
-  public init(keyEvent: KeyEvent) {
-    self.keyEvent = keyEvent
+  /// Creates a key recorder view for the given key command.
+  public init(command: KeyCommand) {
+    self.command = command
   }
   
-  /// Creates a key recorder view for the key event with the given name.
-  public init(name: KeyEvent.Name) {
-    keyEvent = .init(name: name)
+  /// Creates a key recorder view for the key command with the given name.
+  public init(name: KeyCommand.Name) {
+    command = .init(name: name)
   }
 }
 
@@ -129,17 +129,17 @@ extension View {
     modifier(KeyRecorderBezelStyle(bezelStyle: style))
   }
   
-  /// Adds the given observation to the given key event, using the
+  /// Adds the given observation to the given key command, using the
   /// context of this view.
   ///
   /// This modifier is useful when working with bindings and state.
   /// Applying it in a custom view gives you access to that view's
   /// internal properties. If you don't need this access, you can
-  /// simply call ``KeyEvent/observe(_:handler:)`` on an instance
-  /// of ``KeyEvent``.
+  /// simply call ``KeyCommand/observe(_:handler:)`` on an instance
+  /// of ``KeyCommand``.
   ///
   /// The following example creates a custom view with a `Slider`
-  /// subview and installs a key event observation that changes
+  /// subview and installs a key command observation that changes
   /// the custom view's `sliderValue` property. Since the property
   /// is bound to the value of the slider, whenever it updates,
   /// the slider's value does as well.
@@ -148,11 +148,11 @@ extension View {
   /// struct ContentView: View {
   ///     @State var sliderValue = 0.5
   ///
-  ///     let event = KeyEvent(name: "RandomizeSliderValue")
+  ///     let command = KeyCommand(name: "RandomizeSliderValue")
   ///
   ///     var body: some View {
   ///         Slider(value: $sliderValue)
-  ///             .onKeyEvent(event, type: .keyDown) {
+  ///             .onKeyCommand(command, type: .keyDown) {
   ///                 sliderValue = .random(in: 0..<1)
   ///             }
   ///     }
@@ -160,27 +160,27 @@ extension View {
   /// ```
   ///
   /// - Note: The observation is not added until the view appears.
-  public func onKeyEvent(
-    _ keyEvent: KeyEvent,
-    type: KeyEvent.EventType,
+  public func onKeyCommand(
+    _ command: KeyCommand,
+    type: KeyCommand.EventType,
     perform handler: @escaping () -> Void
   ) -> some View {
     onAppear {
-      keyEvent.observe(type, handler: handler)
+      command.observe(type, handler: handler)
     }
   }
   
-  /// Adds the given observation to the key event with the given
+  /// Adds the given observation to the key command with the given
   /// name, using the context of this view.
   ///
   /// This modifier is useful when working with bindings and state.
   /// Applying it in a custom view gives you access to that view's
   /// internal properties. If you don't need this access, you can
-  /// simply call ``KeyEvent/observe(_:handler:)`` on an instance
-  /// of ``KeyEvent``.
+  /// simply call ``KeyCommand/observe(_:handler:)`` on an instance
+  /// of ``KeyCommand``.
   ///
   /// The following example creates a custom view with a `Slider`
-  /// subview and installs a key event observation that changes
+  /// subview and installs a key command observation that changes
   /// the custom view's `sliderValue` property. Since the property
   /// is bound to the value of the slider, whenever it updates,
   /// the slider's value does as well.
@@ -191,7 +191,7 @@ extension View {
   ///
   ///     var body: some View {
   ///         Slider(value: $sliderValue)
-  ///             .onKeyEvent(named: "RandomizeSliderValue", type: .keyDown) {
+  ///             .onKeyCommand(named: "RandomizeSliderValue", type: .keyDown) {
   ///                 sliderValue = .random(in: 0..<1)
   ///             }
   ///     }
@@ -199,12 +199,12 @@ extension View {
   /// ```
   ///
   /// - Note: The observation is not added until the view appears.
-  public func onKeyEvent(
-    named name: KeyEvent.Name,
-    type: KeyEvent.EventType,
+  public func onKeyCommand(
+    named name: KeyCommand.Name,
+    type: KeyCommand.EventType,
     perform handler: @escaping () -> Void
   ) -> some View {
-    onKeyEvent(.init(name: name), type: type, perform: handler)
+    onKeyCommand(.init(name: name), type: type, perform: handler)
   }
 }
 #endif

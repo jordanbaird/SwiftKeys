@@ -72,14 +72,14 @@ struct Constraint {
   }
 }
 
-// MARK: - EventError
+// MARK: - KeyCommandError
 
-struct EventError: Error {
+struct KeyCommandError: Error {
   let code: OSStatus
   let message: String
 }
 
-extension EventError {
+extension KeyCommandError {
   @discardableResult
   func log() -> String {
     let message = "[Error code \(code)] \(message)"
@@ -88,17 +88,17 @@ extension EventError {
   }
 }
 
-extension EventError {
+extension KeyCommandError {
   static func decodingFailed(code: OSStatus) -> Self {
     .init(
       code: code,
-      message: "An error occurred while decoding a key event.")
+      message: "An error occurred while decoding a key command.")
   }
   
   static func encodingFailed(code: OSStatus) -> Self {
     .init(
       code: code,
-      message: "An error occurred while encoding a key event.")
+      message: "An error occurred while encoding a key command.")
   }
   
   static func installationFailed(code: OSStatus) -> Self {
@@ -107,21 +107,27 @@ extension EventError {
       message: "An error occurred while installing event handler.")
   }
   
+  static func uninstallationFailed(code: OSStatus) -> Self {
+    .init(
+      code: code,
+      message: "An error occurred while uninstalling event handler.")
+  }
+  
   static func registrationFailed(code: OSStatus) -> Self {
     .init(
       code: code,
-      message: "An error occurred while registering a key event.")
+      message: "An error occurred while registering a key command.")
   }
   static func unregistrationFailed(code: OSStatus) -> Self {
     .init(
       code: code,
-      message: "An error occurred while unregistering a key event.")
+      message: "An error occurred while unregistering a key command.")
   }
   
   static func systemRetrievalFailed(code: OSStatus) -> Self {
     .init(
       code: code,
-      message: "An error occurred while retrieving system reserved key events.")
+      message: "An error occurred while retrieving system reserved key commands.")
   }
 }
 

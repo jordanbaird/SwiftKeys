@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 //
-// EventProxy.swift
+// Proxy.swift
 //
 // Created: 2022. Author: Jordan Baird.
 //
@@ -8,9 +8,7 @@
 
 import Carbon.HIToolbox
 
-final class EventProxy {
-  typealias EventType = KeyEvent.EventType
-  
+final class Proxy {
   struct Observation: IdentifiableObservation {
     let id = rng.next()
     let value: () -> Void
@@ -36,8 +34,8 @@ final class EventProxy {
   var hotKeyRef: EventHotKeyRef?
   let identifier = EventHotKeyID(signature: signature, id: proxyCount)
   
-  let name: KeyEvent.Name
-  var eventObservations = [KeyEvent.Observation]()
+  let name: KeyCommand.Name
+  var keyCommandObservations = [KeyCommand.Observation]()
   
   var keyAndModifierChangeObservations = Set<Observation>()
   var registrationStateObservations = Set<Observation>()
@@ -52,7 +50,7 @@ final class EventProxy {
     }
   }
   
-  var key: KeyEvent.Key? = nil {
+  var key: KeyCommand.Key? = nil {
     didSet {
       // If already registered, we need to re-register
       // for the new key.
@@ -65,7 +63,7 @@ final class EventProxy {
     }
   }
   
-  var modifiers = [KeyEvent.Modifier]() {
+  var modifiers = [KeyCommand.Modifier]() {
     didSet {
       // If already registered, we need to re-register
       // for the new modifiers.
@@ -82,13 +80,13 @@ final class EventProxy {
     .init(self)
   }
   
-  init(name: KeyEvent.Name) {
+  init(name: KeyCommand.Name) {
     self.name = name
     Self.proxyCount += 1
   }
   
-  func install() -> OSStatus {
-    guard !Self.isInstalled else {
+  static func install() -> OSStatus {
+    guard !isInstalled else {
       return noErr
     }
     
@@ -117,14 +115,14 @@ final class EventProxy {
       // lines up with our signature), and that we have a stored proxy
       // for the event.
       guard
-        identifier.signature == EventProxy.signature,
+        identifier.signature == Proxy.signature,
         let proxy = ProxyStorage.proxy(with: identifier.id)
       else {
         return OSStatus(eventNotHandledErr)
       }
       
       // Execute the proxy's stored handlers.
-      proxy.performObservations(matching: EventType(event))
+      proxy.performObservations(matching: KeyCommand.EventType(event))
       
       return noErr
     }
@@ -132,10 +130,21 @@ final class EventProxy {
     return InstallEventHandler(
       GetEventDispatcherTarget(),
       handler,
-      Self.eventTypes.count,
-      Self.eventTypes,
+      eventTypes.count,
+      eventTypes,
       nil,
-      &Self.eventHandlerRef)
+      &eventHandlerRef)
+  }
+  
+  static func uninstall() throws {
+    guard isInstalled else {
+      return
+    }
+    let status = RemoveEventHandler(eventHandlerRef)
+    guard status == noErr else {
+      throw KeyCommandError.uninstallationFailed(code: status)
+    }
+    eventHandlerRef = nil
   }
   
   func register() {
@@ -158,10 +167,10 @@ final class EventProxy {
     // does is check whether we're already installed, so this will
     // be quick. Note that if we're already installed, the install()
     // method returns noErr.
-    var status = install()
+    var status = Self.install()
     
     guard status == noErr else {
-      EventError.installationFailed(code: status).log()
+      KeyCommandError.installationFailed(code: status).log()
       return
     }
     
@@ -182,19 +191,19 @@ final class EventProxy {
     ProxyStorage.store(self)
     
     guard status == noErr else {
-      EventError.registrationFailed(code: status).log()
+      KeyCommandError.registrationFailed(code: status).log()
       return
     }
     
     do {
-      let data = try JSONEncoder().encode(KeyEvent(name: name))
+      let data = try JSONEncoder().encode(KeyCommand(name: name))
       UserDefaults.standard.set(data, forKey: name.combinedValue)
     } catch {
       // Rather than return, just log the error. Everything else
-      // worked properly, the event just wasn't stored. All things
+      // worked properly, the command just wasn't stored. All things
       // considered, a relatively minor error, but one that the
       // programmer should be made aware of nonetheless.
-      EventError.encodingFailed(code: OSStatus(eventInternalErr)).log()
+      KeyCommandError.encodingFailed(code: OSStatus(eventInternalErr)).log()
     }
     
     isRegistered = true
@@ -210,7 +219,7 @@ final class EventProxy {
     let status = UnregisterEventHotKey(hotKeyRef)
     hotKeyRef = nil
     if status != noErr {
-      EventError.unregistrationFailed(code: status).log()
+      KeyCommandError.unregistrationFailed(code: status).log()
     }
     UserDefaults.standard.removeObject(forKey: name.combinedValue)
     isRegistered = false
@@ -239,7 +248,7 @@ final class EventProxy {
     return observation
   }
   
-  func mutateWithoutChangingRegistrationState(_ handler: (EventProxy) throws -> Void) rethrows {
+  func mutateWithoutChangingRegistrationState(_ handler: (Proxy) throws -> Void) rethrows {
     blockRegistrationChanges = true
     defer {
       blockRegistrationChanges = false
@@ -247,8 +256,8 @@ final class EventProxy {
     try handler(self)
   }
   
-  func performObservations(matching eventType: EventType?) {
-    eventObservations.performObservations(matching: eventType)
+  func performObservations(matching eventType: KeyCommand.EventType?) {
+    keyCommandObservations.performObservations(matching: eventType)
   }
   
   deinit {
@@ -256,38 +265,38 @@ final class EventProxy {
   }
 }
 
-extension EventProxy: Hashable {
+extension Proxy: Hashable {
   func hash(into hasher: inout Hasher) {
     hasher.combine(objectIdentifier)
   }
 }
 
-extension EventProxy: Equatable {
-  static func == (lhs: EventProxy, rhs: EventProxy) -> Bool {
+extension Proxy: Equatable {
+  static func == (lhs: Proxy, rhs: Proxy) -> Bool {
     lhs.objectIdentifier == rhs.objectIdentifier
   }
 }
 
 // MARK: - ProxyStorage
 
-typealias ProxyStorage = Set<EventProxy>
+typealias ProxyStorage = Set<Proxy>
 
-extension Set where Element == EventProxy {
+extension Set where Element == Proxy {
   private static var all = Self()
   
-  static func proxy(with identifier: UInt32) -> EventProxy? {
+  static func proxy(with identifier: UInt32) -> Proxy? {
     all.first { $0.identifier.id == identifier }
   }
   
-  static func proxy(with name: KeyEvent.Name) -> EventProxy? {
+  static func proxy(with name: KeyCommand.Name) -> Proxy? {
     all.first { $0.name == name }
   }
   
-  static func store(_ proxy: EventProxy) {
+  static func store(_ proxy: Proxy) {
     all.update(with: proxy)
   }
   
-  static func remove(_ proxy: EventProxy) {
+  static func remove(_ proxy: Proxy) {
     all.remove(proxy)
   }
 }

@@ -9,11 +9,11 @@
 import XCTest
 @testable import SwiftKeys
 
-final class KeyTests: XCTestCase {
+final class KeyTests: TestCase {
   func testInitRawValue() {
-    for key in KeyEvent.Key.allCases {
-      XCTAssertEqual(KeyEvent.Key(key.rawValue), key)
-      XCTAssertEqual(KeyEvent.Key(key.stringValue)?.stringValue, key.stringValue)
+    for key in KeyCommand.Key.allCases {
+      XCTAssertEqual(KeyCommand.Key(key.rawValue), key)
+      XCTAssertEqual(KeyCommand.Key(key.stringValue)?.stringValue, key.stringValue)
     }
   }
 }

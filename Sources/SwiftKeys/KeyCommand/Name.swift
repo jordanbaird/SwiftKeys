@@ -6,34 +6,35 @@
 //
 //===----------------------------------------------------------------------===//
 
-extension KeyEvent {
-  /// A type that represents the name of a key event.
+extension KeyCommand {
+  /// A type that represents the name of a key command.
   ///
-  /// Key events are automatically stored in the `UserDefaults` system once they
-  /// have been registered. The value of the event's `name` property (an instance
-  /// of this type) is used as the key. You can set the name's `prefix` property
-  /// to help distinguish which system, or part of the app the name is being used
-  /// in. For example, you might use "Event" to indicate that the name is
-  /// associated with a key event.
+  /// Key commands are automatically stored in the `UserDefaults` system once
+  /// they have been registered. The value of the command's
+  /// ``KeyCommand/name-swift.property`` property is used as the key. You can
+  /// set the name's ``prefix-swift.property`` property to help differentiate
+  /// between command types. For example, you might use "Command" to indicate
+  /// that the name is associated with a key command.
   ///
   /// ```swift
-  /// extension KeyEvent.Name {
-  ///     // "EventOpenPreferences" will be the full defaults key.
-  ///     static let openPreferences = Self("OpenPreferences", prefix: "Event")
+  /// extension KeyCommand.Name {
+  ///     // "CommandOpenPreferences" will be the full UserDefaults key.
+  ///     static let openPreferences = Self("OpenPreferences", prefix: "Command")
   /// }
   /// ```
   ///
   /// You can also provide a custom implementation of the static `sharedPrefix`
-  /// property of the `Prefix` type. Every event name that is created will
-  /// use this prefix unless explicitly stated otherwise. By default, the value
-  /// of `sharedPrefix` is an empty string.
+  /// property of the `Prefix` type. Every name that is created will
+  /// automatically use this prefix unless explicitly stated otherwise. By
+  /// default, the value of `sharedPrefix` is an empty string.
   ///
   /// ```swift
-  /// extension KeyEvent.Name.Prefix {
+  /// extension KeyCommand.Name.Prefix {
   ///     static var sharedPrefix: Self { "SwiftKeys" }
   /// }
-  /// extension KeyEvent.Name {
-  ///     // "SwiftKeysQuitApp" will be the full defaults key.
+  ///
+  /// extension KeyCommand.Name {
+  ///     // "SwiftKeysQuitApp" will be the full UserDefaults key.
   ///     static let quitApp = Self("QuitApp")
   /// }
   /// ```
@@ -51,8 +52,8 @@ extension KeyEvent {
     /// through `Name`'s initializer, or by setting this property directly.
     ///
     /// - Note: You can extend the `Prefix` type and override its `sharedPrefix`
-    /// property to automatically apply a custom prefix to every event name that
-    /// is created.
+    ///   property to automatically apply a custom prefix to every name that
+    ///   doesn't explicitly define its own prefix.
     public var prefix: Prefix {
       get { .init(truePrefix.rawValue) }
       set { truePrefix = .init(prefix: newValue) }
@@ -61,7 +62,7 @@ extension KeyEvent {
     /// The name's raw value, combined with its prefix.
     ///
     /// ```swift
-    /// let name = KeyEvent.Name("Toggle", prefix: "Trigger")
+    /// let name = KeyCommand.Name("Toggle", prefix: "Trigger")
     ///
     /// print(name.combinedValue)
     /// // Prints "TriggerToggle"
@@ -83,14 +84,14 @@ extension KeyEvent {
   }
 }
 
-extension KeyEvent.Name: CustomStringConvertible {
+extension KeyCommand.Name: CustomStringConvertible {
   public var description: String {
     "\(Self.self)(" + combinedValue + ")"
   }
 }
 
-extension KeyEvent.Name: Codable { }
+extension KeyCommand.Name: Codable { }
 
-extension KeyEvent.Name: Equatable { }
+extension KeyCommand.Name: Equatable { }
 
-extension KeyEvent.Name: Hashable { }
+extension KeyCommand.Name: Hashable { }

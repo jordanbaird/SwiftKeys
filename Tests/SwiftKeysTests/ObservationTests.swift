@@ -9,11 +9,11 @@
 import XCTest
 @testable import SwiftKeys
 
-final class ObservationTests: XCTestCase {
+final class ObservationTests: TestCase {
   var handler1WasCalled = false
   var handler2WasCalled = false
-  lazy var o1 = KeyEvent.Observation(eventType: .keyDown) { self.handler1WasCalled = true }
-  lazy var o2 = KeyEvent.Observation(eventType: .keyDown) { self.handler2WasCalled = true }
+  lazy var o1 = KeyCommand.Observation(eventType: .keyDown) { self.handler1WasCalled = true }
+  lazy var o2 = KeyCommand.Observation(eventType: .keyDown) { self.handler2WasCalled = true }
   
   func testID() {
     XCTAssertNotEqual(o1.id, o2.id)

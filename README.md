@@ -22,11 +22,11 @@ Add the following dependency to your `Package.swift` file:
 
 [Read the full documentation here](https://swiftpackageindex.com/jordanbaird/SwiftKeys/main/documentation/swiftkeys)
 
-Start by creating an instance of `KeyEvent`. Then, use it to initialize a `KeyRecorder`.
+Start by creating an instance of `KeyCommand`. Then, use it to initialize a `KeyRecorder`.
 
 ```swift
-let event = KeyEvent(name: "SomeEvent")
-let recorder = KeyRecorder(keyEvent: event)
+let command = KeyCommand(name: "SomeCommand")
+let recorder = KeyRecorder(command: command)
 ```
 
 <div align='center'>
@@ -34,30 +34,30 @@ let recorder = KeyRecorder(keyEvent: event)
     <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png', style='width:49%'>
 </div>
 
-The recorder and the event will stay synchronized with each other, so when the user records a new key combination, the event will update to the new value. You can also observe the event and perform actions on both key-up and key-down.
+The recorder and the key command will stay synchronized with each other, so when the user records a new key combination, the command will update to the new value. You can also observe the command and perform actions on both key-up and key-down.
 
 ```swift
-event.observe(.keyUp) {
+command.observe(.keyUp) {
     print("UP")
 }
-event.observe(.keyDown) {
+command.observe(.keyDown) {
     print("DOWN")
 }
 ```
 
-For improved type safety, you can create hard-coded key event names that can be referenced across your app.
+For improved type safety, you can create hard-coded command names that can be referenced across your app.
 
 ```swift
-extension KeyEvent.Name {
+extension KeyCommand.Name {
     static let showPreferences = Self("ShowPreferences")
 }
-let event = KeyEvent(name: .showPreferences)
+let command = KeyCommand(name: .showPreferences)
 ```
 
-Key events are automatically stored in the `UserDefaults` system, using their names as keys. You can provide a custom prefix that will be combined with each name to create the keys.
+Key commands are automatically stored in the `UserDefaults` system, using their names as keys. You can provide a custom prefix that will be combined with each name to create the keys.
 
 ```swift
-extension KeyEvent.Name.Prefix {
+extension KeyCommand.Name.Prefix {
     public override var sharedPrefix: Self { 
         Self("SK")
     }
@@ -72,17 +72,17 @@ The following pseudo-code is what a typical view controller that utilizes `Swift
 import SwiftKeys
 
 class ViewController: NSViewController {
-    let event = KeyEvent(name: "SomeEvent")
-    let recorder = KeyRecorder(keyEvent: event)
+    let command = KeyCommand(name: "SomeCommand")
+    let recorder = KeyRecorder(command: command)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(recorder)
         
-        event.observe(.keyUp) {
+        command.observe(.keyUp) {
             print("UP")
         }
-        event.observe(.keyDown) {
+        command.observe(.keyDown) {
             print("DOWN")
         }
     }

@@ -10,8 +10,8 @@ import AppKit
 import Carbon.HIToolbox
 import CoreGraphics
 
-extension KeyEvent {
-  /// Constants that represent modifier keys associated with a key event.
+extension KeyCommand {
+  /// Constants that represent modifier keys associated with a key command.
   public enum Modifier: CaseIterable {
     /// The Command key.
     case command
@@ -81,16 +81,16 @@ extension KeyEvent {
   }
 }
 
-extension KeyEvent.Modifier: Codable { }
+extension KeyCommand.Modifier: Codable { }
 
-extension KeyEvent.Modifier: Equatable { }
+extension KeyCommand.Modifier: Equatable { }
 
-extension KeyEvent.Modifier: Hashable { }
+extension KeyCommand.Modifier: Hashable { }
 
-extension Array where Element == KeyEvent.Modifier {
+extension Array where Element == KeyCommand.Modifier {
   init?(carbonModifiers: Int) {
     self.init()
-    for modifier in KeyEvent.Modifier.allCases
+    for modifier in KeyCommand.Modifier.allCases
       where carbonModifiers.containsModifier(modifier)
     {
       append(modifier)
@@ -106,7 +106,7 @@ extension Array where Element == KeyEvent.Modifier {
   /// If the array does not directly contain the given modifier, another
   /// check is run to determine if the array instead contains a modifier
   /// whose associated `cgEventFlag` value matches that of the modifier.
-  func fuzzyContains(_ modifier: KeyEvent.Modifier) -> Bool {
+  func fuzzyContains(_ modifier: KeyCommand.Modifier) -> Bool {
     contains(modifier)
     ||
     contains {
@@ -115,12 +115,12 @@ extension Array where Element == KeyEvent.Modifier {
   }
 }
 
-extension Array where Element == KeyEvent.Modifier {
+extension Array where Element == KeyCommand.Modifier {
   /// The flags for the given modifiers, as defined by the `Carbon` framework,
   /// or'd together into a single unsigned integer.
   var carbonFlags: UInt32 {
     var converted = 0
-    for modifier in KeyEvent.Modifier.allCases where fuzzyContains(modifier) {
+    for modifier in KeyCommand.Modifier.allCases where fuzzyContains(modifier) {
       converted |= modifier.carbonFlag
     }
     return .init(converted)
@@ -140,7 +140,7 @@ extension Int {
     other & self == other
   }
   
-  func containsModifier(_ modifier: KeyEvent.Modifier) -> Bool {
+  func containsModifier(_ modifier: KeyCommand.Modifier) -> Bool {
     bitwiseContains(modifier.carbonFlag)
   }
 }

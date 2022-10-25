@@ -9,13 +9,13 @@
 import XCTest
 @testable import SwiftKeys
 
-final class NSMenuItemTests: XCTestCase {
+final class NSMenuItemTests: TestCase {
   var mostRecentHandler: Int?
   
-  let event = KeyEvent(name: "Test")
-  lazy var observation1 = event.observe(.keyDown) { self.mostRecentHandler = 1 }
-  lazy var observation2 = event.observe(.keyDown) { self.mostRecentHandler = 2 }
-  lazy var observation3 = event.observe(.keyDown) { self.mostRecentHandler = 3 }
+  let command = KeyCommand(name: "Test")
+  lazy var observation1 = command.observe(.keyDown) { self.mostRecentHandler = 1 }
+  lazy var observation2 = command.observe(.keyDown) { self.mostRecentHandler = 2 }
+  lazy var observation3 = command.observe(.keyDown) { self.mostRecentHandler = 3 }
   
   func testObservations() {
     let item = NSMenuItem()
@@ -34,7 +34,7 @@ final class NSMenuItemTests: XCTestCase {
   func testHandler() {
     let item = NSMenuItem()
     for n in 0..<3 {
-      item.setKeyEvent(event) { self.mostRecentHandler = n }
+      item.setKeyCommand(command) { self.mostRecentHandler = n }
       item.handler?()
       XCTAssert(mostRecentHandler == n)
     }

@@ -13,10 +13,13 @@ extension KeyRecorder {
   public enum HighlightStyle: CaseIterable {
     /// A light highlight style.
     case light
+    
     /// A medium-light highlight style.
     case mediumLight
+    
     /// A dark highlight style.
     case dark
+    
     /// An ultra-dark highlight style.
     case ultraDark
     

@@ -8,21 +8,21 @@
 
 import AppKit
 
-/// A view that can record key events.
+/// A view that can record key commands.
 ///
-/// Start by creating a ``KeyEvent``. You can then use it to initialize a key
-/// recorder, which will update the event whenever a new key combination is
-/// recorded. You can also observe the event, and perform actions on both
+/// Start by creating a ``KeyCommand``. You can then use it to initialize a key
+/// recorder, which will update the command whenever a new key combination is
+/// recorded. You can also observe the command, and perform actions on both
 /// key-down and key-up.
 ///
 /// ```swift
-/// let event = KeyEvent(name: "SomeEvent")
-/// let recorder = KeyRecorder(keyEvent: event)
+/// let command = KeyCommand(name: "SomeCommand")
+/// let recorder = KeyRecorder(command: command)
 ///
-/// event.observe(.keyDown) {
+/// command.observe(.keyDown) {
 ///     print("DOWN")
 /// }
-/// event.observe(.keyUp) {
+/// command.observe(.keyUp) {
 ///     print("UP")
 /// }
 /// ```
@@ -91,8 +91,13 @@ public final class KeyRecorder: NSControl {
     }
   }
   
-  /// The key event associated with the recorder.
+  @available(*, deprecated, renamed: "command")
   public var keyEvent: KeyEvent {
+    .init(name: segmentedControl.proxy.name)
+  }
+  
+  /// The key command associated with the recorder.
+  public var command: KeyCommand {
     .init(name: segmentedControl.proxy.name)
   }
   
@@ -209,25 +214,30 @@ public final class KeyRecorder: NSControl {
   
   // MARK: - Initializers
   
-  /// Creates a key recorder for the given key event.
+  /// Creates a key recorder for the given key command.
   ///
-  /// Whenever the event records a key combination, the key and modifiers
-  /// of the key recorder's event will be updated to match.
-  public init(keyEvent: KeyEvent) {
-    segmentedControl = .init(keyEvent: keyEvent)
+  /// Whenever a new key combination is recorded, the key and modifiers
+  /// of the command will be updated to match.
+  public init(command: KeyCommand) {
+    segmentedControl = .init(command: command)
     super.init(frame: segmentedControl.frame)
     Constraint(.width, of: self, constant: segmentedControl.frame.width).activate()
     Constraint(.height, of: self, constant: segmentedControl.frame.height).activate()
     addSubview(segmentedControl)
   }
   
-  /// Creates a key recorder for the key event with the given name.
+  @available(*, deprecated, renamed: "init(command:)")
+  public convenience init(keyEvent: KeyEvent) {
+    self.init(command: keyEvent)
+  }
+  
+  /// Creates a key recorder for the key command with the given name.
   ///
-  /// If an event with the name does not exist, a blank event will be created.
-  /// As soon as the key recorder records a key combination, the event will
+  /// If a command with the name does not exist, a blank command will be created.
+  /// As soon as the key recorder records a key combination, the command will
   /// assume that combination's value.
-  public convenience init(name: KeyEvent.Name) {
-    self.init(keyEvent: .init(name: name))
+  public convenience init(name: KeyCommand.Name) {
+    self.init(command: .init(name: name))
   }
   
   @available(*, unavailable)
@@ -336,7 +346,7 @@ public final class KeyRecorder: NSControl {
 
 extension KeyRecorder {
   class SegmentedControl: NSSegmentedControl {
-    let proxy: EventProxy
+    let proxy: Proxy
     
     var windowVisibilityObservation: NSKeyValueObservation?
     
@@ -389,11 +399,11 @@ extension KeyRecorder {
       guard let self = self else {
         return event
       }
-      guard let key = KeyEvent.Key(Int(event.keyCode)) else {
+      guard let key = KeyCommand.Key(Int(event.keyCode)) else {
         NSSound.beep()
         return nil
       }
-      let modifiers = event.modifierFlags.keyEventModifiers
+      let modifiers = event.modifierFlags.commandModifiers
       guard !modifiers.isEmpty else {
         NSSound.beep()
         self.setFailureReason(.needsModifiers)
@@ -406,7 +416,7 @@ extension KeyRecorder {
         self.failureReason.incrementFailureCount()
         return nil
       }
-      guard !KeyEvent.isReservedBySystem(key: key, modifiers: modifiers) else {
+      guard !KeyCommand.isReservedBySystem(key: key, modifiers: modifiers) else {
         NSSound.beep()
         let alert = NSAlert()
         alert.window.isMovable = false
@@ -486,8 +496,8 @@ extension KeyRecorder {
       }
     }
     
-    init(keyEvent: KeyEvent) {
-      proxy = keyEvent.proxy
+    init(command: KeyCommand) {
+      proxy = command.proxy
       super.init(frame: .init(origin: .zero, size: .init(width: 140, height: 24)))
       sharedInit()
     }
@@ -534,7 +544,7 @@ extension KeyRecorder {
       updateVisualAppearance()
     }
     
-    func record(key: KeyEvent.Key, modifiers: [KeyEvent.Modifier]) {
+    func record(key: KeyCommand.Key, modifiers: [KeyCommand.Modifier]) {
       proxy.mutateWithoutChangingRegistrationState {
         $0.key = key
         $0.modifiers = modifiers
@@ -551,7 +561,7 @@ extension KeyRecorder {
     func setLabel(_ label: Label) {
       var string = ""
       if
-        label == .keyEvent,
+        label == .hasKeyCommand,
         proxy.isRegistered,
         let key = proxy.key
       {
@@ -569,7 +579,7 @@ extension KeyRecorder {
         setLabel(.typeShortcut)
       case .idle:
         if proxy.isRegistered {
-          setLabel(.keyEvent)
+          setLabel(.hasKeyCommand)
         } else {
           setLabel(.recordShortcut)
         }
@@ -638,7 +648,7 @@ extension KeyRecorder.SegmentedControl {
   enum Label: String {
     case typeShortcut = "Type shortcut"
     case recordShortcut = "Record shortcut"
-    case keyEvent = "*****"
+    case hasKeyCommand = "*****" // Should never be displayed
   }
   
   struct FailureReason: Equatable {
@@ -678,8 +688,8 @@ extension KeyRecorder.SegmentedControl {
 }
 
 extension NSEvent.ModifierFlags {
-  var keyEventModifiers: [KeyEvent.Modifier] {
-    var modifiers = [KeyEvent.Modifier]()
+  var commandModifiers: [KeyCommand.Modifier] {
+    var modifiers = [KeyCommand.Modifier]()
     // NOTE: Keep the order of these statements.
     if contains(.control) {
       modifiers.append(.control)

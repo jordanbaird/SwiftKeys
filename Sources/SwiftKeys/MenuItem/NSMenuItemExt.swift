@@ -53,13 +53,13 @@ extension NSMenuItem {
     set { Storage(object: self).set(newValue) }
   }
   
-  // Use this to retrieve the key event.
-  var name: KeyEvent.Name? {
+  // Use this to retrieve the key command.
+  var name: KeyCommand.Name? {
     get { Storage(object: self).get() }
     set { Storage(object: self).set(newValue) }
   }
   
-  // We need to observe the key event and proxy for changes in their
+  // We need to observe the key command and proxy for changes in their
   // state, so that we can update the menu item to match. We store
   // all the observations here.
   var observations: Set<AnyIdentifiableObservation> {
@@ -100,7 +100,7 @@ extension NSMenuItem {
   }
   
   // We need to save the original key equivalent so that we can restore
-  // it if the user removes the key event from the menu.
+  // it if the user removes the key command from the menu.
   var originalKeyEquivalent: String {
     get { Storage(object: self).get(backup: "") }
     set {
@@ -122,14 +122,14 @@ extension NSMenuItem {
     }
   }
   
-  /// A key event associated with the menu item.
+  /// A key command associated with the menu item.
   ///
   /// When this value is set, the menu item's key equivalent and modifier mask
-  /// are set to match with the key event. You can then observe the key event
-  /// using its ``KeyEvent/observe(_:handler:)`` method. The handler you provide,
+  /// are set to match with the command. You can then observe the command
+  /// using its ``KeyCommand/observe(_:handler:)`` method. The handler you provide,
   /// as well as the menu item's action will be executed both when the key
   /// combination is pressed (or released), and when the menu item is clicked.
-  public var keyEvent: KeyEvent? {
+  public var command: KeyCommand? {
     get {
       guard let name = name else {
         return nil
@@ -138,36 +138,52 @@ extension NSMenuItem {
     }
     set {
       name = newValue?.name
-      registerKeyEvent()
+      registerKeyCommand()
     }
+  }
+  
+  @available(*, deprecated, renamed: "command")
+  public var keyEvent: KeyEvent? {
+    get { command }
+    set { command = newValue }
   }
   
   // MARK: - Public Methods
   
-  /// Sets the value of the menu item's `keyEvent` property, while allowing
+  /// Sets the value of the menu item's `command` property, while allowing
   /// you to provide an additional change handler that will execute immediately
   /// after the menu item's action has been performed.
   ///
   /// If you don't need to provide a change handler, you can simply set the
-  /// value of the menu item's `keyEvent` property instead.
-  public func setKeyEvent(_ keyEvent: KeyEvent, handler: @escaping () -> Void) {
+  /// value of the menu item's `command` property instead.
+  public func setKeyCommand(_ command: KeyCommand, handler: @escaping () -> Void) {
     self.handler = handler
-    self.keyEvent = keyEvent
+    self.command = command
   }
   
-  /// Removes and disables the menu item's key event.
+  @available(*, deprecated, renamed: "setKeyCommand(_:handler:)")
+  public func setKeyEvent(_ keyEvent: KeyEvent, handler: @escaping () -> Void) {
+    setKeyCommand(keyEvent, handler: handler)
+  }
+  
+  /// Removes and disables the menu item's key command.
   ///
-  /// - Parameter disabling: A Boolean value that determines whether the key event
-  /// should be disabled when it is removed from the menu item. If false, the menu
-  /// item will remove its key equivalent and modifier mask, but the event will
-  /// remain active.
-  public func removeKeyEvent(disabling: Bool = true) {
+  /// - Parameter disabling: A Boolean value that determines whether the key
+  ///   command should be disabled when it is removed from the menu item. If
+  ///   false, the menu item will remove its key equivalent and modifier mask,
+  ///   but the command will remain active.
+  public func removeKeyCommand(disabling: Bool = true) {
     resetKeyEquivalentAndMask()
     if disabling {
-      keyEvent?.disable()
+      command?.disable()
     }
     name = nil
     handler = nil
+  }
+  
+  @available(*, deprecated, renamed: "removeKeyCommand(disabling:)")
+  public func removeKeyEvent(disabling: Bool = true) {
+    removeKeyCommand(disabling: disabling)
   }
   
   // MARK: - Internal Methods
@@ -178,8 +194,8 @@ extension NSMenuItem {
       NSApp.perform(action, with: sender)
     }
     guard
-      let keyEvent = keyEvent,
-      keyEvent.isEnabled
+      let command = command,
+      command.isEnabled
     else {
       return
     }
@@ -189,12 +205,12 @@ extension NSMenuItem {
   func setKeyEquivalent() {
     originalKeyEquivalent = keyEquivalent
     originalModifierMask = keyEquivalentModifierMask
-    guard let keyEvent = keyEvent else {
+    guard let command = command else {
       resetKeyEquivalentAndMask()
       return
     }
-    keyEquivalent = keyEvent.key?.stringValue ?? keyEquivalent
-    keyEquivalentModifierMask = keyEvent.modifiers.cocoaFlags
+    keyEquivalent = command.key?.stringValue ?? keyEquivalent
+    keyEquivalentModifierMask = command.modifiers.cocoaFlags
   }
   
   func resetKeyEquivalentAndMask() {
@@ -203,30 +219,30 @@ extension NSMenuItem {
   }
   
   func removeObservations<T: IdentifiableObservation>(ofType type: T.Type) {
-    if T.self is KeyEvent.Observation.Type {
+    if T.self is KeyCommand.Observation.Type {
       for observation in observations {
-        if let base = observation.base as? KeyEvent.Observation {
-          keyEvent?.removeObservation(base)
+        if let base = observation.base as? KeyCommand.Observation {
+          command?.removeObservation(base)
           observations.remove(observation)
         }
       }
-    } else if T.self is EventProxy.Observation.Type {
+    } else if T.self is Proxy.Observation.Type {
       for observation in observations {
-        if let base = observation.base as? EventProxy.Observation {
-          keyEvent?.proxy.removeObservation(base)
+        if let base = observation.base as? Proxy.Observation {
+          command?.proxy.removeObservation(base)
           observations.remove(observation)
         }
       }
     }
   }
   
-  func registerKeyEvent() {
+  func registerKeyCommand() {
     originalAction = action
     
-    removeObservations(ofType: KeyEvent.Observation.self)
-    removeObservations(ofType: EventProxy.Observation.self)
+    removeObservations(ofType: KeyCommand.Observation.self)
+    removeObservations(ofType: Proxy.Observation.self)
     
-    guard let keyEvent = keyEvent else {
+    guard let command = command else {
       resetKeyEquivalentAndMask()
       return
     }
@@ -238,7 +254,7 @@ extension NSMenuItem {
     
     observations.update(
       with: .init(
-        keyEvent.observe(.keyDown) { [weak self] in
+        command.observe(.keyDown) { [weak self] in
           guard let self = self else {
             return
           }
@@ -249,16 +265,16 @@ extension NSMenuItem {
     
     observations.update(
       with: .init(
-        keyEvent.proxy.observeKeyAndModifierChanges {
-          self.setKeyEvent(keyEvent, handler: self.handler ?? { })
+        command.proxy.observeKeyAndModifierChanges {
+          self.setKeyCommand(command, handler: self.handler ?? { })
         }
       )
     )
     
     observations.update(
       with: .init(
-        keyEvent.proxy.observeRegistrationState {
-          if keyEvent.isEnabled {
+        command.proxy.observeRegistrationState {
+          if command.isEnabled {
             self.setKeyEquivalent()
           } else {
             self.resetKeyEquivalentAndMask()

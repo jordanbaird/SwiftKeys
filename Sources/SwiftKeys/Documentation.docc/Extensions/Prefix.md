@@ -1,4 +1,4 @@
-# ``SwiftKeys/KeyEvent/Name-swift.struct/Prefix-swift.class``
+# ``SwiftKeys/KeyCommand/Name-swift.struct/Prefix-swift.class``
 
 A prefix that will be applied to a name when it is stored in `UserDefaults`.
 
@@ -10,41 +10,29 @@ There are two different ways to initialize a prefix:
 2. Using a string literal.
 
 ```swift
-let prefix = KeyEvent.Name.Prefix("SomePrefix")
-let prefix: KeyEvent.Name.Prefix = "SomePrefix"
+let prefix = KeyCommand.Name.Prefix("SomePrefix")
+let prefix: KeyCommand.Name.Prefix = "SomePrefix"
 ```
 
-This allows for a ``KeyEvent/Name-swift.struct`` instance to be initialized in the following ways:
+This allows for a ``KeyCommand/Name-swift.struct`` instance to be initialized in the following ways:
 
 ```swift
 // 1.
-let prefix = KeyEvent.Name.Prefix("SomePrefix")
-let name = KeyEvent.Name("SomeName", prefix: prefix)
+let prefix = KeyCommand.Name.Prefix("SomePrefix")
+let name = KeyCommand.Name("SomeName", prefix: prefix)
 
 // 2.
-let name = KeyEvent.Name("SomeName", prefix: "SomePrefix")
+let name = KeyCommand.Name("SomeName", prefix: "SomePrefix")
 ```
-
-You can create an extension to this type and override the `sharedPrefix` property to suit your own needs.
-
-```swift
-extension KeyEvent.Name.Prefix {
-    public override var sharedPrefix: Self {
-        Self("Watermelon")
-    }
-}
-```
-
-This property serves as the defacto standard for prefixing all instances of ``KeyEvent/Name-swift.struct``. In order for a name to have a different prefix, it must be included in the name's initializer.
 
 ### Creating a shared prefix
 
-The prefix that all ``KeyEvent/Name-swift.struct`` instances will automatically use.
+The `sharedPrefix` property serves as the defacto standard for prefixing all instances of ``KeyCommand/Name-swift.struct``. In order for a name to have a different prefix, it must be included in the name's initializer.
 
-The default implementation of this property returns an instance containing an empty string. In essence, if you do nothing with this property, it will be as if it does not exist. If you choose to override this property, start by creating an extension to the ``Prefix-swift.class`` type. Once overridden, every instance of ``KeyEvent/Name-swift.struct`` will, by default, be saved to `UserDefaults` with the prefix you have chosen.
+The default implementation of the property returns an instance containing an empty string. In essence, if you do nothing with this property, it will be as if it does not exist. If you choose to override this property, start by creating an extension to the ``Prefix-swift.class`` type. Once overridden, every instance of ``KeyCommand/Name-swift.struct`` will, by default, be saved to `UserDefaults` with the prefix you have chosen.
 
 ```swift
-extension KeyEvent.Name.Prefix {
+extension KeyCommand.Name.Prefix {
     public override var sharedPrefix: Self {
         Self("Watermelon")
     }
@@ -53,10 +41,10 @@ extension KeyEvent.Name.Prefix {
 
 ### Specializing a name with its own prefix
 
-By default, ``KeyEvent/Name-swift.struct`` uses the `sharedPrefix` property. However, you can also choose to provide custom prefixes on an individual basis.
+By default, ``KeyCommand/Name-swift.struct`` uses the `sharedPrefix` property. However, you can also choose to provide custom prefixes on an individual basis.
 
 ```swift
-extension KeyEvent.Name.Prefix {
+extension KeyCommand.Name.Prefix {
     static let skPrefix = Self("SK")
     static let jbPrefix = Self("JB")
     
@@ -65,10 +53,10 @@ extension KeyEvent.Name.Prefix {
     }
 }
 
-let quitApp = KeyEvent.Name("QuitApp", prefix: .skPrefix)
-let makeSoup = KeyEvent.Name("MakeSoup", prefix: .jbPrefix)
-let swimToSpain = KeyEvent.Name("SwimToSpain")
+let quitApp = KeyCommand.Name("QuitApp", prefix: .skPrefix)
+let makeSoup = KeyCommand.Name("MakeSoup", prefix: .jbPrefix)
+let swimToSpain = KeyCommand.Name("SwimToSpain")
 
 ```
 
-In the example above, "QuitApp" becomes "SKQuitApp" when used as a defaults key. "MakeSoup" becomes "JBMakeSoup". Since "SwimToSpain" did not provide a prefix, it gets assigned the shared prefix, "Cheesecake".
+In the example above, "QuitApp" becomes "SKQuitApp" when used as a defaults key. "MakeSoup" becomes "JBMakeSoup". Since "SwimToSpain" did not provide a prefix, it gets assigned the shared prefix, and becomes "CheesecakeSwimToSpain".

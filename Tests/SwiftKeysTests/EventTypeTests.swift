@@ -10,11 +10,11 @@ import Carbon.HIToolbox
 import XCTest
 @testable import SwiftKeys
 
-final class EventTypeTests: XCTestCase {
+final class EventTypeTests: TestCase {
   func testInitWithInteger() {
-    let typePressed = KeyEvent.EventType(kEventHotKeyPressed)
-    let typeReleased = KeyEvent.EventType(kEventHotKeyReleased)
-    let typeNone = KeyEvent.EventType(kEventHotKeyNoOptions)
+    let typePressed = KeyCommand.EventType(kEventHotKeyPressed)
+    let typeReleased = KeyCommand.EventType(kEventHotKeyReleased)
+    let typeNone = KeyCommand.EventType(kEventHotKeyNoOptions)
     XCTAssertNotNil(typePressed)
     XCTAssertNotNil(typeReleased)
     XCTAssertNil(typeNone)
@@ -37,7 +37,7 @@ final class EventTypeTests: XCTestCase {
     let ref = EventRef(nsEvent.eventRef)!
     
     // Use that to create an EventType. If all goes right, this should fail.
-    let nilType = KeyEvent.EventType(ref)
+    let nilType = KeyCommand.EventType(ref)
     XCTAssertNil(nilType)
   }
 }
