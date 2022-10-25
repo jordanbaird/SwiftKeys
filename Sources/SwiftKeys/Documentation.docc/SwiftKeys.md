@@ -1,6 +1,6 @@
 # ``SwiftKeys``
 
-A straightforward global hotkey API for macOS.
+A straightforward global key command API for macOS.
 
 ## Overview
 

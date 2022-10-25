@@ -24,7 +24,7 @@ extension KeyEvent {
   /// ```
   ///
   /// You can also provide a custom implementation of the static `sharedPrefix`
-  /// property of the ``Prefix`` type. Every event name that is created will
+  /// property of the `Prefix` type. Every event name that is created will
   /// use this prefix unless explicitly stated otherwise. By default, the value
   /// of `sharedPrefix` is an empty string.
   ///
@@ -47,10 +47,10 @@ extension KeyEvent {
     /// `UserDefaults`.
     /// 
     /// By default, this value is set to the `sharedPrefix` property of the
-    /// ``Prefix`` type. However, it can be set to any value desired, either
+    /// `Prefix` type. However, it can be set to any value desired, either
     /// through `Name`'s initializer, or by setting this property directly.
     ///
-    /// - Note: You can extend the ``Prefix`` type and override its `sharedPrefix`
+    /// - Note: You can extend the `Prefix` type and override its `sharedPrefix`
     /// property to automatically apply a custom prefix to every event name that
     /// is created.
     public var prefix: Prefix {
