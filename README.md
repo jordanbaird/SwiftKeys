@@ -7,11 +7,11 @@
     <br>
 </h1>
 
-![Continuous Integration](https://img.shields.io/circleci/build/github/jordanbaird/SwiftKeys/main)
-[![Code Coverage](https://codecov.io/gh/jordanbaird/SwiftKeys/branch/main/graph/badge.svg?token=PARNSVMN0H)](https://codecov.io/gh/jordanbaird/SwiftKeys)
-![Release](https://img.shields.io/github/v/release/jordanbaird/SwiftKeys)
-![Swift Version](https://img.shields.io/badge/Swift-5.6%2B-orange)
-![License](https://img.shields.io/github/license/jordanbaird/SwiftKeys)
+![Continuous Integration](https://img.shields.io/github/workflow/status/jordanbaird/SwiftKeys/Continuous%20Integration?style=flat-square)
+[![Code Coverage](https://img.shields.io/codecov/c/github/jordanbaird/SwiftKeys?label=codecov&logo=codecov&style=flat-square)](https://codecov.io/gh/jordanbaird/SwiftKeys)
+![Release](https://img.shields.io/github/v/release/jordanbaird/SwiftKeys?style=flat-square)
+[![Swift Versions](https://img.shields.io/badge/dynamic/json?color=F05138&label=Swift&query=%24.message&url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fjordanbaird%2FSwiftKeys%2Fbadge%3Ftype%3Dswift-versions&style=flat-square)](https://swiftpackageindex.com/jordanbaird/SwiftKeys)
+![License](https://img.shields.io/github/license/jordanbaird/SwiftKeys?style=flat-square)
 
 ## Install
 
@@ -25,72 +25,108 @@ Add the following dependency to your `Package.swift` file:
 
 [Read the full documentation here](https://swiftpackageindex.com/jordanbaird/SwiftKeys/main/documentation/swiftkeys)
 
-Start by creating an instance of `KeyCommand`. Then, use it to initialize a `KeyRecorder`.
+Start by creating an instance of `KeyCommand`.
+
+Observe it and perform actions on `keyDown`, `keyUp`, or both:
 
 ```swift
-let command = KeyCommand(name: "SomeCommand")
-let recorder = KeyRecorder(command: command)
-```
+let command = KeyCommand(name: "ToggleMainWindow")
 
-<div align='center'>
-    <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window.png', style='width:49%'>
-    <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png', style='width:49%'>
-</div>
-
-The recorder and the key command will stay synchronized with each other, so when the user records a new key combination, the command will update to the new value. You can also observe the command and perform actions on both key-up and key-down.
-
-```swift
-command.observe(.keyUp) {
-    print("UP")
-}
 command.observe(.keyDown) {
-    print("DOWN")
+    if mainWindow.isVisible {
+        mainWindow.orderOut(command)
+    } else {
+        mainWindow.makeKeyAndOrderFront(command)
+    }
 }
-```
 
-For improved type safety, you can create hard-coded command names that can be referenced across your app.
-
-```swift
-extension KeyCommand.Name {
-    static let showPreferences = Self("ShowPreferences")
-}
-let command = KeyCommand(name: .showPreferences)
-```
-
-Key commands are automatically stored in the `UserDefaults` system, using their names as keys. You can provide a custom prefix that will be combined with each name to create the keys.
-
-```swift
-extension KeyCommand.Name.Prefix {
-    public override var sharedPrefix: Self { 
-        Self("SK")
+command.observe(.keyUp) {
+    if Int.random(in: 0..<10) == 7 {
+        performJumpScare()
     }
 }
 ```
 
-In the example above, the name "ShowPreferences" would become "SKShowPreferences" when used as a defaults key.
+Use the key command's name to create a key recorder. Then, add it to a view (note the use of `KeyRecorderView` for SwiftUI and `KeyRecorder` for Cocoa):
 
-The following pseudo-code is what a typical view controller that utilizes `SwiftKeys` might look like:
+### SwiftUI
 
 ```swift
-import SwiftKeys
+struct SettingsView: View {
+    var body: some View {
+        KeyRecorderView(name: "ToggleMainWindow")
+    }
+}
+```
 
-class ViewController: NSViewController {
-    let command = KeyCommand(name: "SomeCommand")
-    let recorder = KeyRecorder(command: command)
+### Cocoa
+
+```swift
+class SettingsViewController: NSViewController {
+    let recorder = KeyRecorder(name: "ToggleMainWindow")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(recorder)
-        
-        command.observe(.keyUp) {
-            print("UP")
-        }
-        command.observe(.keyDown) {
-            print("DOWN")
-        }
     }
 }
 ```
+
+The result should look something like this:
+
+<div align='center'>
+    <table align='center'>
+        <tr>
+            <th>Light mode</th>
+            <th>Dark mode</th>
+        </tr>
+        <tr>
+            <td>
+                <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window.png'>
+            </td>
+            <td>
+                <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png'>
+            </td>
+        </tr>
+    </table>
+</div>
+
+The recorder and command will stay synchronized with each other, so when the user records a new key combination, the command will be updated to match the new value.
+
+---
+
+For improved type safety, you can create hard-coded command names that can be referenced across your app.
+
+`Misc.swift`
+```swift
+extension KeyCommand.Name {
+    static let toggleMainWindow = Self("ToggleMainWindow")
+}
+```
+
+`AppDelegate.swift`
+```swift
+let command = KeyCommand(name: .toggleMainWindow)
+```
+
+`SettingsView.swift`
+```swift
+let recorder = KeyRecorder(name: .toggleMainWindow)
+```
+
+---
+
+Key commands are automatically stored in the `UserDefaults` system, using their names as keys. It's common for `UserDefaults` keys to be prefixed, or namespaced, according to their corresponding app or subsystem. To that end, SwiftKeys lets you provide custom prefixes that can be applied to individual names, as well as a global, shared prefix that will automatically apply to every name that doesn't explicitly specify otherwise.
+
+```swift
+extension KeyCommand.Name.Prefix {
+    public override var sharedPrefix: Self { 
+        Self("MyApp")
+    }
+}
+```
+
+In the example above, the name "ToggleMainWindow" would become "MyAppToggleMainWindow" when used as a `UserDefaults` key.
 
 ## License
 
