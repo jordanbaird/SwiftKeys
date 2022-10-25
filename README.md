@@ -74,22 +74,9 @@ class SettingsViewController: NSViewController {
 
 The result should look something like this:
 
-<div align='center'>
-    <table align='center'>
-        <tr>
-            <th>Light mode</th>
-            <th>Dark mode</th>
-        </tr>
-        <tr>
-            <td>
-                <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window.png'>
-            </td>
-            <td>
-                <img src='Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png'>
-            </td>
-        </tr>
-    </table>
-</div>
+| Light mode | Dark mode |
+| ---------- | --------- |
+| ![][light] | ![][dark] |
 
 The recorder and command will stay synchronized with each other, so when the user records a new key combination, the command will be updated to match the new value.
 
@@ -131,3 +118,6 @@ In the example above, the name "ToggleMainWindow" would become "MyAppToggleMainW
 ## License
 
 SwiftKeys is licensed under the [MIT license](http://www.opensource.org/licenses/mit-license).
+
+[light]: Sources/SwiftKeys/Documentation.docc/Resources/recorder-window.png
+[dark]: Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png
