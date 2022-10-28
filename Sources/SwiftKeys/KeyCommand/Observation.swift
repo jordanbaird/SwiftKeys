@@ -64,4 +64,10 @@ extension Array where Element == KeyCommand.Observation {
       observation.handler()
     }
   }
+  
+  func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
+    for observation in self where try predicate(observation.eventType) {
+      observation.handler()
+    }
+  }
 }

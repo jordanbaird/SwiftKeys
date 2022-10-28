@@ -283,12 +283,18 @@ public struct KeyCommand {
   /// command.observe(.keyUp) {
   ///     print("'Shift + Command + Space' was released.")
   /// }
+  /// command.observe(.doubleTap(0.5)) {
+  ///     print("'Shift + Command + Space' was pressed twice within 0.5 seconds.")
+  /// }
   ///
   /// command.runHandlers(for: .keyDown)
   /// // Prints: 'Shift + Command + Space' was pressed.
   ///
   /// command.runHandlers(for: .keyUp)
   /// // Prints: 'Shift + Command + Space' was released.
+  ///
+  /// command.runHandlers(for: .doubleTap(0.5))
+  /// // Prints: 'Shift + Command + Space' was pressed twice within 0.5 seconds.
   /// ```
   public func runHandlers(for eventType: EventType) {
     proxy.performObservations(matching: eventType)
@@ -348,14 +354,22 @@ extension KeyCommand {
   /// command.observe(.keyUp) {
   ///     print("KEY UP")
   /// }
+  ///
+  /// command.observe(.doubleTap(0.5)) {
+  ///     print("DOUBLE TAP")
+  /// }
   /// ```
   ///
   /// - Tip: You can call ``observe(_:handler:)`` as many times as you want.
   public enum EventType {
     /// The key is in the "up" position.
     case keyUp
+    
     /// The key is in the "down" position.
     case keyDown
+    
+    /// The key has been pressed twice within the given time interval.
+    case doubleTap(_ interval: Double)
     
     init?(_ eventKind: Int) {
       switch eventKind {
@@ -394,3 +408,7 @@ extension KeyCommand: CustomStringConvertible {
 extension KeyCommand: Equatable { }
 
 extension KeyCommand: Hashable { }
+
+extension KeyCommand.EventType: Equatable { }
+
+extension KeyCommand.EventType: Hashable { }

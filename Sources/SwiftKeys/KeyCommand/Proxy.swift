@@ -42,6 +42,8 @@ final class Proxy {
   
   var blockRegistrationChanges = false
   
+  var lastKeyDownDate = Date()
+  
   var isRegistered = false {
     didSet {
       for observation in registrationStateObservations {
@@ -121,8 +123,38 @@ final class Proxy {
         return OSStatus(eventNotHandledErr)
       }
       
+      var eventTypes = [KeyCommand.EventType(event)]
+      
+      if eventTypes == [.keyDown] {
+        let currentDate = Date()
+        eventTypes.append(.doubleTap(currentDate.timeIntervalSince(proxy.lastKeyDownDate)))
+        proxy.lastKeyDownDate = currentDate
+      }
+      
       // Execute the proxy's stored handlers.
-      proxy.performObservations(matching: KeyCommand.EventType(event))
+      for eventType in eventTypes {
+        proxy.performObservations {
+          switch $0 {
+          case .doubleTap(let requiredInterval):
+            switch eventType {
+            case .doubleTap(let realInterval):
+              // The real interval of the observation must be within the bounds
+              // of the required interval. Example:
+              //
+              // command.observe(.doubleTap(1)) { ... }
+              //
+              // The above observation requires that, in order for its handler
+              // to be executed, the time between key presses must be less than
+              // or equal to 1 second.
+              return realInterval <= requiredInterval
+            default:
+              return false
+            }
+          default:
+            return $0 == eventType
+          }
+        }
+      }
       
       return noErr
     }
@@ -258,6 +290,10 @@ final class Proxy {
   
   func performObservations(matching eventType: KeyCommand.EventType?) {
     keyCommandObservations.performObservations(matching: eventType)
+  }
+  
+  func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
+    try keyCommandObservations.performObservations(where: predicate)
   }
   
   deinit {
