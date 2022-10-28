@@ -44,11 +44,7 @@ public final class KeyRecorder: NSControl {
   lazy var backingView: NSVisualEffectView = {
     let view = NSVisualEffectView(frame: frame)
     view.blendingMode = .behindWindow
-    if #available(macOS 10.11, *) {
-      view.material = .sidebar
-    } else {
-      view.material = .titlebar
-    }
+    view.material = .sidebar
     view.wantsLayer = true
     view.layer?.cornerRadius = cornerRadius
     return view
@@ -188,22 +184,9 @@ public final class KeyRecorder: NSControl {
   }
   
   /// The alignment of the key recorder's label.
-  /// - Warning: Prior to macOS 10.13, the behavior of this property is undefined.
   public override var alignment: NSTextAlignment {
-    get {
-      if #available(macOS 10.13, *) {
-        return segmentedControl.alignment(forSegment: 0)
-      } else {
-        return segmentedControl.alignment
-      }
-    }
-    set {
-      if #available(macOS 10.13, *) {
-        segmentedControl.setAlignment(newValue, forSegment: 0)
-      } else {
-        segmentedControl.alignment = newValue
-      }
-    }
+    get { segmentedControl.alignment(forSegment: 0) }
+    set { segmentedControl.setAlignment(newValue, forSegment: 0) }
   }
   
   /// The appearance of the key recorder.
@@ -424,8 +407,7 @@ extension KeyRecorder {
         alert.informativeText = "\""
         + modifiers.reduce("") { $0 + $1.stringValue }
         + key.stringValue
-        + "\""
-        + " is reserved system-wide."
+        + "\" is reserved system-wide."
         alert.runModal()
         return nil
       }
@@ -445,11 +427,7 @@ extension KeyRecorder {
       let escapeKeyCode = 0x238B
       let string = NSString(format: "%C", escapeKeyCode)
       var attributes: [NSAttributedString.Key: Any] = [.foregroundColor: NSColor.white]
-      if #available(macOS 10.11, *) {
-        attributes[.font] = NSFont.systemFont(ofSize: 16, weight: .thin)
-      } else {
-        attributes[.font] = NSFont.systemFont(ofSize: 16)
-      }
+      attributes[.font] = NSFont.systemFont(ofSize: 16, weight: .thin)
       let stringSize = string.size(withAttributes: attributes)
       let image = NSImage(
         size: .init(width: stringSize.height, height: stringSize.height),

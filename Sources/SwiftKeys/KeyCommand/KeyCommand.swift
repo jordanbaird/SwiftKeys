@@ -36,11 +36,10 @@ public struct KeyCommand {
   var proxy: Proxy {
     if let proxy = ProxyStorage.proxy(with: name) {
       return proxy
-    } else {
-      let proxy = Proxy(name: name)
-      ProxyStorage.store(proxy)
-      return proxy
     }
+    let proxy = Proxy(name: name)
+    ProxyStorage.store(proxy)
+    return proxy
   }
   
   /// A Boolean value that indicates whether the key command is currently
@@ -130,10 +129,13 @@ public struct KeyCommand {
         $0[kHISymbolicHotKeyEnabled] as? Bool == true,
         let keyCode = $0[kHISymbolicHotKeyCode] as? Int,
         let modifierCode = $0[kHISymbolicHotKeyModifiers] as? Int,
-        let reservedKey = Key(keyCode),
-        let reservedModifiers = [Modifier](carbonModifiers: modifierCode)
+        let reservedModifiers = [Modifier](carbonModifiers: modifierCode),
+        modifiers.count == reservedModifiers.count,
+        key == Key(keyCode)
       {
-        return key == reservedKey && modifiers == reservedModifiers
+        return modifiers.allSatisfy {
+          reservedModifiers.contains($0)
+        }
       }
       return false
     }
@@ -342,7 +344,7 @@ extension KeyCommand {
   ///
   /// ```swift
   /// let command = KeyCommand(
-  ///     name: "Cheese",
+  ///     name: "SomeName",
   ///     key: .leftArrow,
   ///     modifiers: [.command, .option]
   /// )

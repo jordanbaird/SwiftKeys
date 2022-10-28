@@ -212,4 +212,27 @@ final class KeyCommandTests: TestCase {
     XCTAssertTrue(KeyCommand.isReservedBySystem(key: .escape, modifiers: [.command]))
     XCTAssertFalse(KeyCommand.isReservedBySystem(key: .space, modifiers: [.control]))
   }
+  
+  func testCarbonModifiers() {
+    let modifiers: [KeyCommand.Modifier] = [.control, .shift, .command]
+    let carbonModifiers = modifiers.carbonFlags
+    let recreatedModifiers = [KeyCommand.Modifier](carbonModifiers: .init(carbonModifiers)) ?? []
+    XCTAssert(modifiers.allSatisfy { recreatedModifiers.contains($0) })
+  }
+  
+  func testModifiersToNSEventFlags() {
+    let pairs: [(NSEvent.ModifierFlags, KeyCommand.Modifier)] = [
+      (.control, .control),
+      (.option, .option),
+      (.shift, .shift),
+      (.command, .command),
+    ]
+    var nsEventFlags = NSEvent.ModifierFlags()
+    var correctModifiers = [KeyCommand.Modifier]()
+    for pair in pairs {
+      nsEventFlags.insert(pair.0)
+      correctModifiers.append(pair.1)
+      XCTAssertEqual(nsEventFlags.commandModifiers, correctModifiers)
+    }
+  }
 }

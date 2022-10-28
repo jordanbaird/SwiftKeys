@@ -88,6 +88,7 @@ extension KeyCommand.Modifier: Equatable { }
 extension KeyCommand.Modifier: Hashable { }
 
 extension Array where Element == KeyCommand.Modifier {
+  /// Creates an array of modifiers based on the given `Carbon` value.
   init?(carbonModifiers: Int) {
     self.init()
     for modifier in KeyCommand.Modifier.allCases
