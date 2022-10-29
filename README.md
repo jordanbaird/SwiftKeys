@@ -1,6 +1,6 @@
 <h1 align='center'>
     <br>
-    <img src='/media/header.png', style='width:67%'>
+    <img src='Sources/SwiftKeys/Documentation.docc/Resources/header.png', style='width:67%'>
     <br>
     Global macOS key commands
     <br>
