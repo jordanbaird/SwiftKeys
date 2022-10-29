@@ -1,17 +1,18 @@
 <h1 align='center'>
     <br>
-    <img src='/media/header.png', style='width:60%'>
+    <img src='/media/header.png', style='width:67%'>
     <br>
     Global macOS key commands
     <br>
     <br>
 </h1>
 
-![Continuous Integration](https://img.shields.io/github/workflow/status/jordanbaird/SwiftKeys/Continuous%20Integration?style=flat-square)
-[![Code Coverage](https://img.shields.io/codecov/c/github/jordanbaird/SwiftKeys?label=codecov&logo=codecov&style=flat-square)](https://codecov.io/gh/jordanbaird/SwiftKeys)
-![Release](https://img.shields.io/github/v/release/jordanbaird/SwiftKeys?style=flat-square)
-[![Swift Versions](https://img.shields.io/badge/dynamic/json?color=F05138&label=Swift&query=%24.message&url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fjordanbaird%2FSwiftKeys%2Fbadge%3Ftype%3Dswift-versions&style=flat-square)](https://swiftpackageindex.com/jordanbaird/SwiftKeys)
-![License](https://img.shields.io/github/license/jordanbaird/SwiftKeys?style=flat-square)
+[![Continuous Integration][ci-badge]](https://github.com/jordanbaird/SwiftKeys/actions/workflows/main.yml)
+[![Code Coverage][codecov-badge]](https://codecov.io/gh/jordanbaird/SwiftKeys)
+[![Release][release-badge]](https://github.com/jordanbaird/SwiftKeys/releases/latest)
+[![Swift Versions][versions-badge]](https://swiftpackageindex.com/jordanbaird/SwiftKeys)
+[![Docs][docs-badge]](https://swiftpackageindex.com/jordanbaird/SwiftKeys/documentation)
+[![License][license-badge]](LICENSE)
 
 ## Install
 
@@ -74,9 +75,9 @@ class SettingsViewController: NSViewController {
 
 The result should look something like this:
 
-| Light mode | Dark mode |
-| ---------- | --------- |
-| ![][light] | ![][dark] |
+| Light mode           | Dark mode                 |
+| -------------------- | ------------------------- |
+| ![][recorder-window] | ![][recorder-window~dark] |
 
 The recorder and command will stay synchronized with each other, so when the user records a new key combination, the command will be updated to match the new value.
 
@@ -117,7 +118,14 @@ In the example above, the name "ToggleMainWindow" would become "MyAppToggleMainW
 
 ## License
 
-SwiftKeys is licensed under the [MIT license](http://www.opensource.org/licenses/mit-license).
+SwiftKeys is available under the MIT license. See the LICENSE file for more info.
 
-[light]: Sources/SwiftKeys/Documentation.docc/Resources/recorder-window.png
-[dark]: Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png
+[recorder-window]: Sources/SwiftKeys/Documentation.docc/Resources/recorder-window.png
+[recorder-window~dark]: Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png
+
+[ci-badge]: https://img.shields.io/github/workflow/status/jordanbaird/SwiftKeys/Continuous%20Integration?style=flat-square
+[codecov-badge]: https://img.shields.io/codecov/c/github/jordanbaird/SwiftKeys?label=codecov&logo=codecov&style=flat-square
+[release-badge]: https://img.shields.io/github/v/release/jordanbaird/SwiftKeys?style=flat-square
+[versions-badge]: https://img.shields.io/badge/dynamic/json?color=F05138&label=Swift&query=%24.message&url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fjordanbaird%2FSwiftKeys%2Fbadge%3Ftype%3Dswift-versions&style=flat-square
+[docs-badge]: https://img.shields.io/static/v1?label=%20&message=documentation&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAEsSURBVHgB7dntDYIwEAbgV+MAuoEj6AaO4AiO4AayAbqBbuAGjoIbwAbnHT8MMTH9uEJrvCch/FB7vEh7EABjjBMRnXhrKY1GxsNUuFhN45gmBKU783lCDKtBiYeoUoeYI79KE6KEACI6RCkBRFSIkgKI4BClBRBBIUoMILxDlBpASIgjtBL3gR2FaV1jzjyKvg98xqDEw615t3Z87eFbc/IAPkJqljwHvFiA3CxAbhaAdI+cNZTUfWD4edQBOMacog9cEE/z25514twsQG4/H2ABJZ5vG97tEefKc/QJhRR9oIH7AeWbjodchdYcSnEJLRGvg5L6EmJb3g6Ic4eSNbLcLEBuf9HIZKnrl0rtvX8E5zLr8w+o79kVbkiBT/yZxn3Z90lqVTDGOL0AoGWIIaQgyakAAAAASUVORK5CYII=&color=F05138&labelColor=gray&style=flat-square
+[license-badge]: https://img.shields.io/github/license/jordanbaird/SwiftKeys?style=flat-square
