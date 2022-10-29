@@ -10,7 +10,7 @@ jobs:
       - name: Set Up Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '13.3'
+          xcode-version: latest-stable
       - name: Build
         run: swift build
       - name: Test
