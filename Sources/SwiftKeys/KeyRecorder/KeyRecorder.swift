@@ -204,8 +204,9 @@ public final class KeyRecorder: NSControl {
   public init(command: KeyCommand) {
     segmentedControl = .init(command: command)
     super.init(frame: segmentedControl.frame)
-    Constraint(.width, of: self, constant: segmentedControl.frame.width).activate()
-    Constraint(.height, of: self, constant: segmentedControl.frame.height).activate()
+    translatesAutoresizingMaskIntoConstraints = false
+    widthAnchor.constraint(equalToConstant: segmentedControl.frame.width).isActive = true
+    heightAnchor.constraint(equalToConstant: segmentedControl.frame.height).isActive = true
     addSubview(segmentedControl)
   }
   
@@ -235,10 +236,17 @@ public final class KeyRecorder: NSControl {
   
   private func addBackingView() {
     addSubview(backingView, positioned: .below, relativeTo: self)
-    Constraint(.centerX, of: backingView, to: .centerX, of: self).activate()
-    Constraint(.centerY, of: backingView, to: .centerY, of: self).activate()
-    Constraint(.width, of: backingView, to: .width, of: self, constant: bezelStyle.widthConstant).activate()
-    Constraint(.height, of: backingView, to: .height, of: self, constant: bezelStyle.heightConstant).activate()
+    backingView.translatesAutoresizingMaskIntoConstraints = false
+    backingView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+    backingView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    backingView.widthAnchor.constraint(
+      equalTo: widthAnchor,
+      constant: bezelStyle.widthConstant
+    ).isActive = true
+    backingView.heightAnchor.constraint(
+      equalTo: heightAnchor,
+      constant: bezelStyle.heightConstant
+    ).isActive = true
   }
   
   private func removeBackingView() {
@@ -247,10 +255,17 @@ public final class KeyRecorder: NSControl {
   
   private func addBorderView() {
     addSubview(borderView, positioned: .below, relativeTo: segmentedControl)
-    Constraint(.centerX, of: borderView, to: .centerX, of: self).activate()
-    Constraint(.centerY, of: borderView, to: .centerY, of: self).activate()
-    Constraint(.width, of: borderView, to: .width, of: self, constant: bezelStyle.widthConstant).activate()
-    Constraint(.height, of: borderView, to: .height, of: self, constant: bezelStyle.heightConstant).activate()
+    borderView.translatesAutoresizingMaskIntoConstraints = false
+    borderView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+    borderView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    borderView.widthAnchor.constraint(
+      equalTo: widthAnchor,
+      constant: bezelStyle.widthConstant
+    ).isActive = true
+    borderView.heightAnchor.constraint(
+      equalTo: heightAnchor,
+      constant: bezelStyle.heightConstant
+    ).isActive = true
   }
   
   private func removeAndResetBorderView() {
@@ -266,10 +281,11 @@ public final class KeyRecorder: NSControl {
     }
     highlightView.material = highlightStyle.material
     highlightView.layer?.backgroundColor = highlightStyle.highlightColor.cgColor
-    Constraint(.centerX, of: highlightView, to: .centerX, of: self).activate()
-    Constraint(.centerY, of: highlightView, to: .centerY, of: self).activate()
-    Constraint(.width, of: highlightView, to: .width, of: self, constant: -4).activate()
-    Constraint(.height, of: highlightView, to: .height, of: self, constant: -2).activate()
+    highlightView.translatesAutoresizingMaskIntoConstraints = false
+    highlightView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+    highlightView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    highlightView.widthAnchor.constraint(equalTo: widthAnchor, constant: -4).isActive = true
+    highlightView.heightAnchor.constraint(equalTo: heightAnchor, constant: -2).isActive = true
   }
   
   private func removeHighlightView() {

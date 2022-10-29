@@ -9,69 +9,6 @@
 import AppKit
 import OSLog
 
-// MARK: - Constraint
-
-struct Constraint {
-  private let base: NSLayoutConstraint
-  private let view: NSView
-  
-  private let originalTranslates: Bool
-  
-  private init(_ base: NSLayoutConstraint, _ view: NSView) {
-    self.base = base
-    self.view = view
-    originalTranslates = view.translatesAutoresizingMaskIntoConstraints
-  }
-  
-  init(
-    _ attribute1: NSLayoutConstraint.Attribute,
-    of view1: NSView,
-    to attribute2: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: attribute1,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: attribute2,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    _ attribute: NSLayoutConstraint.Attribute,
-    of view: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view,
-      attribute: attribute,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: attribute,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view)
-  }
-  
-  func activate() {
-    view.translatesAutoresizingMaskIntoConstraints = false
-    base.isActive = true
-  }
-  
-  func deactivate() {
-    base.isActive = false
-    view.translatesAutoresizingMaskIntoConstraints = originalTranslates
-  }
-}
-
 // MARK: - KeyCommandError
 
 struct KeyCommandError: Error {
