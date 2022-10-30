@@ -32,7 +32,11 @@ public struct KeyCommand {
   /// The name that is used to store the key command.
   public let name: Name
   
-  /// The underlying object associated with the key command.
+  /// The underlying proxy object associated with the key command,
+  /// stored and retrieved using the key command's name.
+  ///
+  /// - Note: If no proxy object has been stored at the time of
+  ///   access, a new object will be created and stored.
   var proxy: Proxy {
     if let proxy = ProxyStorage.proxy(with: name) {
       return proxy
@@ -92,7 +96,7 @@ public struct KeyCommand {
   ///
   /// - Note: The underlying object's key and modifiers will be updated to
   ///   match the ones provided in this initializer. If this behavior is undesired,
-  ///   use ``init(name:)`` instead.
+  ///   use ``KeyCommand/init(name:)`` instead.
   public init(name: Name, key: Key, modifiers: [Modifier]) {
     self.init(name: name)
     proxy.mutateWithoutChangingRegistrationState {
@@ -109,7 +113,7 @@ public struct KeyCommand {
   ///
   /// - Note: The underlying object's key and modifiers will be updated to
   ///   match the ones provided in this initializer. If this behavior is undesired,
-  ///   use ``init(name:)`` instead.
+  ///   use ``KeyCommand/init(name:)`` instead.
   public init(name: Name, key: Key, modifiers: Modifier...) {
     self.init(name: name, key: key, modifiers: modifiers)
   }
@@ -153,6 +157,9 @@ public struct KeyCommand {
   ///
   /// When the command is triggered, the observations attached to it will
   /// be executed synchronously in the order they were added.
+  ///
+  /// You typically shouldn't need to use this method;
+  /// prefer ``observe(_:handler:)``.
   public func addObservation(_ observation: Observation) {
     if !proxy.keyCommandObservations.contains(observation) {
       proxy.keyCommandObservations.append(observation)

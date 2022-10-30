@@ -77,18 +77,22 @@ print(originalCommand.modifiers)
 
 ### Creating
 
-- ``init(name:key:modifiers:)-5m38h``
+- ``init(name:key:modifiers:)-7ly66``
+- ``init(name:key:modifiers:)-41zy0``
 - ``init(name:)``
 
 ### Observing
 
-- ``Observation``
-- ``EventType``
+- ``name-swift.property``
+- ``key-swift.property``
+- ``modifiers``
 - ``observe(_:handler:)``
 - ``removeObservation(_:)``
 - ``removeObservations(_:)``
 - ``removeObservations(where:)``
+- ``removeFirstObservation(where:)``
 - ``removeAllObservations()``
+- ``addObservation(_:)``
 
 ### Changing State
 
@@ -97,8 +101,17 @@ print(originalCommand.modifiers)
 - ``remove()``
 - ``isEnabled``
 
-### Naming and Prefixing
+### Running a Key Command's Handlers
 
-- ``name-swift.property``
+Sometimes, it's useful to be able to run the handlers stored under a key command without having to wait for it to trigger. You can do so using the following methods:
+
+- ``runHandlers(for:)``
+- ``runHandlers(where:)``
+
+### Nested Types
+
+- ``Observation``
 - ``Name-swift.struct``
-- ``Name-swift.struct/Prefix-swift.class``
+- ``Key-swift.enum``
+- ``Modifier``
+- ``EventType``
