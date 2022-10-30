@@ -11,14 +11,5 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: latest-stable
-      - name: Build
-        run: swift build
       - name: Test
-        run: swift test --enable-code-coverage
-      - name: Generate
-        run: ./.github/scripts/generate-code-coverage.sh
-      - name: Upload Code Coverage
-        uses: codecov/codecov-action@v3.1.0
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./info.lcov
+        run: swift test

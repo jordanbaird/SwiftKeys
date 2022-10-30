@@ -205,8 +205,12 @@ public final class KeyRecorder: NSControl {
     segmentedControl = .init(command: command)
     super.init(frame: segmentedControl.frame)
     translatesAutoresizingMaskIntoConstraints = false
-    widthAnchor.constraint(equalToConstant: segmentedControl.frame.width).isActive = true
-    heightAnchor.constraint(equalToConstant: segmentedControl.frame.height).isActive = true
+    widthAnchor.constraint(
+      equalToConstant: segmentedControl.frame.width
+    ).isActive = true
+    heightAnchor.constraint(
+      equalToConstant: segmentedControl.frame.height
+    ).isActive = true
     addSubview(segmentedControl)
   }
   
@@ -237,8 +241,12 @@ public final class KeyRecorder: NSControl {
   private func addBackingView() {
     addSubview(backingView, positioned: .below, relativeTo: self)
     backingView.translatesAutoresizingMaskIntoConstraints = false
-    backingView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-    backingView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    backingView.centerXAnchor.constraint(
+      equalTo: centerXAnchor
+    ).isActive = true
+    backingView.centerYAnchor.constraint(
+      equalTo: centerYAnchor
+    ).isActive = true
     backingView.widthAnchor.constraint(
       equalTo: widthAnchor,
       constant: bezelStyle.widthConstant
@@ -256,8 +264,12 @@ public final class KeyRecorder: NSControl {
   private func addBorderView() {
     addSubview(borderView, positioned: .below, relativeTo: segmentedControl)
     borderView.translatesAutoresizingMaskIntoConstraints = false
-    borderView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-    borderView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    borderView.centerXAnchor.constraint(
+      equalTo: centerXAnchor
+    ).isActive = true
+    borderView.centerYAnchor.constraint(
+      equalTo: centerYAnchor
+    ).isActive = true
     borderView.widthAnchor.constraint(
       equalTo: widthAnchor,
       constant: bezelStyle.widthConstant
@@ -282,10 +294,20 @@ public final class KeyRecorder: NSControl {
     highlightView.material = highlightStyle.material
     highlightView.layer?.backgroundColor = highlightStyle.highlightColor.cgColor
     highlightView.translatesAutoresizingMaskIntoConstraints = false
-    highlightView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-    highlightView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-    highlightView.widthAnchor.constraint(equalTo: widthAnchor, constant: -4).isActive = true
-    highlightView.heightAnchor.constraint(equalTo: heightAnchor, constant: -2).isActive = true
+    highlightView.centerXAnchor.constraint(
+      equalTo: centerXAnchor
+    ).isActive = true
+    highlightView.centerYAnchor.constraint(
+      equalTo: centerYAnchor
+    ).isActive = true
+    highlightView.widthAnchor.constraint(
+      equalTo: widthAnchor,
+      constant: -4
+    ).isActive = true
+    highlightView.heightAnchor.constraint(
+      equalTo: heightAnchor,
+      constant: -2
+    ).isActive = true
   }
   
   private func removeHighlightView() {
@@ -386,10 +408,7 @@ extension KeyRecorder {
       didSet {
         if failureReason.failureCount >= 3 {
           recordingState = .idle
-          let alert = NSAlert()
-          alert.messageText = "Cannot record shortcut."
-          alert.informativeText = failureReason.message
-          alert.runModal()
+          failureReason.displayAlert()
           failureReason = .noFailure
         }
       }
@@ -638,32 +657,44 @@ extension KeyRecorder.SegmentedControl {
     case hasKeyCommand = "*****" // Should never be displayed
   }
   
-  struct FailureReason: Equatable {
-    static let noFailure = Self(message: "There is nothing wrong.")
+  struct FailureReason {
+    static let noFailure = Self(infoText: "There is nothing wrong.")
     
-    static let needsModifiers = Self(message: """
+    static let needsModifiers = Self(infoText: """
       Please include at least one modifier key \
       (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
       """)
     
-    static let onlyShift = Self(message: """
-      \(KeyCommand.Modifier.shift.stringValue) by itself is not a valid \
-      modifier key. Please include at least one additional modifier key \
-      (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
+    static let onlyShift = Self(infoText: """
+      Shift (\(KeyCommand.Modifier.shift.stringValue)) by itself is not a \
+      valid modifier key. Please include at least one additional modifier \
+      key (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
       """)
     
     static func systemReserved(
       key: KeyCommand.Key,
       modifiers: [KeyCommand.Modifier]
     ) -> Self {
-      .init(
-        message: #""\#(modifiers.stringValue)\#(key.stringValue)" is reserved system-wide."#,
+      let settingsString = ProcessInfo.processInfo.isOperatingSystemAtLeast(
+        .init(
+          majorVersion: 13,
+          minorVersion: 0,
+          patchVersion: 0))
+      ? "Settings"
+      : "Preferences"
+      return .init(
+        infoText: """
+          "\(modifiers.stringValue)\(key.stringValue)" \
+          is reserved system-wide. Most system shortcuts can be changed \
+          from "System \(settingsString) › Keyboard › Keyboard Shortcuts".
+          """,
         failureCount: 3)
     }
     
-    let message: String
+    let messageText: String
+    let infoText: String
     
-    var failureCount = 0 {
+    var failureCount: Int {
       didSet {
         guard
           self == .noFailure,
@@ -675,13 +706,33 @@ extension KeyRecorder.SegmentedControl {
       }
     }
     
-    static func == (lhs: Self, rhs: Self) -> Bool {
-      lhs.message == rhs.message
+    init(
+      messageText: String = "Cannot record shortcut.",
+      infoText: String,
+      failureCount: Int = 0
+    ) {
+      self.messageText = messageText
+      self.infoText = infoText
+      self.failureCount = failureCount
     }
     
     mutating func incrementFailureCount() {
       failureCount += 1
     }
+    
+    func displayAlert() {
+      let alert = NSAlert()
+      alert.messageText = messageText
+      alert.informativeText = infoText
+      alert.runModal()
+    }
+  }
+}
+
+extension KeyRecorder.SegmentedControl.FailureReason: Equatable {
+  static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.messageText == rhs.messageText &&
+    lhs.infoText == rhs.infoText
   }
 }
 

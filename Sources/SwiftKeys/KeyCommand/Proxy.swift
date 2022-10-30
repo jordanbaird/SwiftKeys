@@ -82,9 +82,12 @@ final class Proxy {
     .init(self)
   }
   
-  init(name: KeyCommand.Name) {
+  init(with name: KeyCommand.Name, storing shouldStore: Bool = false) {
     self.name = name
     Self.proxyCount += 1
+    if shouldStore {
+      ProxyStorage.store(self)
+    }
   }
   
   static func install() -> OSStatus {
@@ -214,6 +217,11 @@ final class Proxy {
       0,
       &hotKeyRef)
     
+    guard status == noErr else {
+      KeyCommandError.registrationFailed(code: status).log()
+      return
+    }
+    
     // We need to retain a reference to each proxy instance. The C
     // function inside of the `install()` method can't deal with
     // context, so we can't inject or reference `self`. We _do_ have
@@ -221,11 +229,6 @@ final class Proxy {
     // to store the proxy, then access the storage from inside the
     // C function.
     ProxyStorage.store(self)
-    
-    guard status == noErr else {
-      KeyCommandError.registrationFailed(code: status).log()
-      return
-    }
     
     do {
       let data = try JSONEncoder().encode(KeyCommand(name: name))
