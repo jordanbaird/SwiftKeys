@@ -22,8 +22,8 @@ final class ObservationTests: TestCase {
   func testHandlers() {
     XCTAssertFalse(handler1WasCalled)
     XCTAssertFalse(handler2WasCalled)
-    o1.handler()
-    o2.handler()
+    o1.perform()
+    o2.perform()
     XCTAssertTrue(handler1WasCalled)
     XCTAssertTrue(handler2WasCalled)
   }

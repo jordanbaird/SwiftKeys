@@ -8,24 +8,6 @@
 
 import Carbon.HIToolbox
 
-protocol IdentifiableObservation: IdentifiableWrapper where Value == () -> Void { }
-
-extension IdentifiableObservation {
-  func perform() { value() }
-}
-
-struct AnyIdentifiableObservation: IdentifiableObservation {
-  let base: Any
-  let id: Identifier
-  let value: () -> Void
-  
-  init<T: IdentifiableObservation>(_ base: T) {
-    self.base = base
-    id = base.id
-    value = base.value
-  }
-}
-
 extension KeyCommand {
   /// The result type of a call to ``KeyCommand/observe(_:handler:)``.
   ///
@@ -40,9 +22,6 @@ extension KeyCommand {
     public let eventType: EventType
     
     let value: () -> Void
-    
-    /// An action that is performed when the observation is triggered.
-    public var handler: () -> Void { value }
   }
 }
 
@@ -61,13 +40,13 @@ extension KeyCommand.Observation: Hashable {
 extension Array where Element == KeyCommand.Observation {
   func performObservations(matching eventType: KeyCommand.EventType?) {
     for observation in self where observation.eventType == eventType {
-      observation.handler()
+      observation.perform()
     }
   }
   
   func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
     for observation in self where try predicate(observation.eventType) {
-      observation.handler()
+      observation.perform()
     }
   }
 }

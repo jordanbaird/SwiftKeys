@@ -385,11 +385,12 @@ extension KeyRecorder {
     var failureReason = FailureReason.noFailure {
       didSet {
         if failureReason.failureCount >= 3 {
+          recordingState = .idle
           let alert = NSAlert()
-          alert.messageText = failureReason.message
-          alert.window.isMovable = false
+          alert.messageText = "Cannot record shortcut."
+          alert.informativeText = failureReason.message
           alert.runModal()
-          self.failureReason = .noFailure
+          failureReason = .noFailure
         }
       }
     }
@@ -402,7 +403,7 @@ extension KeyRecorder {
         NSSound.beep()
         return nil
       }
-      let modifiers = event.modifierFlags.commandModifiers
+      let modifiers = event.modifierFlags.orderedModifiers
       guard !modifiers.isEmpty else {
         NSSound.beep()
         self.setFailureReason(.needsModifiers)
@@ -417,19 +418,11 @@ extension KeyRecorder {
       }
       guard !KeyCommand.isReservedBySystem(key: key, modifiers: modifiers) else {
         NSSound.beep()
-        let alert = NSAlert()
-        alert.window.isMovable = false
-        alert.messageText = "Cannot record shortcut."
-        alert.informativeText = "\""
-        + modifiers.reduce("") { $0 + $1.stringValue }
-        + key.stringValue
-        + "\" is reserved system-wide."
-        alert.runModal()
+        self.setFailureReason(.systemReserved(key: key, modifiers: modifiers))
         return nil
       }
       self.record(key: key, modifiers: modifiers)
       self.setFailureReason(.noFailure)
-      self.deselectAll()
       return nil
     }
     
@@ -477,8 +470,8 @@ extension KeyRecorder {
     var recordingState = RecordingState.idle {
       didSet {
         updateVisualAppearance()
+        deselectAll()
         if recordingState == .recording {
-          deselectAll()
           setSelected(true, forSegment: 0)
           failureReason = .noFailure
           keyDownMonitor.start()
@@ -649,13 +642,24 @@ extension KeyRecorder.SegmentedControl {
     static let noFailure = Self(message: "There is nothing wrong.")
     
     static let needsModifiers = Self(message: """
-      Please include at least one modifier key (Shift, Control, Option, Command).
+      Please include at least one modifier key \
+      (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
       """)
     
     static let onlyShift = Self(message: """
-      Shift by itself is not a valid modifier key. Please include at least one \
-      additional modifier key (Control, Option, Command).
+      \(KeyCommand.Modifier.shift.stringValue) by itself is not a valid \
+      modifier key. Please include at least one additional modifier key \
+      (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
       """)
+    
+    static func systemReserved(
+      key: KeyCommand.Key,
+      modifiers: [KeyCommand.Modifier]
+    ) -> Self {
+      .init(
+        message: #""\#(modifiers.stringValue)\#(key.stringValue)" is reserved system-wide."#,
+        failureCount: 3)
+    }
     
     let message: String
     
@@ -682,21 +686,7 @@ extension KeyRecorder.SegmentedControl {
 }
 
 extension NSEvent.ModifierFlags {
-  var commandModifiers: [KeyCommand.Modifier] {
-    var modifiers = [KeyCommand.Modifier]()
-    // NOTE: Keep the order of these statements.
-    if contains(.control) {
-      modifiers.append(.control)
-    }
-    if contains(.option) {
-      modifiers.append(.option)
-    }
-    if contains(.shift) {
-      modifiers.append(.shift)
-    }
-    if contains(.command) {
-      modifiers.append(.command)
-    }
-    return modifiers
+  var orderedModifiers: [KeyCommand.Modifier] {
+    .canonicalOrder.filter { contains($0.cocoaFlag) }
   }
 }
