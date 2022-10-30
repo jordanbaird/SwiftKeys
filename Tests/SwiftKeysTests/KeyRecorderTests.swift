@@ -14,6 +14,7 @@ final class KeyRecorderTests: TestCase {
   let window = NSWindow()
   
   override func setUp() {
+    super.setUp()
     KeyCommand(name: "SomeKeyCommand").remove()
     recorder = .init(name: "SomeKeyCommand")
     recorder.removeFromSuperview()
@@ -25,20 +26,20 @@ final class KeyRecorderTests: TestCase {
   func testRecorder() {
     XCTAssert(recorder.isEnabled)
     recorder.isEnabled = false
-    XCTAssert(!recorder.isEnabled)
+    XCTAssertFalse(recorder.isEnabled)
     XCTAssert(recorder.hasBackingView)
     recorder.hasBackingView = false
-    XCTAssert(!recorder.hasBackingView)
+    XCTAssertFalse(recorder.hasBackingView)
   }
   
   func testSimulatePress() {
-    XCTAssert(recorder.segmentedControl.recordingState == .idle)
+    XCTAssertEqual(recorder.segmentedControl.recordingState, .idle)
     recorder.segmentedControl.setSelected(true, forSegment: 0)
     recorder.segmentedControl.controlWasPressed(recorder.segmentedControl)
-    XCTAssert(recorder.segmentedControl.recordingState == .recording)
+    XCTAssertEqual(recorder.segmentedControl.recordingState, .recording)
     recorder.segmentedControl.setSelected(true, forSegment: 1)
     recorder.segmentedControl.controlWasPressed(recorder.segmentedControl)
-    XCTAssert(recorder.segmentedControl.recordingState == .idle)
+    XCTAssertEqual(recorder.segmentedControl.recordingState, .idle)
   }
   
   func testRecord() {
@@ -46,14 +47,14 @@ final class KeyRecorderTests: TestCase {
     XCTAssertNil(command.key)
     XCTAssert(command.modifiers.isEmpty)
     recorder.segmentedControl.record(key: .return, modifiers: [.command, .control])
-    XCTAssert(command.key == .return)
-    XCTAssert(command.modifiers == [.command, .control])
+    XCTAssertEqual(command.key, .return)
+    XCTAssertEqual(command.modifiers, [.command, .control])
   }
   
   func testHighlight() {
     for style in KeyRecorder.HighlightStyle.allCases {
       recorder.isHighlighted = false
-      XCTAssert(!recorder.subviews.contains(recorder.highlightView))
+      XCTAssertFalse(recorder.subviews.contains(recorder.highlightView))
       
       recorder.highlightStyle = style
       recorder.isHighlighted = true
@@ -82,26 +83,26 @@ final class KeyRecorderTests: TestCase {
   }
   
   func testBezelStyle() {
-    XCTAssert(recorder.bezelStyle == .rounded)
+    XCTAssertEqual(recorder.bezelStyle, .rounded)
     recorder.bezelStyle = .flatBordered
-    XCTAssert(recorder.bezelStyle == .flatBordered)
-    XCTAssert(recorder.segmentedControl.segmentStyle == .roundRect)
+    XCTAssertEqual(recorder.bezelStyle, .flatBordered)
+    XCTAssertEqual(recorder.segmentedControl.segmentStyle, .roundRect)
   }
   
   func testStringValue() {
     let label = KeyRecorder.SegmentedControl.Label.recordShortcut
     let newStringValue = "New String Value"
-    XCTAssert(recorder.stringValue == label.rawValue)
+    XCTAssertEqual(recorder.stringValue, label.rawValue)
     recorder.stringValue = newStringValue
-    XCTAssert(recorder.stringValue == newStringValue)
-    XCTAssert(recorder.segmentedControl.label(forSegment: 0) == newStringValue)
+    XCTAssertEqual(recorder.stringValue, newStringValue)
+    XCTAssertEqual(recorder.segmentedControl.label(forSegment: 0), newStringValue)
   }
   
   func testAlignment() {
-    XCTAssert(recorder.alignment == .center)
-    XCTAssert(recorder.segmentedControl.alignment(forSegment: 0) == .center)
+    XCTAssertEqual(recorder.alignment, .center)
+    XCTAssertEqual(recorder.segmentedControl.alignment(forSegment: 0), .center)
     recorder.alignment = .left
-    XCTAssert(recorder.alignment == .left)
-    XCTAssert(recorder.segmentedControl.alignment(forSegment: 0) == .left)
+    XCTAssertEqual(recorder.alignment, .left)
+    XCTAssertEqual(recorder.segmentedControl.alignment(forSegment: 0), .left)
   }
 }

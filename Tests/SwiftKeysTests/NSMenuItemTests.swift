@@ -25,10 +25,10 @@ final class NSMenuItemTests: TestCase {
       .init(observation2),
       .init(observation3),
     ]
-    XCTAssert(item.observations.count == 3)
+    XCTAssertEqual(item.observations.count, 3)
     XCTAssert(item.observations.contains(.init(observation2)))
     item.observations.remove(.init(observation2))
-    XCTAssert(!item.observations.contains(.init(observation2)))
+    XCTAssertFalse(item.observations.contains(.init(observation2)))
   }
   
   func testHandler() {
@@ -36,7 +36,7 @@ final class NSMenuItemTests: TestCase {
     for n in 0..<3 {
       item.setKeyCommand(command) { self.mostRecentHandler = n }
       item.handler?()
-      XCTAssert(mostRecentHandler == n)
+      XCTAssertEqual(mostRecentHandler, n)
     }
   }
 }

@@ -6,78 +6,124 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Carbon.HIToolbox
 import XCTest
 @testable import SwiftKeys
 
 final class KeyCommandTests: TestCase {
-  func testProxySharing1() {
-    // This tests to make sure that two key commands with the
-    // same name share the same proxy.
-    let command1 = KeyCommand(name: "Cheese")
-    let command2 = KeyCommand(name: "Cheese")
-    XCTAssert(command1.proxy === command2.proxy)
+  typealias EventType = KeyCommand.EventType
+  
+  typealias Observation = KeyCommand.Observation
+  
+  typealias Modifier = KeyCommand.Modifier
+  
+  func testProxySharing() {
+    //
+    // Two key commands with the same name should
+    // share the same proxy.
+    //
+    
+    let command1 = KeyCommand(name: "TestCommand0")
+    let command2 = KeyCommand(name: "TestCommand0")
+    XCTAssertEqual(command1.proxy, command2.proxy)
   }
   
-  func testProxySharing2() {
-    // This tests to make sure that if a command is created with
-    // the same name as an existing command, both will assume the
-    // value of the newest command.
-    let command1 = KeyCommand(name: "Balloon", key: .b, modifiers: [.command])
-    let command2 = KeyCommand(name: "Balloon", key: .l, modifiers: [.option])
-    XCTAssert(command1.proxy === command2.proxy)
-    XCTAssert(command1.proxy.key == .l)
-    XCTAssert(command1.proxy.modifiers == [.option])
+  func testValueSharing() {
+    //
+    // If a command is created with the same name as an
+    // existing command, and has different keys and/or modifiers,
+    // both commands should assume the value of the newest one.
+    //
+    
+    let command1 = KeyCommand(
+      name: "TestCommand1",
+      key: .b,
+      modifiers: [.command])
+    
+    XCTAssertEqual(KeyCommand(name: "TestCommand1").key, .b)
+    XCTAssertEqual(KeyCommand(name: "TestCommand1").modifiers, [.command])
+    
+    let command2 = KeyCommand(
+      name: "TestCommand1",
+      key: .l,
+      modifiers: [.option])
+    
     XCTAssertEqual(command1, command2)
+    XCTAssertEqual(KeyCommand(name: "TestCommand1").key, .l)
+    XCTAssertEqual(KeyCommand(name: "TestCommand1").modifiers, [.option])
   }
   
   func testEnable() {
-    let command = KeyCommand(name: "Soup", key: .a, modifiers: .option, .shift)
+    let command = KeyCommand(
+      name: "TestCommand2",
+      key: .a,
+      modifiers: .option, .shift)
     
-    XCTAssert(!command.isEnabled)
+    XCTAssertFalse(
+      command.isEnabled,
+      "A key command that has just been created should not be enabled.")
+    
     command.observe(.keyDown) { }
-    XCTAssert(command.isEnabled)
-    command.disable()
-    XCTAssert(!command.isEnabled)
+    XCTAssert(
+      command.isEnabled,
+      "Observing a key command should enable it.")
     
-    XCTAssertNotNil(command.key)
-    XCTAssert(!command.modifiers.isEmpty)
+    command.disable()
+    XCTAssertFalse(
+      command.isEnabled,
+      "Calling `disable()` on a key command should disable it.")
+    
+    XCTAssertNotNil(
+      command.key,
+      "Nothing has changed with the command. Its key should not be nil.")
+    XCTAssertFalse(
+      command.modifiers.isEmpty,
+      "Nothing has changed with the command. Its modifiers should not be empty.")
     
     command.remove()
     
-    XCTAssertNil(command.key)
-    XCTAssert(command.modifiers.isEmpty)
+    XCTAssertNil(
+      command.key,
+      "Calling `remove()` on a key command should set its key to nil.")
+    XCTAssert(
+      command.modifiers.isEmpty,
+      "Calling `remove()` on a key command should remove all of its modifiers.")
   }
   
   func testObservation() {
-    var didRunObservation = false
-    let observation = KeyCommand.Observation(eventType: .keyDown) {
-      didRunObservation = true
+    var lastRunEventType: EventType?
+    
+    @Builder<Observation> var observations: [Observation] {
+      Observation(eventType: .keyDown) {
+        lastRunEventType = .keyDown
+      }
+      Observation(eventType: .keyUp) {
+        lastRunEventType = .keyUp
+      }
+      Observation(eventType: .doubleTap(1)) {
+        lastRunEventType = .doubleTap(1)
+      }
+      Observation(eventType: .doubleTap(0.1)) {
+        lastRunEventType = nil
+      }
     }
     
-    // Create an arbitrary CGEvent that we know won't be key up or key down.
-    let cgEvent = CGEvent(
-      scrollWheelEvent2Source: .init(stateID: .hidSystemState),
-      units: .pixel,
-      wheelCount: 1,
-      wheel1: 0,
-      wheel2: 0,
-      wheel3: 0)!
+    XCTAssertNil(lastRunEventType)
     
-    // Get its NSEvent equivalent.
-    let nsEvent = NSEvent(cgEvent: cgEvent)!
-    
-    // Use it to create an EventRef.
-    let ref = EventRef(nsEvent.eventRef)!
-    
-    [observation].performObservations(matching: .init(ref))
-    
-    XCTAssertFalse(didRunObservation)
+    observations.performObservations(matching: .keyDown)
+    XCTAssertEqual(lastRunEventType, .keyDown)
+    observations.performObservations(matching: .keyUp)
+    XCTAssertEqual(lastRunEventType, .keyUp)
+    observations.performObservations(matching: .doubleTap(1))
+    XCTAssertEqual(lastRunEventType, .doubleTap(1))
+    observations.performObservations(matching: .doubleTap(0.1))
+    XCTAssertNil(lastRunEventType)
+    observations.performObservations(where: { $0 == .keyUp })
+    XCTAssertEqual(lastRunEventType, .keyUp)
   }
   
   func testRemoveSpecificObservations() {
-    var lastRunEventType: KeyCommand.EventType?
-    let command = KeyCommand(name: "SomeName")
+    var lastRunEventType: EventType?
+    let command = KeyCommand(name: "TestCommand3")
     
     let keyDownObservation = command.observe(.keyDown) {
       lastRunEventType = .keyDown
@@ -91,23 +137,26 @@ final class KeyCommandTests: TestCase {
     
     command.runHandlers(for: .keyDown)
     XCTAssertEqual(lastRunEventType, .keyDown)
-    
     command.runHandlers(for: .keyUp)
     XCTAssertEqual(lastRunEventType, .keyUp)
     
     lastRunEventType = nil
-    
-    command.removeObservations([keyDownObservation, keyUpObservation])
-    
+    command.removeObservation(keyUpObservation)
     command.runHandlers(for: .keyDown)
     command.runHandlers(for: .keyUp)
+    
+    XCTAssertEqual(lastRunEventType, .keyDown)
+    
+    lastRunEventType = nil
+    command.removeObservation(keyDownObservation)
+    command.runHandlers(for: .keyDown)
     
     XCTAssertNil(lastRunEventType)
   }
   
   func testRemoveNonSpecificObservations() {
-    var lastRunEventType: KeyCommand.EventType?
-    let command = KeyCommand(name: "SomeName")
+    var lastRunEventType: EventType?
+    let command = KeyCommand(name: "TestCommand4")
     
     command.observe(.keyDown) {
       lastRunEventType = .keyDown
@@ -144,7 +193,7 @@ final class KeyCommandTests: TestCase {
     }
     
     var runInfo = [RunInfo]()
-    let command = KeyCommand(name: "SomeName")
+    let command = KeyCommand(name: "TestCommand5")
     
     command.observe(.keyDown) {
       runInfo.append(.firstKeyDown)
@@ -179,8 +228,8 @@ final class KeyCommandTests: TestCase {
   }
   
   func testRemoveAllObservations() {
-    var lastRunEventType: KeyCommand.EventType?
-    let command = KeyCommand(name: "SomeName")
+    var lastRunEventType: EventType?
+    let command = KeyCommand(name: "TestCommand6")
     
     command.observe(.keyDown) {
       lastRunEventType = .keyDown
@@ -214,21 +263,21 @@ final class KeyCommandTests: TestCase {
   }
   
   func testCarbonModifiers() {
-    let modifiers: [KeyCommand.Modifier] = [.control, .shift, .command]
+    let modifiers: [Modifier] = [.control, .shift, .command]
     let carbonModifiers = modifiers.carbonFlags
-    let recreatedModifiers = [KeyCommand.Modifier](carbonModifiers: .init(carbonModifiers)) ?? []
+    let recreatedModifiers = [Modifier](carbonModifiers: .init(carbonModifiers)) ?? []
     XCTAssert(modifiers.allSatisfy { recreatedModifiers.contains($0) })
   }
   
   func testModifiersToNSEventFlags() {
-    let pairs: [(NSEvent.ModifierFlags, KeyCommand.Modifier)] = [
+    let pairs: [(NSEvent.ModifierFlags, Modifier)] = [
       (.control, .control),
       (.option, .option),
       (.shift, .shift),
       (.command, .command),
     ]
     var nsEventFlags = NSEvent.ModifierFlags()
-    var correctModifiers = [KeyCommand.Modifier]()
+    var correctModifiers = [Modifier]()
     for pair in pairs {
       nsEventFlags.insert(pair.0)
       correctModifiers.append(pair.1)
@@ -237,6 +286,6 @@ final class KeyCommandTests: TestCase {
   }
   
   func testModifiersStringValue() {
-    XCTAssertEqual([KeyCommand.Modifier].canonicalOrder.stringValue, "⌃⌥⇧⌘")
+    XCTAssertEqual([Modifier].canonicalOrder.stringValue, "⌃⌥⇧⌘")
   }
 }

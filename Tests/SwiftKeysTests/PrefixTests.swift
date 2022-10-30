@@ -11,6 +11,7 @@ import XCTest
 
 final class PrefixTests: TestCase {
   override func setUp() {
+    super.setUp()
     // Ensures that the defaults domain is wiped before every test.
     UserDefaults.standard.set("Value", forKey: "Key")
     let name = kCFPreferencesCurrentApplication as String
@@ -31,28 +32,14 @@ final class PrefixTests: TestCase {
     XCTAssertEqual(n2.prefix.rawValue, "Prefix2")
   }
   
-  func testStringLiteralPrefix() {
-    let p1 = KeyCommand.Name.Prefix("Prefix")
-    let p2: KeyCommand.Name.Prefix = "Prefix"
-    XCTAssertEqual(p1, p2, "String literals should function as valid prefixes.")
-  }
-  
-  func testUnderlyingReference() {
-    let c1 = KeyCommand(name: "Name", key: .return, modifiers: .command, .shift, .option)
-    let c2 = KeyCommand(name: "Name")
-    XCTAssertEqual(c1, c2, "Commands with the same name should be equal.")
-    XCTAssertEqual(c2.key, .return)
-    XCTAssertEqual(c2.modifiers, [.command, .shift, .option])
-  }
-  
   func testHashValue() {
     let p1 = KeyCommand.Name.Prefix("Hello")
     let p2: KeyCommand.Name.Prefix = "Hello"
     let p3 = KeyCommand.Name.Prefix("Goodbye")
     
-    XCTAssert(p1.hashValue == p2.hashValue,
+    XCTAssertEqual(p1.hashValue, p2.hashValue,
               "Identical prefixes should have identical hash values.")
-    XCTAssert(p2.hashValue != p3.hashValue,
+    XCTAssertNotEqual(p2.hashValue, p3.hashValue,
               "Different prefixes should have different hash values.")
   }
 }
