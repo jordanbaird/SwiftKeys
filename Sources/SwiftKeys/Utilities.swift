@@ -9,69 +9,6 @@
 import AppKit
 import OSLog
 
-// MARK: - Constraint
-
-struct Constraint {
-  private let base: NSLayoutConstraint
-  private let view: NSView
-  
-  private let originalTranslates: Bool
-  
-  private init(_ base: NSLayoutConstraint, _ view: NSView) {
-    self.base = base
-    self.view = view
-    originalTranslates = view.translatesAutoresizingMaskIntoConstraints
-  }
-  
-  init(
-    _ attribute1: NSLayoutConstraint.Attribute,
-    of view1: NSView,
-    to attribute2: NSLayoutConstraint.Attribute,
-    of view2: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view1,
-      attribute: attribute1,
-      relatedBy: relation,
-      toItem: view2,
-      attribute: attribute2,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view1)
-  }
-  
-  init(
-    _ attribute: NSLayoutConstraint.Attribute,
-    of view: NSView,
-    relation: NSLayoutConstraint.Relation = .equal,
-    multiplier: CGFloat = 1,
-    constant: CGFloat = 0
-  ) {
-    let constraint = NSLayoutConstraint(
-      item: view,
-      attribute: attribute,
-      relatedBy: relation,
-      toItem: nil,
-      attribute: attribute,
-      multiplier: multiplier,
-      constant: constant)
-    self.init(constraint, view)
-  }
-  
-  func activate() {
-    view.translatesAutoresizingMaskIntoConstraints = false
-    base.isActive = true
-  }
-  
-  func deactivate() {
-    base.isActive = false
-    view.translatesAutoresizingMaskIntoConstraints = originalTranslates
-  }
-}
-
 // MARK: - KeyCommandError
 
 struct KeyCommandError: Error {
@@ -167,7 +104,7 @@ var rng = SystemRandomNumberGenerator()
 
 protocol IdentifiableWrapper: Hashable {
   associatedtype Value
-  typealias Identifier = UInt64
+  associatedtype Identifier: Hashable
   var id: Identifier { get }
   var value: Value { get }
 }
@@ -184,6 +121,24 @@ extension IdentifiableWrapper {
   }
 }
 
+protocol IdentifiableObservation: IdentifiableWrapper where Value == () -> Void { }
+
+extension IdentifiableObservation {
+  var perform: () -> Void { value }
+}
+
+struct AnyIdentifiableObservation: IdentifiableObservation {
+  let base: Any
+  let id: AnyHashable
+  let value: () -> Void
+  
+  init<T: IdentifiableObservation>(_ base: T) {
+    self.base = base
+    id = base.id
+    value = base.value
+  }
+}
+
 // MARK: - Logger
 
 /// A wrapper for the unified logging system.
@@ -192,49 +147,49 @@ struct Logger {
   let level: OSLogType
   
   /// Sends a message to the logging system using the given logger.
-  public static func send(logger: Self = .default, message: String) {
+  static func send(logger: Self = .default, message: String) {
     logger.send(message: message)
   }
   
   /// Sends a message to the logging system using the given logger.
-  public static func send(logger: Self = .default, @LogMessageBuilder message: () -> String) {
+  static func send(logger: Self = .default, @LogMessageBuilder message: () -> String) {
     logger.send(message: message)
   }
   
   /// Sends a message to the logging system using this logger's log object and level.
-  public func send(message: String) {
+  func send(message: String) {
     os_log("%@", log: log, type: level, message)
   }
   
   /// Sends a message to the logging system using this logger's log object and level.
-  public func send(@LogMessageBuilder message: () -> String) {
+  func send(@LogMessageBuilder message: () -> String) {
     send(message: message())
   }
   
-  public func callAsFunction(@LogMessageBuilder message: () -> String) {
+  func callAsFunction(@LogMessageBuilder message: () -> String) {
     send(message: message)
   }
   
-  public func callAsFunction(message: String) {
+  func callAsFunction(message: String) {
     send(message: message)
   }
 }
 
 extension Logger {
   /// The default logger.
-  public static let `default` = Self(log: .default, level: .default)
+  static let `default` = Self(log: .default, level: .default)
   
   /// A logger for error messages.
-  public static let error = Self(log: .default, level: .error)
+  static let error = Self(log: .default, level: .error)
   
   /// A logger for debug messages.
-  public static let debug = Self(log: .default, level: .debug)
+  static let debug = Self(log: .default, level: .debug)
   
   /// A logger for faults.
-  public static let fault = Self(log: .default, level: .fault)
+  static let fault = Self(log: .default, level: .fault)
   
   /// A logger for informative messages.
-  public static let info = Self(log: .default, level: .info)
+  static let info = Self(log: .default, level: .info)
 }
 
 // MARK: - LogMessageBuilder

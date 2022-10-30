@@ -204,8 +204,9 @@ public final class KeyRecorder: NSControl {
   public init(command: KeyCommand) {
     segmentedControl = .init(command: command)
     super.init(frame: segmentedControl.frame)
-    Constraint(.width, of: self, constant: segmentedControl.frame.width).activate()
-    Constraint(.height, of: self, constant: segmentedControl.frame.height).activate()
+    translatesAutoresizingMaskIntoConstraints = false
+    widthAnchor.constraint(equalToConstant: segmentedControl.frame.width).isActive = true
+    heightAnchor.constraint(equalToConstant: segmentedControl.frame.height).isActive = true
     addSubview(segmentedControl)
   }
   
@@ -235,10 +236,17 @@ public final class KeyRecorder: NSControl {
   
   private func addBackingView() {
     addSubview(backingView, positioned: .below, relativeTo: self)
-    Constraint(.centerX, of: backingView, to: .centerX, of: self).activate()
-    Constraint(.centerY, of: backingView, to: .centerY, of: self).activate()
-    Constraint(.width, of: backingView, to: .width, of: self, constant: bezelStyle.widthConstant).activate()
-    Constraint(.height, of: backingView, to: .height, of: self, constant: bezelStyle.heightConstant).activate()
+    backingView.translatesAutoresizingMaskIntoConstraints = false
+    backingView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+    backingView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    backingView.widthAnchor.constraint(
+      equalTo: widthAnchor,
+      constant: bezelStyle.widthConstant
+    ).isActive = true
+    backingView.heightAnchor.constraint(
+      equalTo: heightAnchor,
+      constant: bezelStyle.heightConstant
+    ).isActive = true
   }
   
   private func removeBackingView() {
@@ -247,10 +255,17 @@ public final class KeyRecorder: NSControl {
   
   private func addBorderView() {
     addSubview(borderView, positioned: .below, relativeTo: segmentedControl)
-    Constraint(.centerX, of: borderView, to: .centerX, of: self).activate()
-    Constraint(.centerY, of: borderView, to: .centerY, of: self).activate()
-    Constraint(.width, of: borderView, to: .width, of: self, constant: bezelStyle.widthConstant).activate()
-    Constraint(.height, of: borderView, to: .height, of: self, constant: bezelStyle.heightConstant).activate()
+    borderView.translatesAutoresizingMaskIntoConstraints = false
+    borderView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+    borderView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    borderView.widthAnchor.constraint(
+      equalTo: widthAnchor,
+      constant: bezelStyle.widthConstant
+    ).isActive = true
+    borderView.heightAnchor.constraint(
+      equalTo: heightAnchor,
+      constant: bezelStyle.heightConstant
+    ).isActive = true
   }
   
   private func removeAndResetBorderView() {
@@ -266,10 +281,11 @@ public final class KeyRecorder: NSControl {
     }
     highlightView.material = highlightStyle.material
     highlightView.layer?.backgroundColor = highlightStyle.highlightColor.cgColor
-    Constraint(.centerX, of: highlightView, to: .centerX, of: self).activate()
-    Constraint(.centerY, of: highlightView, to: .centerY, of: self).activate()
-    Constraint(.width, of: highlightView, to: .width, of: self, constant: -4).activate()
-    Constraint(.height, of: highlightView, to: .height, of: self, constant: -2).activate()
+    highlightView.translatesAutoresizingMaskIntoConstraints = false
+    highlightView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+    highlightView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+    highlightView.widthAnchor.constraint(equalTo: widthAnchor, constant: -4).isActive = true
+    highlightView.heightAnchor.constraint(equalTo: heightAnchor, constant: -2).isActive = true
   }
   
   private func removeHighlightView() {
@@ -369,11 +385,12 @@ extension KeyRecorder {
     var failureReason = FailureReason.noFailure {
       didSet {
         if failureReason.failureCount >= 3 {
+          recordingState = .idle
           let alert = NSAlert()
-          alert.messageText = failureReason.message
-          alert.window.isMovable = false
+          alert.messageText = "Cannot record shortcut."
+          alert.informativeText = failureReason.message
           alert.runModal()
-          self.failureReason = .noFailure
+          failureReason = .noFailure
         }
       }
     }
@@ -386,7 +403,7 @@ extension KeyRecorder {
         NSSound.beep()
         return nil
       }
-      let modifiers = event.modifierFlags.commandModifiers
+      let modifiers = event.modifierFlags.orderedModifiers
       guard !modifiers.isEmpty else {
         NSSound.beep()
         self.setFailureReason(.needsModifiers)
@@ -401,19 +418,11 @@ extension KeyRecorder {
       }
       guard !KeyCommand.isReservedBySystem(key: key, modifiers: modifiers) else {
         NSSound.beep()
-        let alert = NSAlert()
-        alert.window.isMovable = false
-        alert.messageText = "Cannot record shortcut."
-        alert.informativeText = "\""
-        + modifiers.reduce("") { $0 + $1.stringValue }
-        + key.stringValue
-        + "\" is reserved system-wide."
-        alert.runModal()
+        self.setFailureReason(.systemReserved(key: key, modifiers: modifiers))
         return nil
       }
       self.record(key: key, modifiers: modifiers)
       self.setFailureReason(.noFailure)
-      self.deselectAll()
       return nil
     }
     
@@ -461,8 +470,8 @@ extension KeyRecorder {
     var recordingState = RecordingState.idle {
       didSet {
         updateVisualAppearance()
+        deselectAll()
         if recordingState == .recording {
-          deselectAll()
           setSelected(true, forSegment: 0)
           failureReason = .noFailure
           keyDownMonitor.start()
@@ -633,13 +642,24 @@ extension KeyRecorder.SegmentedControl {
     static let noFailure = Self(message: "There is nothing wrong.")
     
     static let needsModifiers = Self(message: """
-      Please include at least one modifier key (Shift, Control, Option, Command).
+      Please include at least one modifier key \
+      (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
       """)
     
     static let onlyShift = Self(message: """
-      Shift by itself is not a valid modifier key. Please include at least one \
-      additional modifier key (Control, Option, Command).
+      \(KeyCommand.Modifier.shift.stringValue) by itself is not a valid \
+      modifier key. Please include at least one additional modifier key \
+      (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
       """)
+    
+    static func systemReserved(
+      key: KeyCommand.Key,
+      modifiers: [KeyCommand.Modifier]
+    ) -> Self {
+      .init(
+        message: #""\#(modifiers.stringValue)\#(key.stringValue)" is reserved system-wide."#,
+        failureCount: 3)
+    }
     
     let message: String
     
@@ -666,21 +686,7 @@ extension KeyRecorder.SegmentedControl {
 }
 
 extension NSEvent.ModifierFlags {
-  var commandModifiers: [KeyCommand.Modifier] {
-    var modifiers = [KeyCommand.Modifier]()
-    // NOTE: Keep the order of these statements.
-    if contains(.control) {
-      modifiers.append(.control)
-    }
-    if contains(.option) {
-      modifiers.append(.option)
-    }
-    if contains(.shift) {
-      modifiers.append(.shift)
-    }
-    if contains(.command) {
-      modifiers.append(.command)
-    }
-    return modifiers
+  var orderedModifiers: [KeyCommand.Modifier] {
+    .canonicalOrder.filter { contains($0.cocoaFlag) }
   }
 }

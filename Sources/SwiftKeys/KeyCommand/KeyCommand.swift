@@ -128,7 +128,7 @@ public struct KeyCommand {
       if
         $0[kHISymbolicHotKeyEnabled] as? Bool == true,
         let keyCode = $0[kHISymbolicHotKeyCode] as? Int,
-        let modifierCode = $0[kHISymbolicHotKeyModifiers] as? Int,
+        let modifierCode = $0[kHISymbolicHotKeyModifiers] as? UInt32,
         let reservedModifiers = [Modifier](carbonModifiers: modifierCode),
         modifiers.count == reservedModifiers.count,
         key == Key(keyCode)
@@ -328,7 +328,7 @@ public struct KeyCommand {
   /// ```
   public func runHandlers(where predicate: (Observation) throws -> Bool) rethrows {
     for observation in proxy.keyCommandObservations where try predicate(observation) {
-      observation.handler()
+      observation.perform()
     }
   }
 }
@@ -364,14 +364,14 @@ extension KeyCommand {
   ///
   /// - Tip: You can call ``observe(_:handler:)`` as many times as you want.
   public enum EventType {
-    /// The key is in the "up" position.
+    /// Indicates that the key is in the "up" position.
     case keyUp
     
-    /// The key is in the "down" position.
+    /// Indicates that the key is in the "down" position.
     case keyDown
     
-    /// The key has been pressed twice within the given time interval.
-    case doubleTap(_ interval: Double)
+    /// Indicates that the key was pressed twice within the given time interval.
+    case doubleTap(_ interval: TimeInterval)
     
     init?(_ eventKind: Int) {
       switch eventKind {
@@ -410,6 +410,8 @@ extension KeyCommand: CustomStringConvertible {
 extension KeyCommand: Equatable { }
 
 extension KeyCommand: Hashable { }
+
+extension KeyCommand.EventType: Codable { }
 
 extension KeyCommand.EventType: Equatable { }
 

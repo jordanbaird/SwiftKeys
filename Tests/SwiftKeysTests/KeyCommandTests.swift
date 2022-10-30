@@ -232,7 +232,11 @@ final class KeyCommandTests: TestCase {
     for pair in pairs {
       nsEventFlags.insert(pair.0)
       correctModifiers.append(pair.1)
-      XCTAssertEqual(nsEventFlags.commandModifiers, correctModifiers)
+      XCTAssertEqual(nsEventFlags.orderedModifiers, correctModifiers)
     }
+  }
+  
+  func testModifiersStringValue() {
+    XCTAssertEqual([KeyCommand.Modifier].canonicalOrder.stringValue, "⌃⌥⇧⌘")
   }
 }
