@@ -123,7 +123,7 @@ public struct KeyCommand {
   }
   
   static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
-    return reservedHotKeys.contains {
+    reservedHotKeys.contains {
       if
         $0[kHISymbolicHotKeyEnabled] as? Bool == true,
         let keyCode = $0[kHISymbolicHotKeyCode] as? Int,
