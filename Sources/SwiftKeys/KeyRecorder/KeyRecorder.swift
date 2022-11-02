@@ -370,6 +370,7 @@ extension KeyRecorder {
     let proxy: Proxy
     
     var windowVisibilityObservation: NSKeyValueObservation?
+    var keyDownMonitor: EventMonitor?
     
     var _attributedLabel: NSAttributedString?
     var attributedLabel: NSAttributedString {
@@ -412,37 +413,6 @@ extension KeyRecorder {
           failureReason = .noFailure
         }
       }
-    }
-    
-    lazy var keyDownMonitor = EventMonitor(mask: .keyDown) { [weak self] event in
-      guard let self = self else {
-        return event
-      }
-      guard let key = KeyCommand.Key(Int(event.keyCode)) else {
-        NSSound.beep()
-        return nil
-      }
-      let modifiers = event.modifierFlags.orderedModifiers
-      guard !modifiers.isEmpty else {
-        NSSound.beep()
-        self.setFailureReason(.needsModifiers)
-        self.failureReason.incrementFailureCount()
-        return nil
-      }
-      guard modifiers != [.shift] else {
-        NSSound.beep()
-        self.setFailureReason(.onlyShift)
-        self.failureReason.incrementFailureCount()
-        return nil
-      }
-      guard !KeyCommand.isReservedBySystem(key: key, modifiers: modifiers) else {
-        NSSound.beep()
-        self.setFailureReason(.systemReserved(key: key, modifiers: modifiers))
-        return nil
-      }
-      self.record(key: key, modifiers: modifiers)
-      self.setFailureReason(.noFailure)
-      return nil
     }
     
     let imageDelete: NSImage = {
@@ -493,10 +463,10 @@ extension KeyRecorder {
         if recordingState == .recording {
           setSelected(true, forSegment: 0)
           failureReason = .noFailure
-          keyDownMonitor.start()
+          keyDownMonitor?.start()
           observeWindowVisibility()
         } else if recordingState == .idle {
-          keyDownMonitor.stop()
+          keyDownMonitor?.stop()
           windowVisibilityObservation = nil
         }
       }
@@ -516,14 +486,51 @@ extension KeyRecorder {
     func sharedInit() {
       target = self
       action = #selector(controlWasPressed(_:))
+      
       segmentCount = 2
+      
       deselectAll()
+      
       setImageScaling(.scaleProportionallyDown, forSegment: 0)
       setImageScaling(.scaleProportionallyDown, forSegment: 1)
       setWidth(frame.width - frame.height, forSegment: 0)
       setWidth(frame.height, forSegment: 1)
-      proxy.observeRegistrationState(updateVisualAppearance)
+      
+      proxy.observeRegistrationState { [weak self] in
+        self?.updateVisualAppearance()
+      }
       proxy.register()
+      
+      keyDownMonitor = EventMonitor(mask: .keyDown) { [weak self] event in
+        guard let self = self else {
+          return event
+        }
+        guard let key = KeyCommand.Key(Int(event.keyCode)) else {
+          NSSound.beep()
+          return nil
+        }
+        let modifiers = event.modifierFlags.orderedModifiers
+        guard !modifiers.isEmpty else {
+          NSSound.beep()
+          self.setFailureReason(.needsModifiers)
+          self.failureReason.incrementFailureCount()
+          return nil
+        }
+        guard modifiers != [.shift] else {
+          NSSound.beep()
+          self.setFailureReason(.onlyShift)
+          self.failureReason.incrementFailureCount()
+          return nil
+        }
+        guard !KeyCommand.isReservedBySystem(key: key, modifiers: modifiers) else {
+          NSSound.beep()
+          self.setFailureReason(.systemReserved(key: key, modifiers: modifiers))
+          return nil
+        }
+        self.record(key: key, modifiers: modifiers)
+        self.setFailureReason(.noFailure)
+        return nil
+      }
     }
     
     @objc
@@ -638,7 +645,7 @@ extension KeyRecorder {
           return
         }
         if !newValue {
-          self.keyDownMonitor.stop()
+          self.keyDownMonitor?.stop()
         }
       }
     }
@@ -649,7 +656,7 @@ extension KeyRecorder {
     }
     
     deinit {
-      keyDownMonitor.stop()
+      keyDownMonitor?.stop()
     }
   }
 }
