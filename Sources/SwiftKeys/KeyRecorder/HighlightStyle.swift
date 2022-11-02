@@ -34,19 +34,19 @@ extension KeyRecorder {
     }
     
     var material: NSVisualEffectView.Material {
-      if #unavailable(macOS 10.14) {
-        switch self {
-        case .light: return .light
-        case .mediumLight: return .mediumLight
-        case .dark: return .dark
-        case .ultraDark: return .ultraDark
-        }
-      } else {
+      if #available(macOS 10.14, *) {
         switch self {
         case .light: return .selection
         case .mediumLight: return .titlebar
         case .dark: return .windowBackground
         case .ultraDark: return .underPageBackground
+        }
+      } else {
+        switch self {
+        case .light: return .light
+        case .mediumLight: return .mediumLight
+        case .dark: return .dark
+        case .ultraDark: return .ultraDark
         }
       }
     }

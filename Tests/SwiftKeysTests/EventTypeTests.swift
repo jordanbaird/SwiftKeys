@@ -10,8 +10,6 @@ import Carbon.HIToolbox
 import XCTest
 @testable import SwiftKeys
 
-extension String: Error { }
-
 final class EventTypeTests: TestCase {
   typealias EventType = KeyCommand.EventType
   

@@ -281,7 +281,7 @@ final class KeyCommandTests: TestCase {
     for pair in pairs {
       nsEventFlags.insert(pair.0)
       correctModifiers.append(pair.1)
-      XCTAssertEqual(nsEventFlags.orderedModifiers, correctModifiers)
+      XCTAssertEqual(nsEventFlags.swiftKeysModifiers, correctModifiers)
     }
   }
   

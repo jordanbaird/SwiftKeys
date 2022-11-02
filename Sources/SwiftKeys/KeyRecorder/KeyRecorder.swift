@@ -28,7 +28,7 @@ import AppKit
 /// ```
 public final class KeyRecorder: NSControl {
   
-  // MARK: - Instance Properties
+  // MARK: - Properties
   
   let segmentedControl: KeyRecorderSegmentedControl
   
@@ -365,6 +365,8 @@ public final class KeyRecorder: NSControl {
   }
 }
 
+// MARK: - KeyRecorderSegmentedControl class
+
 extension KeyRecorder {
   class KeyRecorderSegmentedControl: NSSegmentedControl {
     let proxy: Proxy
@@ -509,7 +511,7 @@ extension KeyRecorder {
           NSSound.beep()
           return nil
         }
-        let modifiers = event.modifierFlags.orderedModifiers
+        let modifiers = event.modifierFlags.swiftKeysModifiers
         guard !modifiers.isEmpty else {
           NSSound.beep()
           self.setFailureReason(.needsModifiers)
@@ -661,52 +663,29 @@ extension KeyRecorder {
   }
 }
 
+// MARK: - RecordingState enum
+
 extension KeyRecorder.KeyRecorderSegmentedControl {
   enum RecordingState {
     case recording
     case idle
   }
-  
+}
+
+// MARK: Label enum
+
+extension KeyRecorder.KeyRecorderSegmentedControl {
   enum Label: String {
     case typeShortcut = "Type shortcut"
     case recordShortcut = "Record shortcut"
     case hasKeyCommand = "*****" // Should never be displayed
   }
-  
+}
+
+// MARK: FailureReason struct
+
+extension KeyRecorder.KeyRecorderSegmentedControl {
   struct FailureReason {
-    static let noFailure = Self(infoText: "There is nothing wrong.")
-    
-    static let needsModifiers = Self(infoText: """
-      Please include at least one modifier key \
-      (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
-      """)
-    
-    static let onlyShift = Self(infoText: """
-      Shift (\(KeyCommand.Modifier.shift.stringValue)) by itself is not a \
-      valid modifier key. Please include at least one additional modifier \
-      key (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
-      """)
-    
-    static func systemReserved(
-      key: KeyCommand.Key,
-      modifiers: [KeyCommand.Modifier]
-    ) -> Self {
-      let settingsString = ProcessInfo.processInfo.isOperatingSystemAtLeast(
-        .init(
-          majorVersion: 13,
-          minorVersion: 0,
-          patchVersion: 0))
-      ? "Settings"
-      : "Preferences"
-      return .init(
-        infoText: """
-          "\(modifiers.stringValue)\(key.stringValue)" \
-          is reserved system-wide. Most system shortcuts can be changed \
-          from "System \(settingsString) › Keyboard › Keyboard Shortcuts".
-          """,
-        failureCount: 3)
-    }
-    
     let messageText: String
     let infoText: String
     
@@ -737,6 +716,9 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
     }
     
     func displayAlert() {
+      guard self != .noFailure else {
+        return
+      }
       let alert = NSAlert()
       alert.messageText = messageText
       alert.informativeText = infoText
@@ -745,6 +727,49 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
   }
 }
 
+// MARK: Predefined Failure Reasons
+
+extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason {
+  static let noFailure = Self(
+    messageText: "",
+    infoText: "No failure.")
+  
+  static let needsModifiers = Self(
+    infoText: """
+      Please include at least one modifier key \
+      (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
+      """)
+  
+  static let onlyShift = Self(
+    infoText: """
+      Shift (\(KeyCommand.Modifier.shift.stringValue)) by itself is not a \
+      valid modifier key. Please include at least one additional modifier \
+      key (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
+      """)
+  
+  static func systemReserved(
+    key: KeyCommand.Key,
+    modifiers: [KeyCommand.Modifier]
+  ) -> Self {
+    let settingsString = ProcessInfo.processInfo.isOperatingSystemAtLeast(
+      .init(
+        majorVersion: 13,
+        minorVersion: 0,
+        patchVersion: 0))
+    ? "Settings"
+    : "Preferences"
+    return .init(
+      infoText: """
+        "\(modifiers.stringValue)\(key.stringValue)" \
+        is reserved system-wide. Most system shortcuts can be changed \
+        from "System \(settingsString) › Keyboard › Keyboard Shortcuts".
+        """,
+      failureCount: 3)
+  }
+}
+
+// MARK: - FailureReason: Equatable
+
 extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason: Equatable {
   static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.messageText == rhs.messageText &&
@@ -752,8 +777,10 @@ extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason: Equatable {
   }
 }
 
+// MARK: - NSEvent.ModifierFlags extension
+
 extension NSEvent.ModifierFlags {
-  var orderedModifiers: [KeyCommand.Modifier] {
+  var swiftKeysModifiers: [KeyCommand.Modifier] {
     .canonicalOrder.filter { contains($0.cocoaFlag) }
   }
 }
