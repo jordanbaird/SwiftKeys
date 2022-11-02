@@ -262,6 +262,16 @@ final class Proxy {
     }
   }
   
+  func removeKeyAndModifiers() {
+    withoutChangingRegistrationState {
+      $0.key = nil
+      $0.modifiers.removeAll()
+    }
+    if isRegistered {
+      unregister(shouldReregister: true)
+    }
+  }
+  
   @discardableResult
   func observeKeyAndModifierChanges(_ handler: @escaping () -> Void) -> Observation {
     let observation = Observation(value: handler)

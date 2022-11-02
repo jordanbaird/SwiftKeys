@@ -538,16 +538,25 @@ extension KeyRecorder {
           recordingState = .recording
         } else if sender.selectedSegment == 1 {
           if proxy.isRegistered {
-            proxy.unregister()
+            proxy.removeKeyAndModifiers()
           } else {
             recordingState = .recording
           }
         }
       }
-      if recordingState == .idle {
+      updateBasedOnNewRecordingState()
+    }
+    
+    func updateBasedOnNewRecordingState() {
+      // Note: updateVisualAppearance() will get called as an observation
+      // handler as soon as the proxy's registration state changes.
+      switch recordingState {
+      case .recording:
+        proxy.unregister()
+      case .idle:
+        proxy.register()
         deselectAll()
       }
-      updateVisualAppearance()
     }
     
     func record(key: KeyCommand.Key, modifiers: [KeyCommand.Modifier]) {
