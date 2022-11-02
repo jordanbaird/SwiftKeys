@@ -90,7 +90,7 @@ final class KeyRecorderTests: TestCase {
   }
   
   func testStringValue() {
-    let label = KeyRecorder.SegmentedControl.Label.recordShortcut
+    let label = KeyRecorder.KeyRecorderSegmentedControl.Label.recordShortcut
     let newStringValue = "New String Value"
     XCTAssertEqual(recorder.stringValue, label.rawValue)
     recorder.stringValue = newStringValue

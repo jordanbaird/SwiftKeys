@@ -30,7 +30,7 @@ public final class KeyRecorder: NSControl {
   
   // MARK: - Instance Properties
   
-  let segmentedControl: SegmentedControl
+  let segmentedControl: KeyRecorderSegmentedControl
   
   var cornerRadius: CGFloat {
     switch bezelStyle {
@@ -366,7 +366,7 @@ public final class KeyRecorder: NSControl {
 }
 
 extension KeyRecorder {
-  class SegmentedControl: NSSegmentedControl {
+  class KeyRecorderSegmentedControl: NSSegmentedControl {
     let proxy: Proxy
     
     var windowVisibilityObservation: NSKeyValueObservation?
@@ -527,7 +527,7 @@ extension KeyRecorder {
     }
     
     @objc
-    func controlWasPressed(_ sender: SegmentedControl) {
+    func controlWasPressed(_ sender: KeyRecorderSegmentedControl) {
       switch recordingState {
       case .recording:
         if sender.selectedSegment == 1 {
@@ -645,7 +645,7 @@ extension KeyRecorder {
   }
 }
 
-extension KeyRecorder.SegmentedControl {
+extension KeyRecorder.KeyRecorderSegmentedControl {
   enum RecordingState {
     case recording
     case idle
@@ -729,7 +729,7 @@ extension KeyRecorder.SegmentedControl {
   }
 }
 
-extension KeyRecorder.SegmentedControl.FailureReason: Equatable {
+extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason: Equatable {
   static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.messageText == rhs.messageText &&
     lhs.infoText == rhs.infoText
