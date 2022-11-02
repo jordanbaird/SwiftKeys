@@ -551,7 +551,7 @@ extension KeyRecorder {
     }
     
     func record(key: KeyCommand.Key, modifiers: [KeyCommand.Modifier]) {
-      proxy.mutateWithoutChangingRegistrationState {
+      proxy.withoutChangingRegistrationState {
         $0.key = key
         $0.modifiers = modifiers
       }

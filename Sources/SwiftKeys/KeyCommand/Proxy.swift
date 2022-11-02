@@ -25,7 +25,7 @@ final class Proxy {
   ]
   
   private static var proxyCount: UInt32 = 0
-  private static let signature = OSType.random(in: (.min)...(.max))
+  private static let signature = OSType.random(in: OSType.min...OSType.max)
   
   static var isInstalled: Bool {
     eventHandlerRef != nil
@@ -57,7 +57,7 @@ final class Proxy {
       // If already registered, we need to re-register
       // for the new key.
       if isRegistered {
-        register()
+        unregister(shouldReregister: true)
       }
       for observation in keyAndModifierChangeObservations {
         observation.perform()
@@ -70,7 +70,7 @@ final class Proxy {
       // If already registered, we need to re-register
       // for the new modifiers.
       if isRegistered {
-        register()
+        unregister(shouldReregister: true)
       }
       for observation in keyAndModifierChangeObservations {
         observation.perform()
@@ -177,7 +177,7 @@ final class Proxy {
     }
     let status = RemoveEventHandler(eventHandlerRef)
     guard status == noErr else {
-      throw KeyCommandError.uninstallationFailed(code: status)
+      throw KeyCommandError.uninstallationFailed(status: status)
     }
     eventHandlerRef = nil
   }
@@ -191,11 +191,10 @@ final class Proxy {
       return
     }
     
-    guard !isRegistered else {
-      // This method might have been called because the key or
-      // modifiers have changed, and need to be re-registered.
-      unregister(shouldReregister: true)
-      return
+    if isRegistered {
+      // If already registered, we need to unregister first,
+      // or we'll end up with two conflicting registrations.
+      unregister()
     }
     
     // Always try to install. The first thing the install() method
@@ -205,7 +204,7 @@ final class Proxy {
     var status = Self.install()
     
     guard status == noErr else {
-      KeyCommandError.installationFailed(code: status).log()
+      KeyCommandError.installationFailed(status: status).log()
       return
     }
     
@@ -218,7 +217,7 @@ final class Proxy {
       &hotKeyRef)
     
     guard status == noErr else {
-      KeyCommandError.registrationFailed(code: status).log()
+      KeyCommandError.registrationFailed(status: status).log()
       return
     }
     
@@ -238,7 +237,7 @@ final class Proxy {
       // worked properly, the command just wasn't stored. All things
       // considered, a relatively minor error, but one that the
       // programmer should be made aware of nonetheless.
-      KeyCommandError.encodingFailed(code: OSStatus(eventInternalErr)).log()
+      KeyCommandError.encodingFailed(status: OSStatus(eventInternalErr)).log()
     }
     
     isRegistered = true
@@ -254,7 +253,7 @@ final class Proxy {
     let status = UnregisterEventHotKey(hotKeyRef)
     hotKeyRef = nil
     if status != noErr {
-      KeyCommandError.unregistrationFailed(code: status).log()
+      KeyCommandError.unregistrationFailed(status: status).log()
     }
     UserDefaults.standard.removeObject(forKey: name.combinedValue)
     isRegistered = false
@@ -283,12 +282,12 @@ final class Proxy {
     return observation
   }
   
-  func mutateWithoutChangingRegistrationState(_ handler: (Proxy) throws -> Void) rethrows {
+  func withoutChangingRegistrationState(do body: (Proxy) throws -> Void) rethrows {
     blockRegistrationChanges = true
     defer {
       blockRegistrationChanges = false
     }
-    try handler(self)
+    try body(self)
   }
   
   func performObservations(matching eventType: KeyCommand.EventType?) {

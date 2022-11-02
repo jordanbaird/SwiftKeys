@@ -23,7 +23,7 @@ public struct KeyCommand {
     var reservedHotKeys: Unmanaged<CFArray>?
     let status = CopySymbolicHotKeys(&reservedHotKeys)
     guard status == noErr else {
-      KeyCommandError.systemRetrievalFailed(code: status).log()
+      KeyCommandError.systemRetrievalFailed(status: status).log()
       return []
     }
     return reservedHotKeys?.takeRetainedValue() as? [[String: Any]] ?? []
@@ -94,7 +94,7 @@ public struct KeyCommand {
   ///   use ``KeyCommand/init(name:)`` instead.
   public init(name: Name, key: Key, modifiers: [Modifier]) {
     self.init(name: name)
-    proxy.mutateWithoutChangingRegistrationState {
+    proxy.withoutChangingRegistrationState {
       $0.key = key
       $0.modifiers = modifiers
     }
@@ -116,7 +116,7 @@ public struct KeyCommand {
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     name = try container.decode(Name.self, forKey: .name)
-    try proxy.mutateWithoutChangingRegistrationState {
+    try proxy.withoutChangingRegistrationState {
       $0.key = try container.decode(Key.self, forKey: .key)
       $0.modifiers = try container.decode([Modifier].self, forKey: .modifiers)
     }
