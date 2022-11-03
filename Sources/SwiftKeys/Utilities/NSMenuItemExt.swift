@@ -62,7 +62,7 @@ extension NSMenuItem {
   // We need to observe the key command and proxy for changes in their
   // state, so that we can update the menu item to match. We store
   // all the observations here.
-  var observations: Set<AnyIdentifiableObservation> {
+  var observations: Set<AnyHashable> {
     get { Storage(object: self).get(backup: []) }
     set { Storage(object: self).set(newValue) }
   }
@@ -218,17 +218,17 @@ extension NSMenuItem {
     keyEquivalentModifierMask = originalModifierMask
   }
   
-  func removeObservations<T: IdentifiableObservation>(ofType type: T.Type) {
-    if T.self is KeyCommand.Observation.Type {
+  func removeObservations<H: Hashable>(ofType type: H.Type) {
+    if H.self is KeyCommand.Observation.Type {
       for observation in observations {
         if let base = observation.base as? KeyCommand.Observation {
           command?.removeObservation(base)
           observations.remove(observation)
         }
       }
-    } else if T.self is Proxy.Observation.Type {
+    } else if H.self is IdentifiableObservation.Type {
       for observation in observations {
-        if let base = observation.base as? Proxy.Observation {
+        if let base = observation.base as? IdentifiableObservation {
           command?.proxy.removeObservation(base)
           observations.remove(observation)
         }
@@ -240,7 +240,7 @@ extension NSMenuItem {
     originalAction = action
     
     removeObservations(ofType: KeyCommand.Observation.self)
-    removeObservations(ofType: Proxy.Observation.self)
+    removeObservations(ofType: IdentifiableObservation.self)
     
     guard let command = command else {
       resetKeyEquivalentAndMask()

@@ -9,11 +9,6 @@
 import Carbon.HIToolbox
 
 final class Proxy {
-  struct Observation: IdentifiableObservation {
-    let id = rng.next()
-    let value: () -> Void
-  }
-  
   private static var eventHandlerRef: EventHandlerRef?
   private static let eventTypes = [
     EventTypeSpec(
@@ -37,8 +32,8 @@ final class Proxy {
   let name: KeyCommand.Name
   var keyCommandObservations = [KeyCommand.Observation]()
   
-  var keyAndModifierChangeObservations = Set<Observation>()
-  var registrationStateObservations = Set<Observation>()
+  var keyAndModifierChangeObservations = Set<IdentifiableObservation>()
+  var registrationStateObservations = Set<IdentifiableObservation>()
   
   var blockRegistrationChanges = false
   
@@ -276,21 +271,21 @@ final class Proxy {
   }
   
   @discardableResult
-  func observeKeyAndModifierChanges(_ handler: @escaping () -> Void) -> Observation {
-    let observation = Observation(value: handler)
+  func observeKeyAndModifierChanges(_ handler: @escaping () -> Void) -> IdentifiableObservation {
+    let observation = IdentifiableObservation(handler: handler)
     keyAndModifierChangeObservations.update(with: observation)
     return observation
   }
   
   @discardableResult
-  func removeObservation(_ observation: Observation) -> Observation? {
+  func removeObservation(_ observation: IdentifiableObservation) -> IdentifiableObservation? {
     keyAndModifierChangeObservations.remove(observation) ??
     registrationStateObservations.remove(observation)
   }
   
   @discardableResult
-  func observeRegistrationState(_ handler: @escaping () -> Void) -> Observation {
-    let observation = Observation(value: handler)
+  func observeRegistrationState(_ handler: @escaping () -> Void) -> IdentifiableObservation {
+    let observation = IdentifiableObservation(handler: handler)
     registrationStateObservations.update(with: observation)
     return observation
   }

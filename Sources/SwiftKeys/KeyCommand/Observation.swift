@@ -14,26 +14,32 @@ extension KeyCommand {
   /// You can pass an instance of this type into the ``KeyCommand/removeObservation(_:)``
   /// method, or similar, to permanently remove the observation and stop the execution of
   /// its handler.
-  public struct Observation: IdentifiableObservation {
-    /// The identifying value of the observation.
-    public let id = rng.next()
+  public struct Observation {
+    private let base: IdentifiableObservation
     
     /// The event type of the observation.
     public let eventType: EventType
     
-    let value: () -> Void
+    init(eventType: EventType, handler: @escaping () -> Void) {
+      self.eventType = eventType
+      base = .init(handler: handler)
+    }
+    
+    func perform() {
+      base.perform()
+    }
   }
 }
 
 extension KeyCommand.Observation: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
-    lhs.id == rhs.id
+    lhs.base == rhs.base
   }
 }
 
 extension KeyCommand.Observation: Hashable {
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(id)
+    hasher.combine(base)
   }
 }
 

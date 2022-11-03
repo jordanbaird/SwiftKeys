@@ -173,7 +173,7 @@ public struct KeyCommand {
   /// method or similar to remove the observation and stop the execution of its handler.
   @discardableResult
   public func observe(_ type: EventType, handler: @escaping () -> Void) -> Observation {
-    let observation = Observation(eventType: type, value: handler)
+    let observation = Observation(eventType: type, handler: handler)
     addObservation(observation)
     return observation
   }
