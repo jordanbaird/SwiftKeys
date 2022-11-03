@@ -417,13 +417,13 @@ extension KeyRecorder {
       }
     }
     
-    let imageDelete: NSImage = {
+    let deleteImage: NSImage = {
       let image = NSImage(named: NSImage.stopProgressFreestandingTemplateName)!
       image.isTemplate = true
       return image
     }()
     
-    let imageEscape: NSImage = {
+    let escapeImage: NSImage = {
       let escapeKeyCode = 0x238B
       let string = NSString(format: "%C", escapeKeyCode)
       var attributes: [NSAttributedString.Key: Any] = [.foregroundColor: NSColor.white]
@@ -447,7 +447,7 @@ extension KeyRecorder {
       return image
     }()
     
-    var imageRecord: NSImage {
+    var recordImage: NSImage {
       let size = NSSize(width: 13, height: 13)
       let image = NSImage(size: size, flipped: false) {
         NSBezierPath(ovalIn: $0.insetBy(dx: 2.5, dy: 2.5)).fill()
@@ -613,12 +613,12 @@ extension KeyRecorder {
     func setImage(forState state: RecordingState) {
       switch state {
       case .recording:
-        setImage(imageEscape, forSegment: 1)
+        setImage(escapeImage, forSegment: 1)
       case .idle:
         if proxy.isRegistered {
-          setImage(imageDelete, forSegment: 1)
+          setImage(deleteImage, forSegment: 1)
         } else {
-          setImage(imageRecord, forSegment: 1)
+          setImage(recordImage, forSegment: 1)
         }
       }
     }
