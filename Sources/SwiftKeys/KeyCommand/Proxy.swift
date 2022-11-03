@@ -116,9 +116,8 @@ final class Proxy {
         return status
       }
       
-      // Make sure the event is one of ours (a.k.a. if its signature
-      // lines up with our signature), and that we have a stored proxy
-      // for the event.
+      // Make sure the event is one of ours (a.k.a. if its signature lines up
+      // with our signature), and that we have a stored proxy for the event.
       guard
         identifier.signature == Proxy.signature,
         let proxy = ProxyStorage.proxy(with: identifier.id)
@@ -126,15 +125,19 @@ final class Proxy {
         return OSStatus(eventNotHandledErr)
       }
       
+      // Create an array of event types, based on the current event.
       var eventTypes = [KeyCommand.EventType(event)]
       
+      // Key up events should also send a double tap event, based on the time
+      // between the most recent key up date and the current date. Observations
+      // whose intervals fall within this time will be executed.
       if eventTypes == [.keyUp] {
         let currentDate = Date()
         eventTypes.append(.doubleTap(currentDate.timeIntervalSince(proxy.lastKeyUpDate)))
         proxy.lastKeyUpDate = currentDate
       }
       
-      // Execute the proxy's stored handlers.
+      // Execute the proxy's stored observations.
       for eventType in eventTypes {
         proxy.performObservations {
           switch $0 {
@@ -312,6 +315,8 @@ final class Proxy {
     unregister()
   }
 }
+
+// MARK: - Protocol Conformances
 
 extension Proxy: Hashable {
   func hash(into hasher: inout Hasher) {
