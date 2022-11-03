@@ -42,7 +42,7 @@ final class Proxy {
   
   var blockRegistrationChanges = false
   
-  var lastKeyDownDate = Date()
+  var lastKeyUpDate = Date()
   
   var isRegistered = false {
     didSet {
@@ -128,10 +128,10 @@ final class Proxy {
       
       var eventTypes = [KeyCommand.EventType(event)]
       
-      if eventTypes == [.keyDown] {
+      if eventTypes == [.keyUp] {
         let currentDate = Date()
-        eventTypes.append(.doubleTap(currentDate.timeIntervalSince(proxy.lastKeyDownDate)))
-        proxy.lastKeyDownDate = currentDate
+        eventTypes.append(.doubleTap(currentDate.timeIntervalSince(proxy.lastKeyUpDate)))
+        proxy.lastKeyUpDate = currentDate
       }
       
       // Execute the proxy's stored handlers.
