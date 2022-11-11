@@ -93,16 +93,16 @@ final class KeyCommandTests: TestCase {
     var lastRunEventType: EventType?
     
     @Builder<Observation> var observations: [Observation] {
-      Observation(eventType: .keyDown) {
+      Observation(.keyDown) {
         lastRunEventType = .keyDown
       }
-      Observation(eventType: .keyUp) {
+      Observation(.keyUp) {
         lastRunEventType = .keyUp
       }
-      Observation(eventType: .doubleTap(1)) {
+      Observation(.doubleTap(1)) {
         lastRunEventType = .doubleTap(1)
       }
-      Observation(eventType: .doubleTap(0.1)) {
+      Observation(.doubleTap(0.1)) {
         lastRunEventType = nil
       }
     }

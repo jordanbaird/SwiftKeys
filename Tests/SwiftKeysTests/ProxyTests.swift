@@ -51,9 +51,9 @@ final class ProxyTests: TestCase {
   
   func testObserveRegistrationState() {
     let command = KeyCommand(name: "Command3")
-    XCTAssert(command.proxy.registrationStateObservations.isEmpty)
+    XCTAssert(command.proxy.registrationStateHandlers.isEmpty)
     command.proxy.observeRegistrationState { }
-    XCTAssertEqual(command.proxy.registrationStateObservations.count, 1,
+    XCTAssertEqual(command.proxy.registrationStateHandlers.count, 1,
                    "Calling observeRegistrationState(_:) should store a handler.")
   }
   

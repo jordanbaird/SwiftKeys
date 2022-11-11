@@ -172,8 +172,8 @@ public struct KeyCommand {
   /// You can pass the returned ``Observation`` instance into the ``removeObservation(_:)``
   /// method or similar to remove the observation and stop the execution of its handler.
   @discardableResult
-  public func observe(_ type: EventType, handler: @escaping () -> Void) -> Observation {
-    let observation = Observation(eventType: type, handler: handler)
+  public func observe(_ eventType: EventType, handler: @escaping () -> Void) -> Observation {
+    let observation = Observation(eventType, handler: handler)
     addObservation(observation)
     return observation
   }

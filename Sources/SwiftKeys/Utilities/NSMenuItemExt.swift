@@ -226,10 +226,10 @@ extension NSMenuItem {
           observations.remove(observation)
         }
       }
-    } else if H.self is IdentifiableObservation.Type {
+    } else if H.self is VoidHandler.Type {
       for observation in observations {
-        if let base = observation.base as? IdentifiableObservation {
-          command?.proxy.removeObservation(base)
+        if let base = observation.base as? VoidHandler {
+          command?.proxy.removeHandler(base)
           observations.remove(observation)
         }
       }
@@ -240,7 +240,7 @@ extension NSMenuItem {
     originalAction = action
     
     removeObservations(ofType: KeyCommand.Observation.self)
-    removeObservations(ofType: IdentifiableObservation.self)
+    removeObservations(ofType: VoidHandler.self)
     
     guard let command = command else {
       resetKeyEquivalentAndMask()

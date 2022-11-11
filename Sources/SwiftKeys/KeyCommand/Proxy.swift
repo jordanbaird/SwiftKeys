@@ -32,8 +32,8 @@ final class Proxy {
   let name: KeyCommand.Name
   var keyCommandObservations = [KeyCommand.Observation]()
   
-  var keyAndModifierChangeObservations = Set<IdentifiableObservation>()
-  var registrationStateObservations = Set<IdentifiableObservation>()
+  var keyAndModifierChangeHandlers = Set<VoidHandler>()
+  var registrationStateHandlers = Set<VoidHandler>()
   
   var blockRegistrationChanges = false
   
@@ -41,9 +41,7 @@ final class Proxy {
   
   var isRegistered = false {
     didSet {
-      for observation in registrationStateObservations {
-        observation.perform()
-      }
+      registrationStateHandlers.performAll()
     }
   }
   
@@ -54,9 +52,7 @@ final class Proxy {
       if isRegistered {
         unregister(shouldReregister: true)
       }
-      for observation in keyAndModifierChangeObservations {
-        observation.perform()
-      }
+      keyAndModifierChangeHandlers.performAll()
     }
   }
   
@@ -67,9 +63,7 @@ final class Proxy {
       if isRegistered {
         unregister(shouldReregister: true)
       }
-      for observation in keyAndModifierChangeObservations {
-        observation.perform()
-      }
+      keyAndModifierChangeHandlers.performAll()
     }
   }
   
@@ -271,23 +265,24 @@ final class Proxy {
   }
   
   @discardableResult
-  func observeKeyAndModifierChanges(_ handler: @escaping () -> Void) -> IdentifiableObservation {
-    let observation = IdentifiableObservation(handler: handler)
-    keyAndModifierChangeObservations.update(with: observation)
-    return observation
+  func observeKeyAndModifierChanges(_ block: @escaping () -> Void) -> VoidHandler {
+    let handler = VoidHandler(block: block)
+    keyAndModifierChangeHandlers.update(with: handler)
+    return handler
   }
   
   @discardableResult
-  func removeObservation(_ observation: IdentifiableObservation) -> IdentifiableObservation? {
-    keyAndModifierChangeObservations.remove(observation) ??
-    registrationStateObservations.remove(observation)
+  func removeHandler(_ handler: VoidHandler) -> VoidHandler? {
+    let h1 = keyAndModifierChangeHandlers.remove(handler)
+    let h2 = registrationStateHandlers.remove(handler)
+    return h1 ?? h2
   }
   
   @discardableResult
-  func observeRegistrationState(_ handler: @escaping () -> Void) -> IdentifiableObservation {
-    let observation = IdentifiableObservation(handler: handler)
-    registrationStateObservations.update(with: observation)
-    return observation
+  func observeRegistrationState(_ block: @escaping () -> Void) -> VoidHandler {
+    let handler = VoidHandler(block: block)
+    registrationStateHandlers.update(with: handler)
+    return handler
   }
   
   func withoutChangingRegistrationState(do body: (Proxy) throws -> Void) rethrows {
