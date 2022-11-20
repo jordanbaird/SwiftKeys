@@ -58,12 +58,14 @@ public struct KeyCommand {
   
   /// The key associated with the key command.
   public var key: Key? {
-    proxy.key
+    get { proxy.key }
+    set { proxy.key = newValue }
   }
   
   /// The modifier keys associated with the key command.
   public var modifiers: [Modifier] {
-    proxy.modifiers
+    get { proxy.modifiers }
+    set { proxy.modifiers = newValue }
   }
   
   /// Creates a key command with the given name.

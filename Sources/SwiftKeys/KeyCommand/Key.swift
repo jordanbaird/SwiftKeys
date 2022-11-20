@@ -361,7 +361,8 @@ extension KeyCommand {
       }
     }
     
-    /// A string representation of the key.
+    /// A string representation of the key, intended
+    /// for display purposes.
     public var stringValue: String {
       switch self {
       case .a: return "a"
@@ -474,7 +475,49 @@ extension KeyCommand {
       case .jisKana: return "かな"
       }
     }
-    
+
+    /// A string representation of the key that can
+    /// be used as a key equivalent in a menu item.
+    public var keyEquivalent: String {
+      guard
+        let inputSource = TISCopyCurrentASCIICapableKeyboardLayoutInputSource(),
+        let rawLayoutData = TISGetInputSourceProperty(
+          inputSource.takeRetainedValue(),
+          kTISPropertyUnicodeKeyLayoutData)
+      else {
+        return ""
+      }
+
+      let layoutData = unsafeBitCast(
+        rawLayoutData,
+        to: CFData.self)
+      let keyLayout = unsafeBitCast(
+        CFDataGetBytePtr(layoutData),
+        to: UnsafePointer<UCKeyboardLayout>.self)
+
+      var keys: UInt32 = 0
+      var chars = [UniChar](repeating: 0, count: 4)
+      var length = 0
+
+      let result = UCKeyTranslate(
+        keyLayout,
+        UInt16(rawValue),
+        UInt16(kUCKeyActionDisplay),
+        0,
+        UInt32(LMGetKbdType()),
+        OptionBits(kUCKeyTranslateNoDeadKeysBit),
+        &keys,
+        MemoryLayout.size(ofValue: chars) / MemoryLayout.size(ofValue: chars[0]),
+        &length,
+        &chars)
+
+      guard result == noErr else {
+        return ""
+      }
+      
+      return .init(utf16CodeUnits: chars, count: length)
+    }
+
     /// An unsigned version of the key's raw value.
     var unsigned: UInt32 {
       .init(rawValue)
@@ -495,13 +538,13 @@ extension KeyCommand {
         return nil
       }
     }
-    
+
     /// Runs a check against all the possible values of `Key`, and if a
     /// case is found whose `stringValue` property matches the given string,
     /// creates a value initialized to that case.
-    init?(_ string: String) {
+    init?(keyEquivalent: String) {
       let key = Self.allCases.first {
-        $0.stringValue.lowercased() == string.lowercased()
+        $0.keyEquivalent == keyEquivalent
       }
       if let key = key {
         self = key
