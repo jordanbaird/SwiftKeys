@@ -35,9 +35,9 @@ final class KeyCommandProxy {
   var keyAndModifierChangeHandlers = Set<VoidHandler>()
   var registrationStateHandlers = Set<VoidHandler>()
 
-  var blockRegistrationChanges = false
+  private var blockRegistrationChanges = false
 
-  var lastKeyUpDate = Date()
+  private var lastKeyUpDate = Date()
 
   var isRegistered = false {
     didSet {
@@ -105,7 +105,7 @@ final class KeyCommandProxy {
       // with our signature), and that we have a stored proxy for the event.
       guard
         identifier.signature == KeyCommandProxy.signature,
-        let proxy = ProxyStorage.proxy(with: identifier.id)
+        let proxy = ProxyStorage.proxy(with: identifier)
       else {
         return OSStatus(eventNotHandledErr)
       }
@@ -197,7 +197,7 @@ final class KeyCommandProxy {
     }
 
     status = RegisterEventHotKey(
-      key.unsigned,
+      key.unsigned(),
       modifiers.carbonFlags,
       identifier,
       GetEventDispatcherTarget(),
@@ -250,6 +250,22 @@ final class KeyCommandProxy {
     }
   }
 
+  /// Mutates the proxy, while blocking it from registering or unregistering.
+  ///
+  /// This is useful, for example, when executing multiple pieces of code that each
+  /// would normally cause the proxy to be automatically re-registered (examples of
+  /// this include the `key` and `modifiers` properties). If we need to change both
+  /// values, one after another, it would be inefficient to have to re-register after
+  /// each change, so instead, we can make the changes inside of `block` in a call
+  /// to this function, and manually perform any registration changes afterwards.
+  func withoutChangingRegistrationState(execute block: (KeyCommandProxy) throws -> Void) rethrows {
+    blockRegistrationChanges = true
+    defer {
+      blockRegistrationChanges = false
+    }
+    try block(self)
+  }
+
   func removeKeyAndModifiers() {
     withoutChangingRegistrationState {
       $0.key = nil
@@ -268,25 +284,10 @@ final class KeyCommandProxy {
   }
 
   @discardableResult
-  func removeHandler(_ handler: VoidHandler) -> VoidHandler? {
-    let h1 = keyAndModifierChangeHandlers.remove(handler)
-    let h2 = registrationStateHandlers.remove(handler)
-    return h1 ?? h2
-  }
-
-  @discardableResult
   func observeRegistrationState(_ block: @escaping () -> Void) -> VoidHandler {
     let handler = VoidHandler(block: block)
     registrationStateHandlers.update(with: handler)
     return handler
-  }
-
-  func withoutChangingRegistrationState(do body: (KeyCommandProxy) throws -> Void) rethrows {
-    blockRegistrationChanges = true
-    defer {
-      blockRegistrationChanges = false
-    }
-    try body(self)
   }
 
   func performObservations(matching eventType: KeyCommand.EventType?) {
@@ -295,6 +296,13 @@ final class KeyCommandProxy {
 
   func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
     try keyCommandObservations.performObservations(where: predicate)
+  }
+
+  @discardableResult
+  func removeHandler(_ handler: VoidHandler) -> VoidHandler? {
+    let h1 = keyAndModifierChangeHandlers.remove(handler)
+    let h2 = registrationStateHandlers.remove(handler)
+    return h1 ?? h2
   }
 
   deinit {
@@ -323,8 +331,8 @@ typealias ProxyStorage = Set<KeyCommandProxy>
 extension Set where Element == KeyCommandProxy {
   private static var all = Self()
 
-  static func proxy(with identifier: UInt32) -> KeyCommandProxy? {
-    all.first { $0.identifier.id == identifier }
+  static func proxy(with identifier: EventHotKeyID) -> KeyCommandProxy? {
+    all.first { $0.identifier.id == identifier.id }
   }
 
   static func proxy(with name: KeyCommand.Name) -> KeyCommandProxy? {
