@@ -1,10 +1,10 @@
 # Getting Started
 
-Get to know the main types and methods of `SwiftKeys`. 
+Get to know the main types and methods of `SwiftKeys`.
 
 ## Overview
 
-There are two top-level types in this package: ``KeyCommand`` and ``KeyRecorder``. 
+There are two top-level types in this package: ``KeyCommand`` and ``KeyRecorder``.
 
 #### KeyCommand
 
@@ -18,8 +18,8 @@ When a `KeyCommand` is initialized, an internal reference is created with the na
 
 ```swift
 let fullCommand = KeyCommand(
-    name: "OpenPreferences", 
-    key: .space, 
+    name: "OpenPreferences",
+    key: .space,
     modifiers: [.control, .shift]
 )
 ```
@@ -36,8 +36,8 @@ print(command.modifiers)
 // Prints: "[]"
 
 let fullCommand = KeyCommand(
-    name: "OpenPreferences", 
-    key: .space, 
+    name: "OpenPreferences",
+    key: .space,
     modifiers: [.control, .shift]
 )
 

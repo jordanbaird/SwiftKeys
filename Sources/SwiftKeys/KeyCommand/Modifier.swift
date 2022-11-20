@@ -21,7 +21,7 @@ extension KeyCommand {
     case shift
     /// The Command key.
     case command
-    
+
     /// A string representation of the modifier.
     public var stringValue: String {
       switch self {
@@ -35,7 +35,7 @@ extension KeyCommand {
         return "⌘"
       }
     }
-    
+
     /// The `CGEventFlags` value associated with the modifier.
     var cgEventFlag: CGEventFlags {
       switch self {
@@ -49,7 +49,7 @@ extension KeyCommand {
         return .maskCommand
       }
     }
-    
+
     /// The `NSEvent.ModifierFlags` value associated with the modifier.
     var cocoaFlag: NSEvent.ModifierFlags {
       switch self {
@@ -63,7 +63,7 @@ extension KeyCommand {
         return .command
       }
     }
-    
+
     /// An integer value associated with the modifier, as
     /// defined by the `Carbon` framework.
     var carbonFlag: UInt32 {
@@ -96,11 +96,11 @@ extension Array where Element == KeyCommand.Modifier {
     KeyCommand.Modifier.shift,
     KeyCommand.Modifier.command,
   ]
-  
+
   var stringValue: String {
     reduce("") { $0 + $1.stringValue }
   }
-  
+
   /// The flags for the given modifiers, as defined by the `Carbon`
   /// framework, or'd together into a single unsigned integer.
   var carbonFlags: UInt32 {
@@ -110,7 +110,7 @@ extension Array where Element == KeyCommand.Modifier {
     }
     return .init(converted)
   }
-  
+
   /// The `NSEvent.ModifierFlags` value for the given modifiers,
   /// reduced into a single value.
   var cocoaFlags: NSEvent.ModifierFlags {
@@ -118,7 +118,7 @@ extension Array where Element == KeyCommand.Modifier {
       $0.insert($1.cocoaFlag)
     }
   }
-  
+
   /// Creates an array of modifiers based on the given `Carbon` value.
   init?(carbonModifiers: UInt32) {
     self.init()
@@ -131,7 +131,7 @@ extension Array where Element == KeyCommand.Modifier {
       return nil
     }
   }
-  
+
   /// Returns a Boolean value indicating whether the array contains the
   /// given modifier, evaluated fuzzily.
   ///
@@ -153,7 +153,7 @@ extension UInt32 {
   func bitwiseContains(_ other: Self) -> Bool {
     other & self == other
   }
-  
+
   /// Returns a Boolean value indicating whether the bits
   /// of this integer contain the bits of the given modifier's
   /// carbon flag value.

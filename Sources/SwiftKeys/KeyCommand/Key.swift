@@ -11,9 +11,9 @@ import Carbon.HIToolbox
 extension KeyCommand {
   /// Constants that represent the various keys available on a keyboard.
   public enum Key: CaseIterable {
-    
+
     // MARK: - ANSI
-    
+
     /// The ANSI A key.
     case a
     /// The ANSI B key.
@@ -66,7 +66,7 @@ extension KeyCommand {
     case y
     /// The ANSI Z key.
     case z
-    
+
     /// The ANSI 0 key.
     case zero
     /// The ANSI 1 key.
@@ -87,7 +87,7 @@ extension KeyCommand {
     case eight
     /// The ANSI 9 key.
     case nine
-    
+
     /// The ANSI "-" key.
     case minus
     /// The ANSI "=" key.
@@ -110,7 +110,7 @@ extension KeyCommand {
     case slash
     /// The ANSI "`" key.
     case grave
-    
+
     /// The ANSI keypad Decimal key.
     case keypadDecimal
     /// The ANSI keypad Multiply key.
@@ -147,9 +147,9 @@ extension KeyCommand {
     case keypad8
     /// The ANSI keypad 9 key.
     case keypad9
-    
+
     // MARK: - Layout-independent
-    
+
     /// The layout-independent Return key.
     case `return`
     /// The layout-independent Tab key.
@@ -176,7 +176,7 @@ extension KeyCommand {
     case pageUp
     /// The layout-independent Page Down key.
     case pageDown
-    
+
     /// The layout-independent Left Arrow key.
     case leftArrow
     /// The layout-independent Right Arrow key.
@@ -185,7 +185,7 @@ extension KeyCommand {
     case downArrow
     /// The layout-independent Up Arrow key.
     case upArrow
-    
+
     /// The layout-independent F1 key.
     case f1
     /// The layout-independent F2 key.
@@ -226,14 +226,14 @@ extension KeyCommand {
     case f19
     /// The layout-independent F20 key.
     case f20
-    
+
     // MARK: - ISO
-    
+
     /// The Section key that is available on ISO keyboards.
     case isoSection
-    
+
     // MARK: - JIS
-    
+
     /// The Yen key that is available on JIS keyboards.
     case jisYen
     /// The Underscore key that is available on JIS keyboards.
@@ -244,9 +244,9 @@ extension KeyCommand {
     case jisEisu
     /// The Kana key that is available on JIS keyboards.
     case jisKana
-    
+
     // MARK: - Properties
-    
+
     /// The raw value of the key.
     public var rawValue: Int {
       switch self {
@@ -360,7 +360,7 @@ extension KeyCommand {
       case .jisKana: return kVK_JIS_Kana
       }
     }
-    
+
     /// A string representation of the key, intended
     /// for display purposes.
     public var stringValue: String {
@@ -514,7 +514,7 @@ extension KeyCommand {
       guard result == noErr else {
         return ""
       }
-      
+
       return .init(utf16CodeUnits: chars, count: length)
     }
 
@@ -522,9 +522,9 @@ extension KeyCommand {
     var unsigned: UInt32 {
       .init(rawValue)
     }
-    
+
     // MARK: - Initializers
-    
+
     /// Runs a check against all the possible values of `Key`, and if a
     /// case is found whose `rawValue` property matches the given integer,
     /// creates a value initialized to that case.

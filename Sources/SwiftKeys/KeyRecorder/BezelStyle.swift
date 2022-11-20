@@ -16,27 +16,27 @@ extension KeyRecorder {
     public enum BorderStyle {
       /// The bezel is drawn with a solid border.
       case solid
-      
+
       /// The bezel is drawn with a dashed border.
       case dashed
-      
+
       /// The bezel style is drawn without a border.
       case noBorder
     }
-    
+
     /// The default style.
     case rounded
-    
+
     /// A rounded, rectangular style with a flat appearance and a solid line border.
     case flatBordered
-    
+
     /// A style where the individual segments of the recorder do not touch, optionally
     /// drawn with a solid line border.
     case separated(_ style: BorderStyle)
-    
+
     /// A square style.
     case square
-    
+
     public static var allCases: [Self] = [
       .rounded,
       .flatBordered,
@@ -45,7 +45,7 @@ extension KeyRecorder {
       .separated(.noBorder),
       .square
     ]
-    
+
     var rawValue: NSSegmentedControl.Style {
       switch self {
       case .rounded: return .rounded
@@ -54,7 +54,7 @@ extension KeyRecorder {
       case .square: return .smallSquare
       }
     }
-    
+
     var widthConstant: CGFloat {
       switch self {
       case .rounded: return -4
@@ -63,7 +63,7 @@ extension KeyRecorder {
       case .square: return -2
       }
     }
-    
+
     var heightConstant: CGFloat {
       switch self {
       case .rounded: return -2
@@ -72,7 +72,7 @@ extension KeyRecorder {
       case .square: return -4
       }
     }
-    
+
     init(_ rawValue: NSSegmentedControl.Style) {
       self = Self.allCases.first { $0.rawValue == rawValue } ?? .rounded
     }

@@ -18,7 +18,7 @@ public struct KeyCommand {
     case modifiers
     case name
   }
-  
+
   static var reservedHotKeys: [[String: Any]] {
     var reservedHotKeys: Unmanaged<CFArray>?
     let status = CopySymbolicHotKeys(&reservedHotKeys)
@@ -28,10 +28,10 @@ public struct KeyCommand {
     }
     return reservedHotKeys?.takeRetainedValue() as? [[String: Any]] ?? []
   }
-  
+
   /// The name that is used to store the key command.
   public let name: Name
-  
+
   /// The underlying proxy object associated with the key command,
   /// stored and retrieved using the key command's name.
   ///
@@ -40,7 +40,7 @@ public struct KeyCommand {
   var proxy: KeyCommandProxy {
     ProxyStorage.proxy(with: name) ?? KeyCommandProxy(with: name, storing: true)
   }
-  
+
   /// A Boolean value that indicates whether the key command is currently
   /// enabled and active.
   ///
@@ -55,19 +55,19 @@ public struct KeyCommand {
   public var isEnabled: Bool {
     proxy.isRegistered
   }
-  
+
   /// The key associated with the key command.
   public var key: Key? {
     get { proxy.key }
     set { proxy.key = newValue }
   }
-  
+
   /// The modifier keys associated with the key command.
   public var modifiers: [Modifier] {
     get { proxy.modifiers }
     set { proxy.modifiers = newValue }
   }
-  
+
   /// Creates a key command with the given name.
   ///
   /// If a key command has already been created with the same name, this
@@ -84,7 +84,7 @@ public struct KeyCommand {
       self.name = name
     }
   }
-  
+
   /// Creates a key command with the given name, keys, and modifiers.
   ///
   /// If a key command has already been created with the same name, this
@@ -101,7 +101,7 @@ public struct KeyCommand {
       $0.modifiers = modifiers
     }
   }
-  
+
   /// Creates a key command with the given name, keys, and modifiers.
   ///
   /// If a key command has already been created with the same name, this
@@ -114,7 +114,7 @@ public struct KeyCommand {
   public init(name: Name, key: Key, modifiers: Modifier...) {
     self.init(name: name, key: key, modifiers: modifiers)
   }
-  
+
   public init(from decoder: Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     name = try container.decode(Name.self, forKey: .name)
@@ -123,7 +123,7 @@ public struct KeyCommand {
       $0.modifiers = try container.decode([Modifier].self, forKey: .modifiers)
     }
   }
-  
+
   static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
     reservedHotKeys.contains {
       if
@@ -141,14 +141,14 @@ public struct KeyCommand {
       return false
     }
   }
-  
+
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(key, forKey: .key)
     try container.encode(modifiers, forKey: .modifiers)
     try container.encode(name, forKey: .name)
   }
-  
+
   /// Adds the given observation to the key command, if the command does
   /// not already contain it.
   ///
@@ -163,7 +163,7 @@ public struct KeyCommand {
       proxy.register()
     }
   }
-  
+
   /// Observes the key command, and executes the provided handler whenever
   /// it is triggered.
   ///
@@ -179,7 +179,7 @@ public struct KeyCommand {
     addObservation(observation)
     return observation
   }
-  
+
   /// Removes the given observation.
   ///
   /// Pass an instance of ``Observation`` that you received from a call to
@@ -188,7 +188,7 @@ public struct KeyCommand {
   public func removeObservation(_ observation: Observation) {
     proxy.keyCommandObservations.removeAll { $0 == observation }
   }
-  
+
   /// Removes the given observations.
   ///
   /// Pass instances of ``Observation`` that you received from calls to
@@ -199,7 +199,7 @@ public struct KeyCommand {
       removeObservation(observation)
     }
   }
-  
+
   /// Removes the first observation that matches the given predicate.
   ///
   /// Use this method if you need to remove an instance of ``Observation``
@@ -219,7 +219,7 @@ public struct KeyCommand {
       proxy.keyCommandObservations.remove(at: index)
     }
   }
-  
+
   /// Removes every observation that matches the given predicate.
   ///
   /// Use this method if you need to remove multiple ``Observation`` instances
@@ -237,7 +237,7 @@ public struct KeyCommand {
   public func removeObservations(where shouldRemove: (Observation) throws -> Bool) rethrows {
     try proxy.keyCommandObservations.removeAll(where: shouldRemove)
   }
-  
+
   /// Removes all observations from the key command.
   ///
   /// Once the observations have been removed, their handlers will no
@@ -245,7 +245,7 @@ public struct KeyCommand {
   public func removeAllObservations() {
     proxy.keyCommandObservations.removeAll()
   }
-  
+
   /// Enables the key command.
   ///
   /// When enabled, the command's observation handlers become active, and will
@@ -254,7 +254,7 @@ public struct KeyCommand {
   public func enable() {
     proxy.register()
   }
-  
+
   /// Disables the key command.
   ///
   /// When disabled, the command's observation handlers become dormant, but are
@@ -263,7 +263,7 @@ public struct KeyCommand {
   public func disable() {
     proxy.unregister()
   }
-  
+
   /// Completely removes the key command and its handlers.
   ///
   /// Once this method has been called, the command should be considered invalid.
@@ -273,7 +273,7 @@ public struct KeyCommand {
     proxy.unregister()
     ProxyStorage.remove(proxy)
   }
-  
+
   /// Runs the key command's observation handlers for the given event type.
   ///
   /// ```swift
@@ -305,7 +305,7 @@ public struct KeyCommand {
   public func runHandlers(for eventType: EventType) {
     proxy.performObservations(matching: eventType)
   }
-  
+
   /// Runs the key command's observation handlers that match the given predicate.
   ///
   /// ```swift
@@ -370,13 +370,13 @@ extension KeyCommand {
   public enum EventType {
     /// Indicates that the key is in the "up" position.
     case keyUp
-    
+
     /// Indicates that the key is in the "down" position.
     case keyDown
-    
+
     /// Indicates that the key was pressed twice within the given time interval.
     case doubleTap(_ interval: TimeInterval)
-    
+
     init?(_ eventKind: Int) {
       switch eventKind {
       case kEventHotKeyPressed, kEventRawKeyDown:
@@ -387,7 +387,7 @@ extension KeyCommand {
         return nil
       }
     }
-    
+
     init?(_ eventRef: EventRef) {
       self.init(Int(GetEventKind(eventRef)))
     }

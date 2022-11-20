@@ -27,11 +27,11 @@ import AppKit
 /// }
 /// ```
 public final class KeyRecorder: NSControl {
-  
+
   // MARK: - Properties
-  
+
   let segmentedControl: KeyRecorderSegmentedControl
-  
+
   var cornerRadius: CGFloat {
     switch bezelStyle {
     case .rounded: return 5.5
@@ -40,7 +40,7 @@ public final class KeyRecorder: NSControl {
     case .square: return 0
     }
   }
-  
+
   lazy var backingView: NSVisualEffectView = {
     let view = NSVisualEffectView(frame: frame)
     view.blendingMode = .behindWindow
@@ -49,7 +49,7 @@ public final class KeyRecorder: NSControl {
     view.layer?.cornerRadius = cornerRadius
     return view
   }()
-  
+
   lazy var highlightView: NSVisualEffectView = {
     let view = NSVisualEffectView(frame: frame)
     view.blendingMode = .behindWindow
@@ -58,7 +58,7 @@ public final class KeyRecorder: NSControl {
     view.alphaValue = 0.75
     return view
   }()
-  
+
   private var _borderViewPrototype: BorderView {
     .init(
       frame: frame,
@@ -67,11 +67,11 @@ public final class KeyRecorder: NSControl {
       borderThickness: 1,
       cornerRadius: cornerRadius)
   }
-  
+
   lazy var borderView: BorderView = _borderViewPrototype
-  
+
   private var _hasBackingView = true
-  
+
   /// A Boolean value that indicates whether the key recorder is
   /// drawn with a backing visual effect view.
   ///
@@ -86,26 +86,26 @@ public final class KeyRecorder: NSControl {
       }
     }
   }
-  
+
   @available(*, deprecated, renamed: "command")
   public var keyEvent: KeyEvent {
     .init(name: segmentedControl.proxy.name)
   }
-  
+
   /// The key command associated with the recorder.
   public var command: KeyCommand {
     .init(name: segmentedControl.proxy.name)
   }
-  
+
   /// A Boolean value that indicates whether the key recorder reacts
   /// to mouse events.
   public override var isEnabled: Bool {
     get { segmentedControl.isEnabled }
     set { segmentedControl.isEnabled = newValue }
   }
-  
+
   private var _isHighlighted = false
-  
+
   /// A Boolean value that indicates whether the key recorder is
   /// highlighted.
   ///
@@ -123,7 +123,7 @@ public final class KeyRecorder: NSControl {
       }
     }
   }
-  
+
   /// The appearance of the key recorder when it is highlighted.
   ///
   /// If the key recorder is already highlighted, and this value is set, the
@@ -138,11 +138,11 @@ public final class KeyRecorder: NSControl {
       }
     }
   }
-  
+
   private lazy var _bezelStyle = BezelStyle(segmentedControl.segmentStyle) {
     didSet { segmentedControl.segmentStyle = _bezelStyle.rawValue }
   }
-  
+
   /// The style of the key recorder's bezel.
   ///
   /// Settings this value will immediately change bezel.
@@ -158,7 +158,7 @@ public final class KeyRecorder: NSControl {
       performCustomActions(for: newValue)
     }
   }
-  
+
   /// The string value of the key recorder's label.
   ///
   /// Setting this value allows you to customize the text that is
@@ -167,7 +167,7 @@ public final class KeyRecorder: NSControl {
     get { segmentedControl.label(forSegment: 0) ?? attributedStringValue.string }
     set { segmentedControl.setLabel(newValue, forSegment: 0) }
   }
-  
+
   /// The attributed string value of the key recorder's label.
   ///
   /// Setting this value allows you to customize the text that is
@@ -176,27 +176,27 @@ public final class KeyRecorder: NSControl {
     get { segmentedControl.attributedLabel }
     set { segmentedControl.attributedLabel = newValue }
   }
-  
+
   /// The font of the key recorder's label.
   public override var font: NSFont? {
     get { segmentedControl.font }
     set { segmentedControl.font = newValue }
   }
-  
+
   /// The alignment of the key recorder's label.
   public override var alignment: NSTextAlignment {
     get { segmentedControl.alignment(forSegment: 0) }
     set { segmentedControl.setAlignment(newValue, forSegment: 0) }
   }
-  
+
   /// The appearance of the key recorder.
   public override var appearance: NSAppearance? {
     get { segmentedControl.appearance }
     set { segmentedControl.appearance = newValue }
   }
-  
+
   // MARK: - Initializers
-  
+
   /// Creates a key recorder for the given key command.
   ///
   /// Whenever a new key combination is recorded, the key and modifiers
@@ -213,12 +213,12 @@ public final class KeyRecorder: NSControl {
     ).isActive = true
     addSubview(segmentedControl)
   }
-  
+
   @available(*, deprecated, renamed: "init(command:)")
   public convenience init(keyEvent: KeyEvent) {
     self.init(command: keyEvent)
   }
-  
+
   /// Creates a key recorder for the key command with the given name.
   ///
   /// If a command with the name does not exist, a blank command will be created.
@@ -227,17 +227,17 @@ public final class KeyRecorder: NSControl {
   public convenience init(name: KeyCommand.Name) {
     self.init(command: .init(name: name))
   }
-  
+
   @available(*, unavailable)
   override init(frame frameRect: NSRect) {
     fatalError("init(frame:) is unavailable.")
   }
-  
+
   @available(*, unavailable)
   required init?(coder: NSCoder) {
     fatalError("KeyRecorder must be created programmatically.")
   }
-  
+
   private func addBackingView() {
     addSubview(backingView, positioned: .below, relativeTo: self)
     backingView.translatesAutoresizingMaskIntoConstraints = false
@@ -256,11 +256,11 @@ public final class KeyRecorder: NSControl {
       constant: bezelStyle.heightConstant
     ).isActive = true
   }
-  
+
   private func removeBackingView() {
     backingView.removeFromSuperview()
   }
-  
+
   private func addBorderView() {
     addSubview(borderView, positioned: .below, relativeTo: segmentedControl)
     borderView.translatesAutoresizingMaskIntoConstraints = false
@@ -279,12 +279,12 @@ public final class KeyRecorder: NSControl {
       constant: bezelStyle.heightConstant
     ).isActive = true
   }
-  
+
   private func removeAndResetBorderView() {
     borderView.removeFromSuperview()
     borderView = _borderViewPrototype
   }
-  
+
   private func addHighlightView() {
     if hasBackingView {
       addSubview(highlightView, positioned: .above, relativeTo: backingView)
@@ -309,28 +309,28 @@ public final class KeyRecorder: NSControl {
       constant: -2
     ).isActive = true
   }
-  
+
   private func removeHighlightView() {
     highlightView.removeFromSuperview()
   }
-  
+
   private func performCustomActions(for style: BezelStyle) {
     removeAndResetBorderView()
     removeBackingView()
     removeHighlightView()
-    
+
     if hasBackingView {
       addBackingView()
     }
     if isHighlighted {
       addHighlightView()
     }
-    
+
     wantsLayer = true
     layer?.cornerRadius = cornerRadius
     backingView.layer?.cornerRadius = cornerRadius
     highlightView.layer?.cornerRadius = cornerRadius
-    
+
     switch style {
     case .rounded, .flatBordered, .square:
       break
@@ -345,7 +345,7 @@ public final class KeyRecorder: NSControl {
       removeHighlightView()
     }
   }
-  
+
   /// Informs the view that it has been added to a new view hierarchy.
   ///
   /// If you override this method, you _must_ call `super` for the key
@@ -370,10 +370,10 @@ public final class KeyRecorder: NSControl {
 extension KeyRecorder {
   class KeyRecorderSegmentedControl: NSSegmentedControl {
     let proxy: KeyCommandProxy
-    
+
     var windowVisibilityObservation: NSKeyValueObservation?
     var keyDownMonitor: EventMonitor?
-    
+
     var _attributedLabel: NSAttributedString?
     var attributedLabel: NSAttributedString {
       get {
@@ -381,13 +381,13 @@ extension KeyRecorder {
       }
       set {
         _attributedLabel = newValue
-        
+
         setLabel("", forSegment: 0)
         setImage(nil, forSegment: 0)
-        
+
         let attStr = NSMutableAttributedString(attributedString: newValue)
         let fontSize = font?.pointSize ?? NSFont.systemFontSize
-        
+
         for n in 0..<attStr.length {
           var attributes = attStr.attributes(at: n, effectiveRange: nil)
           if let font = attributes[.font] as? NSFont {
@@ -397,16 +397,16 @@ extension KeyRecorder {
           }
           attStr.setAttributes(attributes, range: .init(location: n, length: 1))
         }
-        
+
         let image = NSImage(size: attStr.size(), flipped: false) {
           attStr.draw(in: $0)
           return true
         }
-        
+
         setImage(image, forSegment: 0)
       }
     }
-    
+
     var failureReason = FailureReason.noFailure {
       didSet {
         if failureReason.failureCount >= 3 {
@@ -416,13 +416,13 @@ extension KeyRecorder {
         }
       }
     }
-    
+
     let deleteImage: NSImage = {
       let image = NSImage(named: NSImage.stopProgressFreestandingTemplateName)!
       image.isTemplate = true
       return image
     }()
-    
+
     let escapeImage: NSImage = {
       let escapeKeyCode = 0x238B
       let string = NSString(format: "%C", escapeKeyCode)
@@ -446,7 +446,7 @@ extension KeyRecorder {
       image.isTemplate = true
       return image
     }()
-    
+
     var recordImage: NSImage {
       let size = NSSize(width: 13, height: 13)
       let image = NSImage(size: size, flipped: false) {
@@ -457,7 +457,7 @@ extension KeyRecorder {
       image.isTemplate = true
       return image
     }
-    
+
     var recordingState = RecordingState.idle {
       didSet {
         updateVisualAppearance()
@@ -473,36 +473,36 @@ extension KeyRecorder {
         }
       }
     }
-    
+
     init(command: KeyCommand) {
       proxy = command.proxy
       super.init(frame: .init(origin: .zero, size: .init(width: 140, height: 24)))
       sharedInit()
     }
-    
+
     @available(*, unavailable)
     required init?(coder: NSCoder) {
       fatalError("KeyRecorder must be created programmatically.")
     }
-    
+
     func sharedInit() {
       target = self
       action = #selector(controlWasPressed(_:))
-      
+
       segmentCount = 2
-      
+
       deselectAll()
-      
+
       setImageScaling(.scaleProportionallyDown, forSegment: 0)
       setImageScaling(.scaleProportionallyDown, forSegment: 1)
       setWidth(frame.width - frame.height, forSegment: 0)
       setWidth(frame.height, forSegment: 1)
-      
+
       proxy.observeRegistrationState { [weak self] in
         self?.updateVisualAppearance()
       }
       proxy.register()
-      
+
       keyDownMonitor = EventMonitor(mask: .keyDown) { [weak self] event in
         guard let self = self else {
           return event
@@ -534,7 +534,7 @@ extension KeyRecorder {
         return nil
       }
     }
-    
+
     @objc
     func controlWasPressed(_ sender: KeyRecorderSegmentedControl) {
       switch recordingState {
@@ -555,7 +555,7 @@ extension KeyRecorder {
       }
       updateBasedOnNewRecordingState()
     }
-    
+
     func updateBasedOnNewRecordingState() {
       // Note: updateVisualAppearance() will get called as an observation
       // handler as soon as the proxy's registration state changes.
@@ -567,7 +567,7 @@ extension KeyRecorder {
         deselectAll()
       }
     }
-    
+
     func record(key: KeyCommand.Key, modifiers: [KeyCommand.Modifier]) {
       proxy.withoutChangingRegistrationState {
         $0.key = key
@@ -576,12 +576,12 @@ extension KeyRecorder {
       proxy.register()
       recordingState = .idle
     }
-    
+
     func updateVisualAppearance() {
       setLabel(forState: recordingState)
       setImage(forState: recordingState)
     }
-    
+
     func setLabel(_ label: Label) {
       var string = ""
       if
@@ -596,7 +596,7 @@ extension KeyRecorder {
       }
       setLabel(string, forSegment: 0)
     }
-    
+
     func setLabel(forState state: RecordingState) {
       switch state {
       case .recording:
@@ -609,7 +609,7 @@ extension KeyRecorder {
         }
       }
     }
-    
+
     func setImage(forState state: RecordingState) {
       switch state {
       case .recording:
@@ -622,19 +622,19 @@ extension KeyRecorder {
         }
       }
     }
-    
+
     func deselectAll() {
       for n in 0..<segmentCount {
         setSelected(false, forSegment: n)
       }
     }
-    
+
     func setFailureReason(_ failureReason: FailureReason) {
       if self.failureReason != failureReason {
         self.failureReason = failureReason
       }
     }
-    
+
     func observeWindowVisibility() {
       windowVisibilityObservation = window?.observe(
         \.isVisible,
@@ -651,12 +651,12 @@ extension KeyRecorder {
         }
       }
     }
-    
+
     override func viewDidMoveToWindow() {
       super.viewDidMoveToWindow()
       updateVisualAppearance()
     }
-    
+
     deinit {
       keyDownMonitor?.stop()
     }
@@ -688,7 +688,7 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
   struct FailureReason {
     let messageText: String
     let infoText: String
-    
+
     var failureCount: Int {
       didSet {
         guard
@@ -700,7 +700,7 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
         failureCount = 0
       }
     }
-    
+
     init(
       messageText: String = "Cannot record shortcut.",
       infoText: String,
@@ -710,11 +710,11 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
       self.infoText = infoText
       self.failureCount = failureCount
     }
-    
+
     mutating func incrementFailureCount() {
       failureCount += 1
     }
-    
+
     func displayAlert() {
       guard self != .noFailure else {
         return
@@ -733,20 +733,20 @@ extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason {
   static let noFailure = Self(
     messageText: "",
     infoText: "No failure.")
-  
+
   static let needsModifiers = Self(
     infoText: """
       Please include at least one modifier key \
       (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
       """)
-  
+
   static let onlyShift = Self(
     infoText: """
       Shift (\(KeyCommand.Modifier.shift.stringValue)) by itself is not a \
       valid modifier key. Please include at least one additional modifier \
       key (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
       """)
-  
+
   static func systemReserved(
     key: KeyCommand.Key,
     modifiers: [KeyCommand.Modifier]

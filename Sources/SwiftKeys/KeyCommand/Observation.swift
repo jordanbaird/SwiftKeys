@@ -15,12 +15,12 @@ extension KeyCommand {
   public struct Observation {
     /// The type of event that an observation observes.
     public typealias EventType = KeyCommand.EventType
-    
+
     private let handler: VoidHandler
-    
+
     /// The event type of the observation.
     public let eventType: EventType
-    
+
     /// Creates an observation that executes the given handler when
     /// it receives the given event type.
     ///
@@ -43,7 +43,7 @@ extension KeyCommand {
       self.eventType = eventType
       self.handler = .init(block: handler)
     }
-    
+
     func perform() {
       handler.perform()
     }
@@ -68,7 +68,7 @@ extension Array where Element == KeyCommand.Observation {
       observation.perform()
     }
   }
-  
+
   func performObservations(matching eventType: KeyCommand.EventType?) {
     performObservations {
       $0 == eventType

@@ -11,14 +11,14 @@ import Foundation // To enable `@objc dynamic` declarations
 // MARK: - _Prefix (Implementation)
 
 public class _Prefix: Codable, ExpressibleByStringInterpolation {
-  
+
   // MARK: - Static Properties
-  
+
   /// A prefix whose value is an empty string.
   public static var emptyPrefix: Self {
     .init("")
   }
-  
+
   /// The prefix that all ``KeyCommand/Name-swift.struct`` instances will
   /// automatically use.
   ///
@@ -32,12 +32,12 @@ public class _Prefix: Codable, ExpressibleByStringInterpolation {
   public static var sharedPrefix: Self {
     emptyPrefix.sharedPrefix
   }
-  
+
   // MARK: - Instance Properties
-  
+
   /// The raw value of the prefix.
   public let rawValue: String
-  
+
   /// The prefix that all ``KeyCommand/Name-swift.struct`` instances will
   /// automatically use.
   ///
@@ -54,14 +54,14 @@ public class _Prefix: Codable, ExpressibleByStringInterpolation {
   /// ```
   @objc dynamic
   open var sharedPrefix: Self { Self.emptyPrefix }
-  
+
   // MARK: - Initializers
-  
+
   /// Creates a prefix with the given raw value.
   public required init(_ rawValue: String) {
     self.rawValue = rawValue
   }
-  
+
   /// Creates a prefix using a string literal.
   public required convenience init(stringLiteral value: String) {
     self.init(value)
@@ -96,7 +96,7 @@ extension KeyCommand.Name {
 
 struct PrefixValueType {
   let rawValue: String
-  
+
   init(prefix: KeyCommand.Name.Prefix) {
     self.rawValue = prefix.rawValue
   }

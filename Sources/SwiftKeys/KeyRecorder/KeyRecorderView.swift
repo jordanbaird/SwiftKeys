@@ -12,15 +12,15 @@ import SwiftUI
 @available(macOS 10.15, *)
 private struct _KeyRecorderView: NSViewRepresentable {
   let constructor: () -> KeyRecorder
-  
+
   init(constructor: @escaping () -> KeyRecorder) {
     self.constructor = constructor
   }
-  
+
   func makeNSView(context: Context) -> KeyRecorder {
     constructor()
   }
-  
+
   func updateNSView(_ nsView: KeyRecorder, context: Context) {
     nsView.bezelStyle = context.environment.keyRecorderBezelStyle
   }
@@ -53,23 +53,23 @@ private struct _KeyRecorderView: NSViewRepresentable {
 public struct KeyRecorderView: View {
   /// Styles that affect the highlighted appearance of a key recorder view.
   public typealias HighlightStyle = KeyRecorder.HighlightStyle
-  
+
   /// Styles that a key recorder view's bezel can be drawn in.
   public typealias BezelStyle = KeyRecorder.BezelStyle
-  
+
   let command: KeyCommand
-  
+
   public var body: some View {
     _KeyRecorderView {
       KeyRecorder(command: command)
     }
   }
-  
+
   /// Creates a key recorder view for the given key command.
   public init(command: KeyCommand) {
     self.command = command
   }
-  
+
   /// Creates a key recorder view for the key command with the given name.
   public init(name: KeyCommand.Name) {
     command = .init(name: name)
@@ -92,7 +92,7 @@ private extension EnvironmentValues {
     get { self[KeyRecorderHighlightStyleKey.self] }
     set { self[KeyRecorderHighlightStyleKey.self] = newValue }
   }
-  
+
   var keyRecorderBezelStyle: KeyRecorder.BezelStyle {
     get { self[KeyRecorderBezelStyleKey.self] }
     set { self[KeyRecorderBezelStyleKey.self] = newValue }
@@ -102,7 +102,7 @@ private extension EnvironmentValues {
 @available(macOS 10.15, *)
 private struct KeyRecorderBezelStyle: ViewModifier {
   let bezelStyle: KeyRecorder.BezelStyle
-  
+
   func body(content: Content) -> some View {
     content.environment(\.keyRecorderBezelStyle, bezelStyle)
   }
@@ -111,7 +111,7 @@ private struct KeyRecorderBezelStyle: ViewModifier {
 @available(macOS 10.15, *)
 private struct KeyRecorderHighlightStyle: ViewModifier {
   let highlightStyle: KeyRecorder.HighlightStyle
-  
+
   func body(content: Content) -> some View {
     content.environment(\.keyRecorderHighlightStyle, highlightStyle)
   }
@@ -123,12 +123,12 @@ extension View {
   public func highlightStyle(_ style: KeyRecorderView.HighlightStyle) -> some View {
     modifier(KeyRecorderHighlightStyle(highlightStyle: style))
   }
-  
+
   /// Applies the given bezel style to a key recorder view.
   public func bezelStyle(_ style: KeyRecorderView.BezelStyle) -> some View {
     modifier(KeyRecorderBezelStyle(bezelStyle: style))
   }
-  
+
   /// Adds the given observation to the given key command, using the
   /// context of this view.
   ///
@@ -169,7 +169,7 @@ extension View {
       command.observe(type, handler: handler)
     }
   }
-  
+
   /// Adds the given observation to the key command with the given
   /// name, using the context of this view.
   ///

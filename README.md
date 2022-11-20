@@ -64,7 +64,7 @@ struct SettingsView: View {
 ```swift
 class SettingsViewController: NSViewController {
     let recorder = KeyRecorder(name: "ToggleMainWindow")
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(recorder)
@@ -107,7 +107,7 @@ Key commands are automatically stored in the `UserDefaults` system, using their 
 
 ```swift
 extension KeyCommand.Name.Prefix {
-    public override var sharedPrefix: Self { 
+    public override var sharedPrefix: Self {
         Self("MyApp")
     }
 }

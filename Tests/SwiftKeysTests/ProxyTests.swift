@@ -15,7 +15,7 @@ final class ProxyTests: TestCase {
     assertNoErr(KeyCommandProxy.install())
     XCTAssertTrue(KeyCommandProxy.isInstalled)
   }
-  
+
   func testInstall() {
     var command = KeyCommand(name: "Command1")
     XCTAssertFalse(KeyCommandProxy.isInstalled)
@@ -26,7 +26,7 @@ final class ProxyTests: TestCase {
     command.observe(.keyDown) { }
     XCTAssertTrue(KeyCommandProxy.isInstalled)
   }
-  
+
   func testRegisterAndUnregister() {
     var command = KeyCommand(name: "Command2")
     XCTAssertFalse(command.proxy.isRegistered)
@@ -48,7 +48,7 @@ final class ProxyTests: TestCase {
     XCTAssertFalse(command.proxy.isRegistered,
                    "Calling unregister() should unregister the command.")
   }
-  
+
   func testObserveRegistrationState() {
     let command = KeyCommand(name: "Command3")
     XCTAssert(command.proxy.registrationStateHandlers.isEmpty)
@@ -56,7 +56,7 @@ final class ProxyTests: TestCase {
     XCTAssertEqual(command.proxy.registrationStateHandlers.count, 1,
                    "Calling observeRegistrationState(_:) should store a handler.")
   }
-  
+
   func testResetRegistration() {
     let command = KeyCommand(
       name: "Command4",

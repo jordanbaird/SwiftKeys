@@ -13,16 +13,16 @@ extension KeyRecorder {
   public enum HighlightStyle: CaseIterable {
     /// A light highlight style.
     case light
-    
+
     /// A medium-light highlight style.
     case mediumLight
-    
+
     /// A dark highlight style.
     case dark
-    
+
     /// An ultra-dark highlight style.
     case ultraDark
-    
+
     var highlightColor: NSColor {
       var color: NSColor
       switch self {
@@ -32,7 +32,7 @@ extension KeyRecorder {
       }
       return color.withAlphaComponent(0.75)
     }
-    
+
     var material: NSVisualEffectView.Material {
       if #available(macOS 10.14, *) {
         switch self {

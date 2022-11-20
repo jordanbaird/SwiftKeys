@@ -41,12 +41,12 @@ extension KeyCommand {
   public struct Name: ExpressibleByStringInterpolation {
     /// The raw value of the name.
     public let rawValue: String
-    
+
     private var truePrefix: PrefixValueType
-    
+
     /// A prefix that will be applied to the name when it is stored in
     /// `UserDefaults`.
-    /// 
+    ///
     /// By default, this value is set to the `sharedPrefix` property of the
     /// `Prefix` type. However, it can be set to any value desired, either
     /// through `Name`'s initializer, or by setting this property directly.
@@ -58,7 +58,7 @@ extension KeyCommand {
       get { .init(truePrefix.rawValue) }
       set { truePrefix = .init(prefix: newValue) }
     }
-    
+
     /// The name's raw value, combined with its prefix.
     ///
     /// ```swift
@@ -70,13 +70,13 @@ extension KeyCommand {
     public var combinedValue: String {
       prefix.rawValue + rawValue
     }
-    
+
     /// Creates a name with the given raw value and prefix.
     public init(_ rawValue: String, prefix: Prefix = .sharedPrefix) {
       truePrefix = .init(prefix: prefix)
       self.rawValue = rawValue
     }
-    
+
     /// Creates a name using a string literal.
     public init(stringLiteral value: String) {
       self.init(value)

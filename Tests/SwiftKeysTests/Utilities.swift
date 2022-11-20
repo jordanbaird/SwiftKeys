@@ -28,7 +28,7 @@ extension TestCase {
     XCTAssertNotNil(value, message(), file: file, line: line)
     return value!
   }
-  
+
   /// Asserts that the result of a block of code is not nil,
   /// and returns the unwrapped value.
   func unwrap<T>(
@@ -39,7 +39,7 @@ extension TestCase {
   ) rethrows -> T {
     try _unwrap(block, message, file: file, line: line)
   }
-  
+
   /// Asserts that an expression is not nil, and returns the
   /// unwrapped value.
   func unwrap<T>(
@@ -50,7 +50,7 @@ extension TestCase {
   ) rethrows -> T {
     try _unwrap(expression, message, file: file, line: line)
   }
-  
+
   private func _assertAllEqual<T: Equatable>(
     _ itemBlock: () throws -> T,
     _ block: () throws -> [T],
@@ -64,7 +64,7 @@ extension TestCase {
       XCTAssertEqual(item, targetItem, message, file: file, line: line)
     }
   }
-  
+
   func assertAllEqual<T: Equatable>(
     to expression: @autoclosure () throws -> T,
     @Builder<T>
@@ -75,7 +75,7 @@ extension TestCase {
   ) rethrows {
     try _assertAllEqual(expression, block, message, file: file, line: line)
   }
-  
+
   func assertAllEqual<T: Equatable>(
     to expression: @autoclosure () throws -> T,
     _ expressions: @autoclosure () throws -> [T],
@@ -85,7 +85,7 @@ extension TestCase {
   ) rethrows {
     try _assertAllEqual(expression, expressions, message, file: file, line: line)
   }
-  
+
   private func _assertAllSatisfyNoErr(
     _ block: () throws -> [OSStatus],
     _ message: () -> String,
@@ -97,7 +97,7 @@ extension TestCase {
       XCTAssertEqual(status, noErr, message, file: file, line: line)
     }
   }
-  
+
   /// Asserts that the result of a block of code is equal
   /// to `OSStatus.noErr`.
   func assertNoErr(
@@ -109,7 +109,7 @@ extension TestCase {
   ) rethrows {
     try _assertAllSatisfyNoErr(block, message, file: file, line: line)
   }
-  
+
   /// Asserts that the given status is equal to `OSStatus.noErr`.
   func assertNoErr(
     _ status: @autoclosure () throws -> OSStatus,
@@ -123,11 +123,11 @@ extension TestCase {
 
 struct TestError: Error {
   let message: String
-  
+
   init(_ message: String) {
     self.message = message
   }
-  
+
   init(_ status: OSStatus) {
     self.init("Received status with value: \(status)")
   }

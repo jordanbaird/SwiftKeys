@@ -47,7 +47,7 @@ By default, ``KeyCommand/Name-swift.struct`` uses the `sharedPrefix` property. H
 extension KeyCommand.Name.Prefix {
     static let skPrefix = Self("SK")
     static let jbPrefix = Self("JB")
-    
+
     public override var sharedPrefix: Self {
         Self("Cheesecake")
     }

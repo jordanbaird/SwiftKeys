@@ -21,22 +21,22 @@ final class PrefixTests: TestCase {
     }
     XCTAssertNil(UserDefaults.standard.persistentDomain(forName: name))
   }
-  
+
   func testPrefix() {
     prefix = "Prefix1"
     let n1 = KeyCommand.Name("Name1")
     XCTAssertEqual(n1.prefix.rawValue, "Prefix1")
-    
+
     prefix = "Prefix2"
     let n2 = KeyCommand.Name("Name2")
     XCTAssertEqual(n2.prefix.rawValue, "Prefix2")
   }
-  
+
   func testHashValue() {
     let p1 = KeyCommand.Name.Prefix("Hello")
     let p2: KeyCommand.Name.Prefix = "Hello"
     let p3 = KeyCommand.Name.Prefix("Goodbye")
-    
+
     XCTAssertEqual(p1.hashValue, p2.hashValue,
               "Identical prefixes should have identical hash values.")
     XCTAssertNotEqual(p2.hashValue, p3.hashValue,

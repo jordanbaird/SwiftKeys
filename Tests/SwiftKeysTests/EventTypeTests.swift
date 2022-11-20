@@ -12,7 +12,7 @@ import XCTest
 
 final class EventTypeTests: TestCase {
   typealias EventType = KeyCommand.EventType
-  
+
   func testInitWithCarbonConstant() {
     // kEventHotKeyPressed and kEventRawKeyDown should both
     // initialize the keyDown EventType.
@@ -20,18 +20,18 @@ final class EventTypeTests: TestCase {
       EventType(kEventHotKeyPressed)
       EventType(kEventRawKeyDown)
     }
-    
+
     // kEventHotKeyReleased and kEventRawKeyUp should both
     // initialize the keyUp EventType.
     assertAllEqual(to: .keyUp) {
       EventType(kEventHotKeyReleased)
       EventType(kEventRawKeyUp)
     }
-    
+
     // Any other value should initialize to nil.
     XCTAssertNil(EventType(kEventHotKeyNoOptions))
   }
-  
+
   func testInitWithValidEventRef() throws {
     //
     // Create two CGEvents that we know will be keyDown and
@@ -39,7 +39,7 @@ final class EventTypeTests: TestCase {
     // from each of them. For this test to succeed, the created
     // EventType should match for both keyDown and keyUp.
     //
-    
+
     let keyDownEvent = unwrap {
       CGEvent(
         keyboardEventSource: .init(stateID: .hidSystemState),
@@ -52,10 +52,10 @@ final class EventTypeTests: TestCase {
         virtualKey: 6,
         keyDown: false)
     }
-    
+
     var keyDownRef: EventRef?
     var keyUpRef: EventRef?
-    
+
     assertNoErr {
       CreateEventWithCGEvent(
         nil,
@@ -68,18 +68,18 @@ final class EventTypeTests: TestCase {
         UInt32(kEventAttributeNone),
         &keyUpRef)
     }
-    
+
     XCTAssertEqual(EventType(unwrap(keyDownRef)), .keyDown)
     XCTAssertEqual(EventType(unwrap(keyUpRef)), .keyUp)
   }
-  
+
   func testInitWithInvalidEventRef() throws {
     //
     // Create a CGEvent that we know won't be keyUp or keyDown.
     // Try to create an instance of EventType from it. For this
     // test to succeed, the EventType creation should fail.
     //
-    
+
     let event = unwrap {
       CGEvent(
         scrollWheelEvent2Source: .init(stateID: .hidSystemState),
@@ -89,9 +89,9 @@ final class EventTypeTests: TestCase {
         wheel2: 0,
         wheel3: 0)
     }
-    
+
     var eventRef: EventRef?
-    
+
     assertNoErr {
       CreateEventWithCGEvent(
         nil,
@@ -99,7 +99,7 @@ final class EventTypeTests: TestCase {
         UInt32(kEventAttributeNone),
         &eventRef)
     }
-    
+
     let eventType = EventType(unwrap(eventRef))
     XCTAssertNil(eventType)
   }

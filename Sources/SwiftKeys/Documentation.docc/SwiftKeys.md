@@ -33,8 +33,8 @@ Key commands are automatically stored `UserDefaults`. The name of the command se
 
 ```swift
 extension KeyCommand.Name.Prefix {
-    public override var sharedPrefix: Self { 
-        Self("SK") 
+    public override var sharedPrefix: Self {
+        Self("SK")
     }
 }
 
