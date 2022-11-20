@@ -51,20 +51,6 @@ final class KeyRecorderTests: TestCase {
     XCTAssertEqual(command.modifiers, [.command, .control])
   }
 
-  func testHighlight() {
-    for style in KeyRecorder.HighlightStyle.allCases {
-      recorder.isHighlighted = false
-      XCTAssertFalse(recorder.subviews.contains(recorder.highlightView))
-
-      recorder.highlightStyle = style
-      recorder.isHighlighted = true
-      XCTAssert(recorder.subviews.contains(recorder.highlightView))
-
-      XCTAssertEqual(recorder.highlightView.layer?.backgroundColor, style.highlightColor.cgColor)
-      XCTAssertEqual(recorder.highlightView.material, style.material)
-    }
-  }
-
   func testAppearance() {
     let allAppearances: [NSAppearance] = [
       .init(named: .aqua)!,
@@ -80,13 +66,6 @@ final class KeyRecorderTests: TestCase {
       XCTAssertEqual(recorder.appearance, recorder.segmentedControl.appearance)
       XCTAssertEqual(recorder.segmentedControl.appearance, appearance)
     }
-  }
-
-  func testBezelStyle() {
-    XCTAssertEqual(recorder.bezelStyle, .rounded)
-    recorder.bezelStyle = .flatBordered
-    XCTAssertEqual(recorder.bezelStyle, .flatBordered)
-    XCTAssertEqual(recorder.segmentedControl.segmentStyle, .roundRect)
   }
 
   func testStringValue() {

@@ -51,9 +51,6 @@ private struct _KeyRecorderView: NSViewRepresentable {
 /// ```
 @available(macOS 10.15, *)
 public struct KeyRecorderView: View {
-  /// Styles that affect the highlighted appearance of a key recorder view.
-  public typealias HighlightStyle = KeyRecorder.HighlightStyle
-
   /// Styles that a key recorder view's bezel can be drawn in.
   public typealias BezelStyle = KeyRecorder.BezelStyle
 
@@ -77,22 +74,12 @@ public struct KeyRecorderView: View {
 }
 
 @available(macOS 10.15, *)
-private struct KeyRecorderHighlightStyleKey: EnvironmentKey {
-  static var defaultValue = KeyRecorder.HighlightStyle.light
-}
-
-@available(macOS 10.15, *)
 private struct KeyRecorderBezelStyleKey: EnvironmentKey {
   static var defaultValue = KeyRecorder.BezelStyle.rounded
 }
 
 @available(macOS 10.15, *)
 private extension EnvironmentValues {
-  var keyRecorderHighlightStyle: KeyRecorder.HighlightStyle {
-    get { self[KeyRecorderHighlightStyleKey.self] }
-    set { self[KeyRecorderHighlightStyleKey.self] = newValue }
-  }
-
   var keyRecorderBezelStyle: KeyRecorder.BezelStyle {
     get { self[KeyRecorderBezelStyleKey.self] }
     set { self[KeyRecorderBezelStyleKey.self] = newValue }
@@ -109,21 +96,7 @@ private struct KeyRecorderBezelStyle: ViewModifier {
 }
 
 @available(macOS 10.15, *)
-private struct KeyRecorderHighlightStyle: ViewModifier {
-  let highlightStyle: KeyRecorder.HighlightStyle
-
-  func body(content: Content) -> some View {
-    content.environment(\.keyRecorderHighlightStyle, highlightStyle)
-  }
-}
-
-@available(macOS 10.15, *)
 extension View {
-  /// Applies the given highlight style to a key recorder view.
-  public func highlightStyle(_ style: KeyRecorderView.HighlightStyle) -> some View {
-    modifier(KeyRecorderHighlightStyle(highlightStyle: style))
-  }
-
   /// Applies the given bezel style to a key recorder view.
   public func bezelStyle(_ style: KeyRecorderView.BezelStyle) -> some View {
     modifier(KeyRecorderBezelStyle(bezelStyle: style))

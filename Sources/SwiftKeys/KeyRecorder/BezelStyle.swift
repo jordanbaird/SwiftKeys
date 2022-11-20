@@ -11,40 +11,17 @@ import AppKit
 extension KeyRecorder {
   /// Styles that a key recorder's bezel can be drawn in.
   public enum BezelStyle: CaseIterable, Hashable {
-    /// Styles available for a key recorder's border.
-    /// - Note: These constants are not available for all bezel styles.
-    public enum BorderStyle {
-      /// The bezel is drawn with a solid border.
-      case solid
-
-      /// The bezel is drawn with a dashed border.
-      case dashed
-
-      /// The bezel style is drawn without a border.
-      case noBorder
-    }
-
     /// The default style.
     case rounded
 
     /// A rounded, rectangular style with a flat appearance and a solid line border.
     case flatBordered
 
-    /// A style where the individual segments of the recorder do not touch, optionally
-    /// drawn with a solid line border.
-    case separated(_ style: BorderStyle)
+    /// A style where the individual segments of the recorder do not touch.
+    case separated
 
     /// A square style.
     case square
-
-    public static var allCases: [Self] = [
-      .rounded,
-      .flatBordered,
-      .separated(.solid),
-      .separated(.dashed),
-      .separated(.noBorder),
-      .square
-    ]
 
     var rawValue: NSSegmentedControl.Style {
       switch self {
@@ -73,8 +50,14 @@ extension KeyRecorder {
       }
     }
 
-    init(_ rawValue: NSSegmentedControl.Style) {
-      self = Self.allCases.first { $0.rawValue == rawValue } ?? .rounded
+    init?(_ rawValue: NSSegmentedControl.Style) {
+      let style = Self.allCases.first {
+        $0.rawValue == rawValue
+      }
+      guard let style = style else {
+        return nil
+      }
+      self = style
     }
   }
 }
