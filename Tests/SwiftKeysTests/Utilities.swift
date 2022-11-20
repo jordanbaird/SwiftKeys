@@ -13,7 +13,7 @@ import XCTest
 /// An `XCTestCase` class, customized for `SwiftKeys`.
 class TestCase: XCTestCase {
   override func tearDownWithError() throws {
-    try Proxy.uninstall()
+    try KeyCommandProxy.uninstall()
   }
 }
 

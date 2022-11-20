@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 //
-// Proxy.swift
+// KeyCommandProxy.swift
 //
 // Created: 2022. Author: Jordan Baird.
 //
@@ -8,7 +8,7 @@
 
 import Carbon.HIToolbox
 
-final class Proxy {
+final class KeyCommandProxy {
   private static var eventHandlerRef: EventHandlerRef?
   private static let eventTypes = [
     EventTypeSpec(
@@ -108,7 +108,7 @@ final class Proxy {
       // Make sure the event is one of ours (a.k.a. if its signature lines up
       // with our signature), and that we have a stored proxy for the event.
       guard
-        identifier.signature == Proxy.signature,
+        identifier.signature == KeyCommandProxy.signature,
         let proxy = ProxyStorage.proxy(with: identifier.id)
       else {
         return OSStatus(eventNotHandledErr)
@@ -285,7 +285,7 @@ final class Proxy {
     return handler
   }
   
-  func withoutChangingRegistrationState(do body: (Proxy) throws -> Void) rethrows {
+  func withoutChangingRegistrationState(do body: (KeyCommandProxy) throws -> Void) rethrows {
     blockRegistrationChanges = true
     defer {
       blockRegistrationChanges = false
@@ -308,38 +308,38 @@ final class Proxy {
 
 // MARK: - Protocol Conformances
 
-extension Proxy: Hashable {
+extension KeyCommandProxy: Hashable {
   func hash(into hasher: inout Hasher) {
     hasher.combine(objectIdentifier)
   }
 }
 
-extension Proxy: Equatable {
-  static func == (lhs: Proxy, rhs: Proxy) -> Bool {
+extension KeyCommandProxy: Equatable {
+  static func == (lhs: KeyCommandProxy, rhs: KeyCommandProxy) -> Bool {
     lhs.objectIdentifier == rhs.objectIdentifier
   }
 }
 
 // MARK: - ProxyStorage
 
-typealias ProxyStorage = Set<Proxy>
+typealias ProxyStorage = Set<KeyCommandProxy>
 
-extension Set where Element == Proxy {
+extension Set where Element == KeyCommandProxy {
   private static var all = Self()
   
-  static func proxy(with identifier: UInt32) -> Proxy? {
+  static func proxy(with identifier: UInt32) -> KeyCommandProxy? {
     all.first { $0.identifier.id == identifier }
   }
   
-  static func proxy(with name: KeyCommand.Name) -> Proxy? {
+  static func proxy(with name: KeyCommand.Name) -> KeyCommandProxy? {
     all.first { $0.name == name }
   }
   
-  static func store(_ proxy: Proxy) {
+  static func store(_ proxy: KeyCommandProxy) {
     all.update(with: proxy)
   }
   
-  static func remove(_ proxy: Proxy) {
+  static func remove(_ proxy: KeyCommandProxy) {
     all.remove(proxy)
   }
 }

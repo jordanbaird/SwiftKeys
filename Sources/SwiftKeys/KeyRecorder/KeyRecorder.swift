@@ -369,7 +369,7 @@ public final class KeyRecorder: NSControl {
 
 extension KeyRecorder {
   class KeyRecorderSegmentedControl: NSSegmentedControl {
-    let proxy: Proxy
+    let proxy: KeyCommandProxy
     
     var windowVisibilityObservation: NSKeyValueObservation?
     var keyDownMonitor: EventMonitor?

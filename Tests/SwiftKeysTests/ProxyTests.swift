@@ -11,20 +11,20 @@ import XCTest
 
 final class ProxyTests: TestCase {
   func testManualInstall() {
-    XCTAssertFalse(Proxy.isInstalled)
-    assertNoErr(Proxy.install())
-    XCTAssertTrue(Proxy.isInstalled)
+    XCTAssertFalse(KeyCommandProxy.isInstalled)
+    assertNoErr(KeyCommandProxy.install())
+    XCTAssertTrue(KeyCommandProxy.isInstalled)
   }
   
   func testInstall() {
     var command = KeyCommand(name: "Command1")
-    XCTAssertFalse(Proxy.isInstalled)
+    XCTAssertFalse(KeyCommandProxy.isInstalled)
     command = KeyCommand(
       name: "Command1",
       key: .return,
       modifiers: .command, .control)
     command.observe(.keyDown) { }
-    XCTAssertTrue(Proxy.isInstalled)
+    XCTAssertTrue(KeyCommandProxy.isInstalled)
   }
   
   func testRegisterAndUnregister() {

@@ -37,8 +37,8 @@ public struct KeyCommand {
   ///
   /// - Note: If no proxy object has been stored at the time of
   ///   access, a new object will be created and stored.
-  var proxy: Proxy {
-    ProxyStorage.proxy(with: name) ?? Proxy(with: name, storing: true)
+  var proxy: KeyCommandProxy {
+    ProxyStorage.proxy(with: name) ?? KeyCommandProxy(with: name, storing: true)
   }
   
   /// A Boolean value that indicates whether the key command is currently
