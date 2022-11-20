@@ -67,10 +67,6 @@ final class KeyCommandProxy {
     }
   }
   
-  var objectIdentifier: ObjectIdentifier {
-    .init(self)
-  }
-  
   init(with name: KeyCommand.Name, storing shouldStore: Bool = false) {
     self.name = name
     Self.proxyCount += 1
@@ -308,15 +304,15 @@ final class KeyCommandProxy {
 
 // MARK: - Protocol Conformances
 
-extension KeyCommandProxy: Hashable {
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(objectIdentifier)
+extension KeyCommandProxy: Equatable {
+  static func == (lhs: KeyCommandProxy, rhs: KeyCommandProxy) -> Bool {
+    ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
   }
 }
 
-extension KeyCommandProxy: Equatable {
-  static func == (lhs: KeyCommandProxy, rhs: KeyCommandProxy) -> Bool {
-    lhs.objectIdentifier == rhs.objectIdentifier
+extension KeyCommandProxy: Hashable {
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(ObjectIdentifier(self))
   }
 }
 
