@@ -70,7 +70,7 @@ public class _Prefix: Codable, ExpressibleByStringInterpolation {
 
 extension _Prefix: CustomStringConvertible {
   public var description: String {
-    "\(Self.self)(" + rawValue + ")"
+    rawValue
   }
 }
 
@@ -92,18 +92,26 @@ extension KeyCommand.Name {
   public final class Prefix: _Prefix { }
 }
 
-// MARK: - PrefixValueType
+// MARK: - Base
 
-struct PrefixValueType {
-  let rawValue: String
+extension _Prefix {
+  struct Base {
+    let rawValue: String
 
-  init(prefix: KeyCommand.Name.Prefix) {
-    self.rawValue = prefix.rawValue
+    init(prefix: _Prefix) {
+      self.rawValue = prefix.rawValue
+    }
   }
 }
 
-extension PrefixValueType: Codable { }
+extension _Prefix.Base: Codable { }
 
-extension PrefixValueType: Equatable { }
+extension _Prefix.Base: CustomStringConvertible {
+  var description: String {
+    rawValue
+  }
+}
 
-extension PrefixValueType: Hashable { }
+extension _Prefix.Base: Equatable { }
+
+extension _Prefix.Base: Hashable { }

@@ -42,39 +42,74 @@ extension KeyCommand {
     /// The raw value of the name.
     public let rawValue: String
 
-    private var truePrefix: PrefixValueType
+    /// A string that separates the name's `rawValue` from its `prefix`
+    /// when the name is combined in the `combinedValue` property.
+    public let separator: String
+
+    private var prefixBase: Prefix.Base
 
     /// A prefix that will be applied to the name when it is stored in
     /// `UserDefaults`.
     ///
-    /// By default, this value is set to the `sharedPrefix` property of the
-    /// `Prefix` type. However, it can be set to any value desired, either
-    /// through `Name`'s initializer, or by setting this property directly.
+    /// By default, this value is set to the `sharedPrefix` property of
+    /// the `Prefix` type. However, it can be set to any value desired
+    /// through `Name`'s initializer.
     ///
     /// - Note: You can extend the `Prefix` type and override its `sharedPrefix`
     ///   property to automatically apply a custom prefix to every name that
     ///   doesn't explicitly define its own prefix.
     public var prefix: Prefix {
-      get { .init(truePrefix.rawValue) }
-      set { truePrefix = .init(prefix: newValue) }
+      .init(prefixBase.rawValue)
     }
 
-    /// The name's raw value, combined with its prefix.
+    /// The name's raw value, combined with its ``prefix-swift.property`` and
+    /// separated by its ``separator``.
     ///
     /// ```swift
-    /// let name = KeyCommand.Name("Toggle", prefix: "Trigger")
+    /// let name = KeyCommand.Name("Toggle", prefix: "Trigger", separator: "_")
     ///
     /// print(name.combinedValue)
-    /// // Prints "TriggerToggle"
+    /// // Prints "Trigger_Toggle"
     /// ```
     public var combinedValue: String {
-      prefix.rawValue + rawValue
+      prefixBase.rawValue + separator + rawValue
+    }
+
+    private init(rawValue: String, prefixBase: Prefix.Base, separator: String) {
+      self.prefixBase = prefixBase
+      self.rawValue = rawValue
+      self.separator = separator
+    }
+
+    /// Creates a name with the given raw value, prefix, and separator.
+    public init(_ rawValue: String, prefix: Prefix = .sharedPrefix, separator: String) {
+      self.init(rawValue: rawValue, prefixBase: .init(prefix: prefix), separator: separator)
     }
 
     /// Creates a name with the given raw value and prefix.
     public init(_ rawValue: String, prefix: Prefix = .sharedPrefix) {
-      truePrefix = .init(prefix: prefix)
-      self.rawValue = rawValue
+      self.init(rawValue, prefix: prefix, separator: "")
+    }
+
+    /// Creates a name from another name, using the given prefix
+    /// and separator.
+    ///
+    /// If `prefix` is `nil`, the prefix belonging to `name` will
+    /// be used.
+    public init(_ name: Self, prefix: Prefix? = nil, separator: String) {
+      if let prefix = prefix {
+        self.init(name.rawValue, prefix: prefix, separator: separator)
+      } else {
+        self.init(name.rawValue, prefix: name.prefix, separator: separator)
+      }
+    }
+
+    /// Creates a name from another name, using the given prefix.
+    ///
+    /// If `prefix` is `nil`, the prefix belonging to `name` will
+    /// be used.
+    public init(_ name: Self, prefix: Prefix? = nil) {
+      self.init(name, prefix: prefix, separator: "")
     }
 
     /// Creates a name using a string literal.
@@ -84,13 +119,23 @@ extension KeyCommand {
   }
 }
 
+extension KeyCommand.Name: Codable { }
+
 extension KeyCommand.Name: CustomStringConvertible {
   public var description: String {
-    "\(Self.self)(" + combinedValue + ")"
+    combinedValue
   }
 }
 
-extension KeyCommand.Name: Codable { }
+extension KeyCommand.Name: CustomDebugStringConvertible {
+  public var debugDescription: String {
+    "\(Self.self)("
+    + "rawValue: \(rawValue), "
+    + "prefix: \(prefixBase), "
+    + "separator: \(separator)"
+    + ")"
+  }
+}
 
 extension KeyCommand.Name: Equatable { }
 
