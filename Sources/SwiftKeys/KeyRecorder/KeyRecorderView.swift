@@ -28,25 +28,27 @@ private struct _KeyRecorderView: NSViewRepresentable {
 
 /// A SwiftUI view that can record key commands.
 ///
-/// Start by creating a ``KeyCommand``. You can then use it to initialize a key
-/// recorder view, which will update the command whenever a new key combination
-/// is recorded. You can also observe the command, and perform actions on both
-/// key-down and key-up.
+/// Start by creating a ``KeyCommand``. You can then use it to initialize
+/// a key recorder view, which will update the command whenever a new key
+/// combination is recorded. You can also observe the command, and perform
+/// actions on key-down, key-up, and double-tap.
 ///
 /// ```swift
 /// struct ContentView: View {
-///     let command = KeyCommand(name: "SomeCommand")
+///     let command = KeyCommand(name: "someCommand")
 ///
 ///     var body: some View {
-///         KeyRecorderView(command: command)
+///         KeyRecorderView(command)
+///             .onKeyCommand(type: .keyDown) {
+///                 print("DOWN")
+///             }
+///             .onKeyCommand(type: .keyUp) {
+///                 print("UP")
+///             }
+///             .onKeyCommand(type: .doubleTap(0.2)) {
+///                 print("DOUBLE TAP")
+///             }
 ///     }
-/// }
-///
-/// command.observe(.keyDown) {
-///     print("DOWN")
-/// }
-/// command.observe(.keyUp) {
-///     print("UP")
 /// }
 /// ```
 @available(macOS 10.15, *)
@@ -56,95 +58,52 @@ public struct KeyRecorderView: View {
 
   let command: KeyCommand
 
+  var bodyConstructor: () -> AnyView
+
   public var body: some View {
-    _KeyRecorderView {
-      KeyRecorder(command: command)
+    bodyConstructor()
+  }
+
+  private init(
+    command: KeyCommand,
+    @ViewBuilder bodyConstructor: @escaping () -> some View
+  ) {
+    self.command = command
+    self.bodyConstructor = {
+      AnyView(bodyConstructor())
     }
   }
 
   /// Creates a key recorder view for the given key command.
   public init(command: KeyCommand) {
-    self.command = command
+    self.init(command: command) {
+      _KeyRecorderView {
+        KeyRecorder(command: command)
+      }
+    }
+  }
+
+  /// Creates a key recorder view for the given key command.
+  public init(_ command: KeyCommand) {
+    self.init(command: command)
   }
 
   /// Creates a key recorder view for the key command with the given name.
   public init(name: KeyCommand.Name) {
-    command = .init(name: name)
-  }
-}
-
-@available(macOS 10.15, *)
-private struct KeyRecorderBezelStyleKey: EnvironmentKey {
-  static var defaultValue = KeyRecorder.BezelStyle.rounded
-}
-
-@available(macOS 10.15, *)
-private extension EnvironmentValues {
-  var keyRecorderBezelStyle: KeyRecorder.BezelStyle {
-    get { self[KeyRecorderBezelStyleKey.self] }
-    set { self[KeyRecorderBezelStyleKey.self] = newValue }
-  }
-}
-
-@available(macOS 10.15, *)
-private struct KeyRecorderBezelStyle: ViewModifier {
-  let bezelStyle: KeyRecorder.BezelStyle
-
-  func body(content: Content) -> some View {
-    content.environment(\.keyRecorderBezelStyle, bezelStyle)
-  }
-}
-
-@available(macOS 10.15, *)
-extension View {
-  /// Applies the given bezel style to a key recorder view.
-  public func bezelStyle(_ style: KeyRecorderView.BezelStyle) -> some View {
-    modifier(KeyRecorderBezelStyle(bezelStyle: style))
+    self.init(command: .init(name: name))
   }
 
-  /// Adds the given observation to the given key command, using the
-  /// context of this view.
-  ///
-  /// This modifier is useful when working with bindings and state.
-  /// Applying it in a custom view gives you access to that view's
-  /// internal properties. If you don't need this access, you can
-  /// simply call ``KeyCommand/observe(_:handler:)`` on an instance
-  /// of ``KeyCommand``.
-  ///
-  /// The following example creates a custom view with a `Slider`
-  /// subview and installs a key command observation that changes
-  /// the custom view's `sliderValue` property. Since the property
-  /// is bound to the value of the slider, whenever it updates,
-  /// the slider's value does as well.
-  ///
-  /// ```swift
-  /// struct ContentView: View {
-  ///     @State var sliderValue = 0.5
-  ///
-  ///     let command = KeyCommand(name: "RandomizeSliderValue")
-  ///
-  ///     var body: some View {
-  ///         Slider(value: $sliderValue)
-  ///             .onKeyCommand(command, type: .keyDown) {
-  ///                 sliderValue = .random(in: 0..<1)
-  ///             }
-  ///     }
-  /// }
-  /// ```
-  ///
-  /// - Note: The observation is not added until the view appears.
-  public func onKeyCommand(
-    _ command: KeyCommand,
-    type: KeyCommand.EventType,
-    perform handler: @escaping () -> Void
-  ) -> some View {
-    onAppear {
-      command.observe(type, handler: handler)
+  func withBodyConstructor(
+    @ViewBuilder bodyConstructor: @escaping () -> some View
+  ) -> Self {
+    var new = self
+    new.bodyConstructor = {
+      AnyView(bodyConstructor())
     }
+    return new
   }
 
-  /// Adds the given observation to the key command with the given
-  /// name, using the context of this view.
+  /// Adds the given observation to the recorder view's key command.
   ///
   /// This modifier is useful when working with bindings and state.
   /// Applying it in a custom view gives you access to that view's
@@ -152,20 +111,42 @@ extension View {
   /// simply call ``KeyCommand/observe(_:handler:)`` on an instance
   /// of ``KeyCommand``.
   ///
-  /// The following example creates a custom view with a `Slider`
-  /// subview and installs a key command observation that changes
-  /// the custom view's `sliderValue` property. Since the property
-  /// is bound to the value of the slider, whenever it updates,
-  /// the slider's value does as well.
+  /// ```swift
+  /// struct ContentView: View {
+  ///     @AppStorage("muteSound") var muteSound = false
+  ///
+  ///     var body: some View {
+  ///         VStack {
+  ///             KeyRecorderView(name: .init("muteSound", prefix: "keyCommand"))
+  ///                 .onKeyCommand(type: .keyDown) {
+  ///                     muteSound.toggle()
+  ///                 }
+  ///             Toggle(isOn: $muteSound) {
+  ///                 Text("Mute sound")
+  ///             }
+  ///         }
+  ///     }
+  /// }
+  /// ```
+  ///
+  /// - Tip: Since this modifier returns another ``KeyRecorderView``,
+  ///   you can chain it together with additional ``onKeyCommand(_:type:perform:)``
+  ///   modifiers to add multiple observations.
   ///
   /// ```swift
   /// struct ContentView: View {
-  ///     @State var sliderValue = 0.5
+  ///     let command = KeyCommand(name: "someCommand")
   ///
   ///     var body: some View {
-  ///         Slider(value: $sliderValue)
-  ///             .onKeyCommand(named: "RandomizeSliderValue", type: .keyDown) {
-  ///                 sliderValue = .random(in: 0..<1)
+  ///         KeyRecorderView(command)
+  ///             .onKeyCommand(type: .keyDown) {
+  ///                 print("DOWN")
+  ///             }
+  ///             .onKeyCommand(type: .keyUp) {
+  ///                 print("UP")
+  ///             }
+  ///             .onKeyCommand(type: .doubleTap(0.2)) {
+  ///                 print("DOUBLE TAP")
   ///             }
   ///     }
   /// }
@@ -173,11 +154,14 @@ extension View {
   ///
   /// - Note: The observation is not added until the view appears.
   public func onKeyCommand(
-    named name: KeyCommand.Name,
     type: KeyCommand.EventType,
     perform handler: @escaping () -> Void
-  ) -> some View {
-    onKeyCommand(.init(name: name), type: type, perform: handler)
+  ) -> Self {
+    withBodyConstructor {
+      onAppear {
+        command.observe(type, handler: handler)
+      }
+    }
   }
 }
 #endif
