@@ -103,17 +103,22 @@ let recorder = KeyRecorder(name: .toggleMainWindow)
 
 ---
 
-Key commands are automatically stored in the `UserDefaults` system, using their names as keys. It's common for `UserDefaults` keys to be prefixed, or namespaced, according to their corresponding app or subsystem. To that end, SwiftKeys lets you provide custom prefixes that can be applied to individual names, as well as a global, shared prefix that will automatically apply to every name that doesn't explicitly specify otherwise.
+Key commands are automatically stored in the `UserDefaults` system, using their names as keys. It's common for `UserDefaults` keys to be prefixed, or namespaced, according to their corresponding app or subsystem. To that end, SwiftKeys lets you provide custom prefixes that can be applied to individual names.
 
 ```swift
 extension KeyCommand.Name.Prefix {
-    public override var sharedPrefix: Self {
-        Self("MyApp")
-    }
+    static let settings = Self("Settings")
+    static let app = Self("MyGreatApp")
+}
+
+extension KeyCommand.Name {
+    // "SettingsOpen" will be the full UserDefaults key.
+    static let openSettings = Self("Open", prefix: .settings)
+    
+    // "MyGreatApp_Quit" will be the full UserDefaults key.
+    static let quitApp = Self("Quit", prefix: .app, separator: "_")
 }
 ```
-
-In the example above, the name "ToggleMainWindow" would become "MyAppToggleMainWindow" when used as a `UserDefaults` key.
 
 ## License
 
