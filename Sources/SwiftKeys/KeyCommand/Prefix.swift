@@ -6,112 +6,48 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Foundation // To enable `@objc dynamic` declarations
+extension KeyCommand.Name {
+  /// A prefix that is applied to a key command's name when stored in `UserDefaults`.
+  public struct Prefix {
+    /// The raw value of the prefix.
+    public let rawValue: String
 
-// MARK: - _Prefix (Implementation)
+    /// Creates a prefix with the given raw value.
+    public init(rawValue: String) {
+      self.rawValue = rawValue
+    }
 
-public class _Prefix: Codable, ExpressibleByStringInterpolation {
-
-  // MARK: - Static Properties
-
-  /// A prefix whose value is an empty string.
-  public static var emptyPrefix: Self {
-    .init("")
-  }
-
-  /// The prefix that all ``KeyCommand/Name-swift.struct`` instances will
-  /// automatically use.
-  ///
-  /// This version of the property is mostly an implementation detail, and is here
-  /// to allow for a more flexible API. For example, with this property, one could
-  /// initialize a name like this:
-  ///
-  /// ```swift
-  /// let name = KeyCommand.Name("SomeName", prefix: .sharedPrefix)
-  /// ```
-  public static var sharedPrefix: Self {
-    emptyPrefix.sharedPrefix
-  }
-
-  // MARK: - Instance Properties
-
-  /// The raw value of the prefix.
-  public let rawValue: String
-
-  /// The prefix that all ``KeyCommand/Name-swift.struct`` instances will
-  /// automatically use.
-  ///
-  /// The default implementation of this property returns an instance containing
-  /// an empty string. You can provide a custom implementation that is unique to
-  /// your app.
-  ///
-  /// ```swift
-  /// extension KeyCommand.Name.Prefix {
-  ///     public override var sharedPrefix: Self {
-  ///         Self("MyAwesomeApp")
-  ///     }
-  /// }
-  /// ```
-  @objc dynamic
-  open var sharedPrefix: Self { Self.emptyPrefix }
-
-  // MARK: - Initializers
-
-  /// Creates a prefix with the given raw value.
-  public required init(_ rawValue: String) {
-    self.rawValue = rawValue
-  }
-
-  /// Creates a prefix using a string literal.
-  public required convenience init(stringLiteral value: String) {
-    self.init(value)
+    /// Creates a prefix with the given raw value.
+    public init(_ rawValue: String) {
+      self.init(rawValue: rawValue)
+    }
   }
 }
 
-extension _Prefix: CustomStringConvertible {
-  public var description: String {
-    rawValue
-  }
+extension KeyCommand.Name.Prefix: Codable { }
+
+extension KeyCommand.Name.Prefix: CustomStringConvertible {
+  /// A textual representation of the prefix.
+  public var description: String { rawValue }
 }
 
-extension _Prefix: Equatable {
-  public static func == (lhs: _Prefix, rhs: _Prefix) -> Bool {
+extension KeyCommand.Name.Prefix: Equatable {
+  public static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.rawValue == rhs.rawValue
   }
 }
 
-extension _Prefix: Hashable {
+extension KeyCommand.Name.Prefix: ExpressibleByStringInterpolation {
+  /// Creates a prefix from a string literal.
+  public init(stringLiteral value: String) {
+    self.init(rawValue: value)
+  }
+}
+
+extension KeyCommand.Name.Prefix: Hashable {
   public func hash(into hasher: inout Hasher) {
     hasher.combine(rawValue)
   }
 }
 
-// MARK: - Prefix
-
-extension KeyCommand.Name {
-  public final class Prefix: _Prefix { }
-}
-
-// MARK: - Base
-
-extension _Prefix {
-  struct Base {
-    let rawValue: String
-
-    init(prefix: _Prefix) {
-      self.rawValue = prefix.rawValue
-    }
-  }
-}
-
-extension _Prefix.Base: Codable { }
-
-extension _Prefix.Base: CustomStringConvertible {
-  var description: String {
-    rawValue
-  }
-}
-
-extension _Prefix.Base: Equatable { }
-
-extension _Prefix.Base: Hashable { }
+extension KeyCommand.Name.Prefix: RawRepresentable { }
