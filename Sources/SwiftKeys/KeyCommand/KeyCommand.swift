@@ -126,19 +126,27 @@ public struct KeyCommand {
 
   static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
     reservedHotKeys.contains {
-      if
-        $0[kHISymbolicHotKeyEnabled] as? Bool == true,
+      guard
+        let isEnabled = $0[kHISymbolicHotKeyEnabled] as? Bool,
+        isEnabled,
         let keyCode = $0[kHISymbolicHotKeyCode] as? Int,
-        let modifierCode = $0[kHISymbolicHotKeyModifiers] as? UInt32,
-        let reservedModifiers = [Modifier](carbonModifiers: modifierCode),
+        let modifierCode = $0[kHISymbolicHotKeyModifiers] as? UInt32
+      else {
+        return false
+      }
+
+      let reservedModifiers = [Modifier](carbonModifiers: modifierCode)
+
+      guard
         modifiers.count == reservedModifiers.count,
         key == Key(keyCode)
-      {
-        return modifiers.allSatisfy {
-          reservedModifiers.contains($0)
-        }
+      else {
+        return false
       }
-      return false
+
+      return modifiers.allSatisfy {
+        reservedModifiers.contains($0)
+      }
     }
   }
 

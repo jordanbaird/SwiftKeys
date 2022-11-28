@@ -88,31 +88,38 @@ extension KeyCommand.Modifier: Equatable { }
 extension KeyCommand.Modifier: Hashable { }
 
 extension Array where Element == KeyCommand.Modifier {
-  /// The order that macOS represents its hotkeys, according to the
-  /// [Apple Style Guide](https://support.apple.com/guide/applestyleguide/k-apsgf9067ae8/1.0/web/1.0)
-  static let canonicalOrder = [
-    KeyCommand.Modifier.control,
-    KeyCommand.Modifier.option,
-    KeyCommand.Modifier.shift,
-    KeyCommand.Modifier.command,
-  ]
+  /// The order that macOS represents its hotkeys, according to
+  /// the Apple Style Guide.
+  static let canonicalOrder: Self = {
+    let canonicalOrder: Self = [
+      .control,
+      .option,
+      .shift,
+      .command,
+    ]
+    assert(
+      canonicalOrder.count == Element.allCases.count,
+      "Canonical order of \(Element.self) does not contain all cases.")
+    return canonicalOrder
+  }()
 
+  /// The combined string value of the modifiers.
   var stringValue: String {
-    reduce("") { $0 + $1.stringValue }
+    map { $0.stringValue }.joined()
   }
 
-  /// The flags for the given modifiers, as defined by the `Carbon`
-  /// framework, or'd together into a single unsigned integer.
+  /// The flags for the modifiers, as defined by the `Carbon` framework, or'd
+  /// together into a single unsigned integer.
   var carbonFlags: UInt32 {
     var converted: UInt32 = 0
-    for modifier in KeyCommand.Modifier.allCases where fuzzyContains(modifier) {
+    for modifier in Self.canonicalOrder where contains(modifier) {
       converted |= modifier.carbonFlag
     }
-    return .init(converted)
+    return converted
   }
 
-  /// The `NSEvent.ModifierFlags` value for the given modifiers,
-  /// reduced into a single value.
+  /// The `NSEvent.ModifierFlags` value for the modifiers, reduced into
+  /// a single value.
   var cocoaFlags: NSEvent.ModifierFlags {
     reduce(into: .init()) {
       $0.insert($1.cocoaFlag)
@@ -120,29 +127,9 @@ extension Array where Element == KeyCommand.Modifier {
   }
 
   /// Creates an array of modifiers based on the given `Carbon` value.
-  init?(carbonModifiers: UInt32) {
-    self.init()
-    for modifier in KeyCommand.Modifier.allCases
-      where carbonModifiers.containsModifier(modifier)
-    {
-      append(modifier)
-    }
-    if isEmpty {
-      return nil
-    }
-  }
-
-  /// Returns a Boolean value indicating whether the array contains the
-  /// given modifier, evaluated fuzzily.
-  ///
-  /// If the array does not directly contain the given modifier, another
-  /// check is run to determine if the array instead contains a modifier
-  /// whose associated `cgEventFlag` value matches that of the modifier.
-  func fuzzyContains(_ modifier: KeyCommand.Modifier) -> Bool {
-    contains(modifier)
-    ||
-    contains {
-      $0.cgEventFlag.contains(modifier.cgEventFlag)
+  init(carbonModifiers modifiers: UInt32) {
+    self = Self.canonicalOrder.filter {
+      modifiers.containsModifier($0)
     }
   }
 }

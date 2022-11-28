@@ -265,7 +265,7 @@ final class KeyCommandTests: TestCase {
   func testCarbonModifiers() {
     let modifiers: [Modifier] = [.control, .shift, .command]
     let carbonModifiers = modifiers.carbonFlags
-    let recreatedModifiers = [Modifier](carbonModifiers: .init(carbonModifiers)) ?? []
+    let recreatedModifiers = [Modifier](carbonModifiers: carbonModifiers)
     XCTAssert(modifiers.allSatisfy { recreatedModifiers.contains($0) })
   }
 
