@@ -18,7 +18,7 @@
 Add the following dependency to your `Package.swift` file:
 
 ```swift
-.package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.1.5")
+.package(url: "https://github.com/jordanbaird/SwiftKeys", from: "0.1.6")
 ```
 
 ## Usage
