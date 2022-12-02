@@ -6,13 +6,12 @@
 //
 //===----------------------------------------------------------------------===//
 
-import AppKit
 import Carbon.HIToolbox
-import CoreGraphics
+import Cocoa
 
 extension KeyCommand {
   /// Constants that represent modifier keys associated with a key command.
-  public enum Modifier: CaseIterable {
+  public enum Modifier {
     /// The Control key.
     case control
     /// The Option, or Alt key.
@@ -21,6 +20,8 @@ extension KeyCommand {
     case shift
     /// The Command key.
     case command
+
+    // MARK: Properties
 
     /// A string representation of the modifier.
     public var stringValue: String {
@@ -81,13 +82,19 @@ extension KeyCommand {
   }
 }
 
+// MARK: - Protocol conformances
+
+extension KeyCommand.Modifier: CaseIterable { }
+
 extension KeyCommand.Modifier: Codable { }
 
 extension KeyCommand.Modifier: Equatable { }
 
 extension KeyCommand.Modifier: Hashable { }
 
-extension Array where Element == KeyCommand.Modifier {
+// MARK: - Helpers
+
+extension [KeyCommand.Modifier] {
   /// The order that macOS represents its hotkeys, according to
   /// the Apple Style Guide.
   static let canonicalOrder: Self = {

@@ -13,11 +13,16 @@ import Foundation
 public typealias KeyEvent = KeyCommand
 
 public struct KeyCommand {
+
+  // MARK: Nested types
+
   private enum CodingKeys: CodingKey {
     case key
     case modifiers
     case name
   }
+
+  // MARK: Static properties
 
   static var reservedHotKeys: [[String: Any]] {
     var reservedHotKeys: Unmanaged<CFArray>?
@@ -28,6 +33,8 @@ public struct KeyCommand {
     }
     return reservedHotKeys?.takeRetainedValue() as? [[String: Any]] ?? []
   }
+
+  // MARK: Properties
 
   /// The name that is used to store the key command.
   public let name: Name
@@ -67,6 +74,8 @@ public struct KeyCommand {
     get { proxy.modifiers }
     set { proxy.modifiers = newValue }
   }
+
+  // MARK: Initializers
 
   /// Creates a key command with the given name.
   ///
@@ -124,6 +133,8 @@ public struct KeyCommand {
     }
   }
 
+  // MARK: Static methods
+
   static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
     reservedHotKeys.contains {
       guard
@@ -139,7 +150,7 @@ public struct KeyCommand {
 
       guard
         modifiers.count == reservedModifiers.count,
-        key == Key(keyCode)
+        key == Key(rawValue: keyCode)
       else {
         return false
       }
@@ -149,6 +160,8 @@ public struct KeyCommand {
       }
     }
   }
+
+  // MARK: Methods
 
   public func encode(to encoder: Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
@@ -402,14 +415,14 @@ extension KeyCommand {
   }
 }
 
-// MARK: - Protocol Conformances
+// MARK: - Protocol conformances
 
 extension KeyCommand: Codable { }
 
 extension KeyCommand: CustomStringConvertible {
   public var description: String {
     var keyString = "nil"
-    if let key = key {
+    if let key {
       keyString = "\(key)"
     }
     return "\(Self.self)("

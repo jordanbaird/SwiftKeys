@@ -202,16 +202,16 @@ public final class KeyRecorder: NSControl {
 
 extension KeyRecorder {
   class KeyRecorderSegmentedControl: NSSegmentedControl {
+
+    // MARK: Properties
+
+    var keyDownMonitor: EventMonitor?
+
     let proxy: KeyCommandProxy
 
     var windowVisibilityObservation: NSKeyValueObservation?
-    var keyDownMonitor: EventMonitor?
 
-    var label: String? {
-      didSet {
-        updateVisualAppearance()
-      }
-    }
+    // MARK: Properties with observers
 
     var attributedLabel: NSAttributedString? {
       didSet {
@@ -228,6 +228,30 @@ extension KeyRecorder {
         }
       }
     }
+
+    var label: String? {
+      didSet {
+        updateVisualAppearance()
+      }
+    }
+
+    var recordingState = RecordingState.idle {
+      didSet {
+        updateVisualAppearance()
+        deselectAll()
+        if recordingState == .recording {
+          setSelected(true, forSegment: 0)
+          failureReason = .noFailure
+          keyDownMonitor?.start()
+          observeWindowVisibility()
+        } else if recordingState == .idle {
+          keyDownMonitor?.stop()
+          windowVisibilityObservation = nil
+        }
+      }
+    }
+
+    // MARK: Image properties
 
     let deleteImage: NSImage = {
       let image = NSImage(named: NSImage.stopProgressFreestandingTemplateName)!
@@ -259,7 +283,7 @@ extension KeyRecorder {
       return image
     }()
 
-    var recordImage: NSImage {
+    let recordImage: NSImage = {
       let size = NSSize(width: 13, height: 13)
       let image = NSImage(size: size, flipped: false) {
         NSBezierPath(ovalIn: $0.insetBy(dx: 2.5, dy: 2.5)).fill()
@@ -268,36 +292,13 @@ extension KeyRecorder {
       }
       image.isTemplate = true
       return image
-    }
+    }()
 
-    var recordingState = RecordingState.idle {
-      didSet {
-        updateVisualAppearance()
-        deselectAll()
-        if recordingState == .recording {
-          setSelected(true, forSegment: 0)
-          failureReason = .noFailure
-          keyDownMonitor?.start()
-          observeWindowVisibility()
-        } else if recordingState == .idle {
-          keyDownMonitor?.stop()
-          windowVisibilityObservation = nil
-        }
-      }
-    }
+    // MARK: Initializers
 
     init(command: KeyCommand) {
       proxy = command.proxy
       super.init(frame: .init(origin: .zero, size: .init(width: 140, height: 24)))
-      sharedInit()
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-      fatalError("KeyRecorder must be created programmatically.")
-    }
-
-    func sharedInit() {
       target = self
       action = #selector(controlWasPressed(_:))
 
@@ -316,10 +317,10 @@ extension KeyRecorder {
       proxy.register()
 
       keyDownMonitor = EventMonitor(mask: .keyDown) { [weak self] event in
-        guard let self = self else {
+        guard let self else {
           return event
         }
-        guard let key = KeyCommand.Key(Int(event.keyCode)) else {
+        guard let key = KeyCommand.Key(rawValue: Int(event.keyCode)) else {
           NSSound.beep()
           return nil
         }
@@ -347,6 +348,13 @@ extension KeyRecorder {
       }
     }
 
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+      fatalError("KeyRecorder must be created programmatically.")
+    }
+
+    // MARK: Methods
+
     @objc
     func controlWasPressed(_ sender: KeyRecorderSegmentedControl) {
       switch recordingState {
@@ -368,15 +376,26 @@ extension KeyRecorder {
       updateBasedOnNewRecordingState()
     }
 
-    func updateBasedOnNewRecordingState() {
-      // Note: updateVisualAppearance() will get called as an observation
-      // handler as soon as the proxy's registration state changes.
-      switch recordingState {
-      case .recording:
-        proxy.unregister()
-      case .idle:
-        proxy.register()
-        deselectAll()
+    func deselectAll() {
+      for n in 0..<segmentCount {
+        setSelected(false, forSegment: n)
+      }
+    }
+
+    func observeWindowVisibility() {
+      windowVisibilityObservation = window?.observe(
+        \.isVisible,
+         options: .new
+      ) { [weak self] _, change in
+        guard
+          let self,
+          let newValue = change.newValue
+        else {
+          return
+        }
+        if !newValue {
+          self.keyDownMonitor?.stop()
+        }
       }
     }
 
@@ -389,33 +408,46 @@ extension KeyRecorder {
       recordingState = .idle
     }
 
-    func updateVisualAppearance() {
-      setLabel(forState: recordingState)
-      setImage(forState: recordingState)
+    func setFailureReason(_ failureReason: FailureReason) {
+      if self.failureReason != failureReason {
+        self.failureReason = failureReason
+      }
     }
 
-    func setLabel(_ label: Label) {
-      if let attributedLabel = attributedLabel {
+    func setImage(forState state: RecordingState) {
+      switch state {
+      case .recording:
+        setImage(escapeImage, forSegment: 1)
+      case .idle:
+        if proxy.isRegistered {
+          setImage(deleteImage, forSegment: 1)
+        } else {
+          setImage(recordImage, forSegment: 1)
+        }
+      }
+    }
+
+    func setLabel(_ newLabel: Label) {
+      if let attributedLabel {
         let image = NSImage(size: attributedLabel.size(), flipped: false) {
           attributedLabel.draw(in: $0)
           return true
         }
         setLabel("", forSegment: 0)
         setImage(image, forSegment: 0)
-      } else if let label = self.label {
+      } else if let label {
         setLabel(label, forSegment: 0)
         setImage(nil, forSegment: 0)
       } else {
-        var string = ""
+        let string: String
         if
-          label == .hasKeyCommand,
+          newLabel == .hasKeyCommand,
           proxy.isRegistered,
           let key = proxy.key
         {
-          string = proxy.modifiers.map { $0.stringValue }.joined()
-          string.append(key.stringValue.uppercased(with: .current))
+          string = proxy.modifiers.stringValue + key.stringValue.localizedUppercase
         } else {
-          string = label.rawValue
+          string = newLabel.rawValue
         }
         setLabel(string, forSegment: 0)
         setImage(nil, forSegment: 0)
@@ -435,52 +467,29 @@ extension KeyRecorder {
       }
     }
 
-    func setImage(forState state: RecordingState) {
-      switch state {
+    func updateBasedOnNewRecordingState() {
+      // Note: updateVisualAppearance() will get called as an observation
+      // handler as soon as the proxy's registration state changes.
+      switch recordingState {
       case .recording:
-        setImage(escapeImage, forSegment: 1)
+        proxy.unregister()
       case .idle:
-        if proxy.isRegistered {
-          setImage(deleteImage, forSegment: 1)
-        } else {
-          setImage(recordImage, forSegment: 1)
-        }
+        proxy.register()
+        deselectAll()
       }
     }
 
-    func deselectAll() {
-      for n in 0..<segmentCount {
-        setSelected(false, forSegment: n)
-      }
-    }
-
-    func setFailureReason(_ failureReason: FailureReason) {
-      if self.failureReason != failureReason {
-        self.failureReason = failureReason
-      }
-    }
-
-    func observeWindowVisibility() {
-      windowVisibilityObservation = window?.observe(
-        \.isVisible,
-         options: .new
-      ) { [weak self] _, change in
-        guard
-          let self = self,
-          let newValue = change.newValue
-        else {
-          return
-        }
-        if !newValue {
-          self.keyDownMonitor?.stop()
-        }
-      }
+    func updateVisualAppearance() {
+      setLabel(forState: recordingState)
+      setImage(forState: recordingState)
     }
 
     override func viewDidMoveToWindow() {
       super.viewDidMoveToWindow()
       updateVisualAppearance()
     }
+
+    // MARK: Deinitializer
 
     deinit {
       keyDownMonitor?.stop()
@@ -516,13 +525,12 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
 
     var failureCount: Int {
       didSet {
-        guard
+        if
           self == .noFailure,
           failureCount != 0
-        else {
-          return
+        {
+          failureCount = 0
         }
-        failureCount = 0
       }
     }
 
@@ -536,10 +544,6 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
       self.failureCount = failureCount
     }
 
-    mutating func incrementFailureCount() {
-      failureCount += 1
-    }
-
     func displayAlert() {
       guard self != .noFailure else {
         return
@@ -548,6 +552,10 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
       alert.messageText = messageText
       alert.informativeText = infoText
       alert.runModal()
+    }
+
+    mutating func incrementFailureCount() {
+      failureCount += 1
     }
   }
 }
@@ -598,7 +606,7 @@ extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason: Equatable {
   }
 }
 
-// MARK: - NSEvent.ModifierFlags [extension]
+// MARK: - Helpers
 
 extension NSEvent.ModifierFlags {
   var swiftKeysModifiers: [KeyCommand.Modifier] {

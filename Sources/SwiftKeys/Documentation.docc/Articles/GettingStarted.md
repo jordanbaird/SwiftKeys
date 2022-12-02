@@ -4,7 +4,7 @@ Get to know the main types and methods of `SwiftKeys`.
 
 ## Overview
 
-There are two top-level types in this package: ``KeyCommand`` and ``KeyRecorder``.
+There are two top-level types in this package: ``KeyCommand`` and ``KeyRecorder`` (to use ``KeyRecorder`` in `SwiftUI`, see ``KeyRecorderView``).
 
 #### KeyCommand
 
@@ -82,3 +82,5 @@ In addition to operating on the key command itself, you can perform similar chan
 ![A window containing a KeyRecorder.](recorder-window.png)
 
 Using a key recorder is extremely simple. Clicking inside puts it into "recording" mode, where it awaits a key-down message. As soon as a key combination is pressed, the recorder updates its key command and enters "idle" mode. In idle mode, a "clear" button appears, which resets the key command to an empty state.
+
+- Note: `SwiftKeys` also supports `SwiftUI` through the ``KeyRecorderView`` type.

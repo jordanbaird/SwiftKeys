@@ -60,7 +60,7 @@ extension NSMenuItem {
       observations = [
         observe(\.keyEquivalent, options: [.old, .new]) { [weak self] _, changes in
           guard
-            let self = self,
+            let self,
             let oldValue = changes.oldValue,
             let newValue = changes.newValue,
             oldValue != newValue,
@@ -74,7 +74,7 @@ extension NSMenuItem {
         },
         observe(\.keyEquivalentModifierMask, options: [.old, .new]) { [weak self] _, changes in
           guard
-            let self = self,
+            let self,
             let oldValue = changes.oldValue,
             let newValue = changes.newValue,
             oldValue != newValue,

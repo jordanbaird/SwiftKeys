@@ -13,13 +13,20 @@ extension KeyCommand {
   /// ``KeyCommand/removeObservation(_:)`` method, or similar, to permanently
   /// remove the observation and stop the execution of its handler.
   public struct Observation {
+
+    // MARK: Typealiases
+
     /// The type of event that an observation observes.
     public typealias EventType = KeyCommand.EventType
+
+    // MARK: Properties
 
     private let handler: VoidHandler
 
     /// The event type of the observation.
     public let eventType: EventType
+
+    // MARK: Initializers
 
     /// Creates an observation that executes the given handler when
     /// it receives the given event type.
@@ -44,11 +51,15 @@ extension KeyCommand {
       self.handler = .init(block: handler)
     }
 
+    // MARK: Methods
+
     func perform() {
       handler.perform()
     }
   }
 }
+
+// MARK: - Protocol conformances
 
 extension KeyCommand.Observation: Equatable {
   public static func == (lhs: Self, rhs: Self) -> Bool {
@@ -62,7 +73,9 @@ extension KeyCommand.Observation: Hashable {
   }
 }
 
-extension Array where Element == KeyCommand.Observation {
+// MARK: - Helpers
+
+extension [KeyCommand.Observation] {
   func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
     for observation in self where try predicate(observation.eventType) {
       observation.perform()

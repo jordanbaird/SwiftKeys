@@ -9,20 +9,27 @@
 extension KeyCommand.Name {
   /// A prefix that is applied to a key command's name when stored in `UserDefaults`.
   public struct Prefix {
+
+    // MARK: Properties
+
     /// The raw value of the prefix.
     public let rawValue: String
 
-    /// Creates a prefix with the given raw value.
-    public init(rawValue: String) {
-      self.rawValue = rawValue
+    // MARK: Initializers
+
+    /// ** Internal use only **
+    private init(_rawValue: String) {
+      self.rawValue = _rawValue
     }
 
     /// Creates a prefix with the given raw value.
     public init(_ rawValue: String) {
-      self.init(rawValue: rawValue)
+      self.init(_rawValue: rawValue)
     }
   }
 }
+
+// MARK: - Protocol conformances
 
 extension KeyCommand.Name.Prefix: Codable { }
 
@@ -40,7 +47,7 @@ extension KeyCommand.Name.Prefix: Equatable {
 extension KeyCommand.Name.Prefix: ExpressibleByStringInterpolation {
   /// Creates a prefix from a string literal.
   public init(stringLiteral value: String) {
-    self.init(rawValue: value)
+    self.init(_rawValue: value)
   }
 }
 
@@ -50,4 +57,9 @@ extension KeyCommand.Name.Prefix: Hashable {
   }
 }
 
-extension KeyCommand.Name.Prefix: RawRepresentable { }
+extension KeyCommand.Name.Prefix: RawRepresentable {
+  /// Creates a prefix with the given raw value.
+  public init(rawValue: String) {
+    self.init(_rawValue: rawValue)
+  }
+}

@@ -9,7 +9,11 @@
 import Carbon.HIToolbox
 
 final class KeyCommandProxy {
+
+  // MARK: Static properties
+
   private static var eventHandlerRef: EventHandlerRef?
+
   private static let eventTypes = [
     EventTypeSpec(
       eventClass: OSType(kEventClassKeyboard),
@@ -20,24 +24,36 @@ final class KeyCommandProxy {
   ]
 
   private static var proxyCount: UInt32 = 0
+
   private static let signature = OSType.random(in: OSType.min...OSType.max)
 
   static var isInstalled: Bool {
     eventHandlerRef != nil
   }
 
-  var hotKeyRef: EventHotKeyRef?
-  let identifier = EventHotKeyID(signature: signature, id: proxyCount)
+  // MARK: Properties (Carbon stuff)
 
-  let name: KeyCommand.Name
-  var keyCommandObservations = [KeyCommand.Observation]()
+  fileprivate var hotKeyRef: EventHotKeyRef?
+
+  fileprivate let identifier = EventHotKeyID(signature: signature, id: proxyCount)
+
+  // MARK: Properties (handlers)
 
   var keyAndModifierChangeHandlers = Set<VoidHandler>()
+
   var registrationStateHandlers = Set<VoidHandler>()
+
+  var keyCommandObservations = [KeyCommand.Observation]()
+
+  // MARK: Properties (misc)
 
   private var blockRegistrationChanges = false
 
   private var lastKeyUpDate = Date()
+
+  let name: KeyCommand.Name
+
+  // MARK: Properties (observers)
 
   var isRegistered = false {
     didSet {
@@ -67,6 +83,8 @@ final class KeyCommandProxy {
     }
   }
 
+  // MARK: Initializers
+
   init(with name: KeyCommand.Name, storing shouldStore: Bool = false) {
     self.name = name
     Self.proxyCount += 1
@@ -75,13 +93,15 @@ final class KeyCommandProxy {
     }
   }
 
+  // MARK: Install/uninstall
+
   static func install() -> OSStatus {
     guard !isInstalled else {
       return noErr
     }
 
     let handler: EventHandlerUPP = { callRef, event, userData in
-      guard let event = event else {
+      guard let event else {
         return OSStatus(eventNotHandledErr)
       }
 
@@ -170,11 +190,13 @@ final class KeyCommandProxy {
     eventHandlerRef = nil
   }
 
+  // MARK: Register/unregister
+
   func register() {
     guard
       !blockRegistrationChanges,
       !modifiers.isEmpty,
-      let key = key
+      let key
     else {
       return
     }
@@ -250,6 +272,32 @@ final class KeyCommandProxy {
     }
   }
 
+  // MARK: Observing
+
+  @discardableResult
+  func observeKeyAndModifierChanges(_ block: @escaping () -> Void) -> VoidHandler {
+    let handler = VoidHandler(block: block)
+    keyAndModifierChangeHandlers.update(with: handler)
+    return handler
+  }
+
+  @discardableResult
+  func observeRegistrationState(_ block: @escaping () -> Void) -> VoidHandler {
+    let handler = VoidHandler(block: block)
+    registrationStateHandlers.update(with: handler)
+    return handler
+  }
+
+  func performObservations(matching eventType: KeyCommand.EventType?) {
+    keyCommandObservations.performObservations(matching: eventType)
+  }
+
+  func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
+    try keyCommandObservations.performObservations(where: predicate)
+  }
+
+  // MARK: Helpers
+
   /// Mutates the proxy, while blocking it from registering or unregistering.
   ///
   /// This is useful, for example, when executing multiple pieces of code that each
@@ -277,40 +325,20 @@ final class KeyCommandProxy {
   }
 
   @discardableResult
-  func observeKeyAndModifierChanges(_ block: @escaping () -> Void) -> VoidHandler {
-    let handler = VoidHandler(block: block)
-    keyAndModifierChangeHandlers.update(with: handler)
-    return handler
-  }
-
-  @discardableResult
-  func observeRegistrationState(_ block: @escaping () -> Void) -> VoidHandler {
-    let handler = VoidHandler(block: block)
-    registrationStateHandlers.update(with: handler)
-    return handler
-  }
-
-  func performObservations(matching eventType: KeyCommand.EventType?) {
-    keyCommandObservations.performObservations(matching: eventType)
-  }
-
-  func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
-    try keyCommandObservations.performObservations(where: predicate)
-  }
-
-  @discardableResult
   func removeHandler(_ handler: VoidHandler) -> VoidHandler? {
     let h1 = keyAndModifierChangeHandlers.remove(handler)
     let h2 = registrationStateHandlers.remove(handler)
     return h1 ?? h2
   }
 
+  // MARK: Deinitializer
+
   deinit {
     unregister()
   }
 }
 
-// MARK: - Protocol Conformances
+// MARK: - Protocol conformances
 
 extension KeyCommandProxy: Equatable {
   static func == (lhs: KeyCommandProxy, rhs: KeyCommandProxy) -> Bool {
@@ -328,7 +356,7 @@ extension KeyCommandProxy: Hashable {
 
 typealias ProxyStorage = Set<KeyCommandProxy>
 
-extension Set where Element == KeyCommandProxy {
+extension ProxyStorage {
   private static var all = Self()
 
   static func proxy(with identifier: EventHotKeyID) -> KeyCommandProxy? {

@@ -26,7 +26,7 @@ private struct _KeyRecorderView: NSViewRepresentable {
   }
 }
 
-/// A SwiftUI view that can record key commands.
+/// A `SwiftUI` view that can record key commands.
 ///
 /// Start by creating a ``KeyCommand``. You can then use it to initialize
 /// a key recorder view, which will update the command whenever a new key

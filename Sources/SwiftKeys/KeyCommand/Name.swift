@@ -42,6 +42,9 @@ extension KeyCommand {
   /// }
   /// ```
   public struct Name {
+
+    // MARK: Properties
+
     /// The raw value of the name.
     public let rawValue: String
 
@@ -65,6 +68,8 @@ extension KeyCommand {
     public var combinedValue: String {
       prefix.rawValue + separator + rawValue
     }
+
+    // MARK: Initializers
 
     /// Creates a name with the given raw value, prefix, and separator.
     public init(
@@ -98,13 +103,9 @@ extension KeyCommand {
   }
 }
 
-extension KeyCommand.Name: Codable { }
+// MARK: - Protocol conformances
 
-extension KeyCommand.Name: CustomStringConvertible {
-  public var description: String {
-    combinedValue
-  }
-}
+extension KeyCommand.Name: Codable { }
 
 extension KeyCommand.Name: CustomDebugStringConvertible {
   public var debugDescription: String {
@@ -113,6 +114,12 @@ extension KeyCommand.Name: CustomDebugStringConvertible {
     + "prefix: \(prefix), "
     + "separator: \(separator)"
     + ")"
+  }
+}
+
+extension KeyCommand.Name: CustomStringConvertible {
+  public var description: String {
+    combinedValue
   }
 }
 

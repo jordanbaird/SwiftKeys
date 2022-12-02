@@ -23,6 +23,8 @@ extension KeyRecorder {
     /// A square style.
     case square
 
+    // MARK: Properties
+
     var rawValue: NSSegmentedControl.Style {
       switch self {
       case .rounded: return .rounded
@@ -50,11 +52,13 @@ extension KeyRecorder {
       }
     }
 
+    // MARK: Initializers
+
     init?(_ rawValue: NSSegmentedControl.Style) {
       let style = Self.allCases.first {
         $0.rawValue == rawValue
       }
-      guard let style = style else {
+      guard let style else {
         return nil
       }
       self = style
