@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 import Carbon.HIToolbox
-import Foundation
+import Cocoa
 
 @available(*, deprecated, renamed: "KeyCommand")
 public typealias KeyEvent = KeyCommand
@@ -48,6 +48,13 @@ public struct KeyCommand {
     ProxyStorage.proxy(with: name) ?? KeyCommandProxy(with: name, storing: true)
   }
 
+  private var trackingNotificationNamesAndBlocks: [(name: Notification.Name, block: () -> Void)] {
+    [
+      (NSMenu.didBeginTrackingNotification, disable),
+      (NSMenu.didEndTrackingNotification, enable),
+    ]
+  }
+
   /// A Boolean value that indicates whether the key command is currently
   /// enabled and active.
   ///
@@ -73,6 +80,30 @@ public struct KeyCommand {
   public var modifiers: [Modifier] {
     get { proxy.modifiers }
     set { proxy.modifiers = newValue }
+  }
+
+  /// A Boolean value that indicates whether the key command
+  /// will be disabled when a menu belonging to the app opens.
+  public var disablesOnMenuOpen: Bool {
+    get {
+      trackingNotificationNamesAndBlocks.allSatisfy {
+        proxy.notificationCenterObserver.isObserving($0.name)
+      }
+    }
+    nonmutating set {
+      guard newValue != disablesOnMenuOpen else {
+        return
+      }
+      if newValue {
+        for tuple in trackingNotificationNamesAndBlocks {
+          proxy.notificationCenterObserver.observe(tuple.name, block: tuple.block)
+        }
+      } else {
+        for tuple in trackingNotificationNamesAndBlocks {
+          proxy.notificationCenterObserver.removeObservations(for: tuple.name)
+        }
+      }
+    }
   }
 
   // MARK: Initializers

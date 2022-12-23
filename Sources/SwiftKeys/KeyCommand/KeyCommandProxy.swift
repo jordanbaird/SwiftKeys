@@ -45,6 +45,8 @@ final class KeyCommandProxy {
 
   var keyCommandObservations = [KeyCommand.Observation]()
 
+  let notificationCenterObserver = NotificationCenterObserver()
+
   // MARK: Properties (misc)
 
   private var blockRegistrationChanges = false
@@ -335,6 +337,46 @@ final class KeyCommandProxy {
 
   deinit {
     unregister()
+  }
+}
+
+extension KeyCommandProxy {
+  class NotificationCenterObserver {
+    private var handlers = [Notification.Name: [VoidHandler]]()
+
+    init() { }
+
+    @discardableResult
+    func observe(_ name: Notification.Name, block: @escaping () -> Void) -> NotificationCenterObserver {
+      let handler = VoidHandler(block: block)
+      if var handlersForName = handlers[name] {
+        handlersForName.append(handler)
+        handlers[name] = handlersForName
+      } else {
+        handlers[name] = [handler]
+        NotificationCenter.default.addObserver(
+          self,
+          selector: #selector(didReceiveNotification(_:)),
+          name: name,
+          object: nil)
+      }
+      return self
+    }
+
+    func removeObservations(for name: Notification.Name) {
+      handlers.removeValue(forKey: name)
+    }
+
+    func isObserving(_ name: Notification.Name) -> Bool {
+      handlers[name] != nil
+    }
+
+    @objc
+    private func didReceiveNotification(_ notification: Notification) {
+      for handler in handlers[notification.name, default: []] {
+        handler.perform()
+      }
+    }
   }
 }
 
