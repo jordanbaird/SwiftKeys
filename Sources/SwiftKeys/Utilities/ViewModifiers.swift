@@ -70,12 +70,12 @@ extension View {
   ///
   /// - Note: The observation is not added until the view appears.
   public func onKeyCommand(
-    _ command: KeyCommand,
+    _ keyCommand: KeyCommand,
     type: KeyCommand.EventType,
     perform handler: @escaping () -> Void
   ) -> some View {
     onAppear {
-      command.observe(type, handler: handler)
+      keyCommand.observe(type, handler: handler)
     }
   }
 

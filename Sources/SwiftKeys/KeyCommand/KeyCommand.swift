@@ -48,10 +48,10 @@ public struct KeyCommand {
     ProxyStorage.proxy(with: name) ?? KeyCommandProxy(with: name, storing: true)
   }
 
-  private var trackingNotificationNamesAndBlocks: [(name: Notification.Name, block: () -> Void)] {
+  private var trackingNotificationNamesAndBlocks: [(name: Notification.Name, blocks: [() -> Void])] {
     [
-      (NSMenu.didBeginTrackingNotification, disable),
-      (NSMenu.didEndTrackingNotification, enable),
+      (NSMenu.didBeginTrackingNotification, [{ proxy.menuIsOpen = true }, disable]),
+      (NSMenu.didEndTrackingNotification, [{ proxy.menuIsOpen = false }, enable]),
     ]
   }
 
@@ -96,7 +96,9 @@ public struct KeyCommand {
       }
       if newValue {
         for tuple in trackingNotificationNamesAndBlocks {
-          proxy.notificationCenterObserver.observe(tuple.name, block: tuple.block)
+          for block in tuple.blocks {
+            proxy.notificationCenterObserver.observe(tuple.name, block: block)
+          }
         }
       } else {
         for tuple in trackingNotificationNamesAndBlocks {
@@ -107,6 +109,10 @@ public struct KeyCommand {
   }
 
   // MARK: Initializers
+
+  init(proxy: KeyCommandProxy) {
+    name = proxy.name
+  }
 
   /// Creates a key command with the given name.
   ///

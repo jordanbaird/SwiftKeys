@@ -77,7 +77,7 @@ In addition to operating on the key command itself, you can perform similar chan
 
 #### KeyRecorder
 
-``KeyRecorder`` is a subclass of `NSControl` that enables you to record new keys and modifiers for a key command. Passing a command into ``KeyRecorder/init(command:)`` creates a key recorder whose state is bound to that command. You can also create a key recorder using ``KeyRecorder/init(name:)``, a convenience initializer which automatically creates a key command based on the name you provide.
+``KeyRecorder`` is a subclass of `NSControl` that enables you to record new keys and modifiers for a key command. Passing a command into ``KeyRecorder/init(keyCommand:)`` creates a key recorder whose state is bound to that command. You can also create a key recorder using ``KeyRecorder/init(name:)``, a convenience initializer which automatically creates a key command based on the name you provide.
 
 ![A window containing a KeyRecorder.](recorder-window.png)
 

@@ -10,7 +10,7 @@ Start by creating an instance of ``KeyCommand``. Then, use it to initialize a ``
 
 ```swift
 let command = KeyCommand(name: "SomeCommand")
-let recorder = KeyRecorder(command: command)
+let recorder = KeyRecorder(keyCommand: command)
 
 command.observe(.keyDown) {
     print("DOWN")

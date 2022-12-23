@@ -53,6 +53,8 @@ final class KeyCommandProxy {
 
   private var lastKeyUpDate = Date()
 
+  var menuIsOpen = false
+
   let name: KeyCommand.Name
 
   // MARK: Properties (observers)

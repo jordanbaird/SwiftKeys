@@ -34,7 +34,7 @@ extension NSMenuItem {
   ///   disable the command before the menu opens, otherwise the
   ///   menu will block the command's handlers from running until
   ///   it closes.
-  public var command: KeyCommand? {
+  public var keyCommand: KeyCommand? {
     get {
       guard let name = Self.keyCommandNameStorage[self] else {
         return nil
@@ -44,7 +44,7 @@ extension NSMenuItem {
     set {
       observations.removeAll()
       if let handler = keyAndModifierChangeHandler {
-        command?.proxy.removeHandler(handler)
+        keyCommand?.proxy.removeHandler(handler)
       }
 
       Self.keyCommandNameStorage[self] = newValue?.name
@@ -64,13 +64,13 @@ extension NSMenuItem {
             let oldValue = changes.oldValue,
             let newValue = changes.newValue,
             oldValue != newValue,
-            var command = self.command,
+            var keyCommand = self.keyCommand,
             let key = KeyCommand.Key(keyEquivalent: newValue)
           else {
             return
           }
-          command.key = key
-          self.command = command
+          keyCommand.key = key
+          self.keyCommand = keyCommand
         },
         observe(\.keyEquivalentModifierMask, options: [.old, .new]) { [weak self] _, changes in
           guard
@@ -78,19 +78,39 @@ extension NSMenuItem {
             let oldValue = changes.oldValue,
             let newValue = changes.newValue,
             oldValue != newValue,
-            var command = self.command
+            var keyCommand = self.keyCommand
           else {
             return
           }
-          command.modifiers = newValue.swiftKeysModifiers
-          self.command = command
+          keyCommand.modifiers = newValue.swiftKeysModifiers
+          self.keyCommand = keyCommand
         },
       ]
     }
   }
 
   private func setKeyEquivalentAndModifierMask() {
-    keyEquivalent = command?.key?.keyEquivalent ?? ""
-    keyEquivalentModifierMask = command?.modifiers.cocoaFlags ?? []
+    keyEquivalent = keyCommand?.key?.keyEquivalent ?? ""
+    keyEquivalentModifierMask = keyCommand?.modifiers.cocoaFlags ?? []
+  }
+}
+
+// MARK: Deprecated
+extension NSMenuItem {
+  /// A key command associated with the menu item.
+  ///
+  /// When this value is set, the menu item's key equivalent and
+  /// modifier mask are updated to match those of the command.
+  /// Likewise, when either the menu item's key equivalent, or its
+  /// modifier mask is set, the key command updates to the new value.
+  ///
+  /// - Important: If you set this property, you need to manually
+  ///   disable the command before the menu opens, otherwise the
+  ///   menu will block the command's handlers from running until
+  ///   it closes.
+  @available(*, deprecated, message: "renamed to 'keyCommand'", renamed: "keyCommand")
+  public var command: KeyCommand? {
+    get { keyCommand }
+    set { keyCommand = newValue }
   }
 }

@@ -100,6 +100,7 @@ print(originalCommand.modifiers)
 - ``disable()``
 - ``remove()``
 - ``isEnabled``
+- ``disablesOnMenuOpen``
 
 ### Running a Key Command's Handlers
 

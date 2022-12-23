@@ -8,6 +8,49 @@
 
 import AppKit
 
+public class _KeyRecorderBaseControl: NSControl {
+  let segmentedControl: KeyRecorderSegmentedControl
+
+  var cornerRadius: CGFloat {
+    switch bezelStyle {
+    case .rounded: return 5.5
+    case .flatBordered: return 5.5
+    case .separated: return 6
+    case .square: return 0
+    }
+  }
+
+  public var bezelStyle: KeyRecorder.BezelStyle {
+    didSet {
+      segmentedControl.segmentStyle = bezelStyle.rawValue
+    }
+  }
+
+  init(_keyCommand: KeyCommand) {
+    segmentedControl = .init(keyCommand: _keyCommand)
+    bezelStyle = .init(segmentedControl.segmentStyle) ?? .rounded
+    super.init(frame: segmentedControl.frame)
+    translatesAutoresizingMaskIntoConstraints = false
+    widthAnchor.constraint(
+      equalToConstant: segmentedControl.frame.width
+    ).isActive = true
+    heightAnchor.constraint(
+      equalToConstant: segmentedControl.frame.height
+    ).isActive = true
+    addSubview(segmentedControl)
+  }
+
+  @available(*, unavailable)
+  override init(frame frameRect: NSRect) {
+    fatalError("init(frame:) is unavailable.")
+  }
+
+  @available(*, unavailable)
+  required init?(coder: NSCoder) {
+    fatalError("KeyRecorder must be created programmatically.")
+  }
+}
+
 /// A view that can record key commands.
 ///
 /// Start by creating a ``KeyCommand``. You can then use it
@@ -30,20 +73,7 @@ import AppKit
 ///     print("DOUBLE")
 /// }
 /// ```
-public final class KeyRecorder: NSControl {
-  let segmentedControl: KeyRecorderSegmentedControl
-
-  var backingView: NSVisualEffectView?
-
-  var cornerRadius: CGFloat {
-    switch bezelStyle {
-    case .rounded: return 5.5
-    case .flatBordered: return 5.5
-    case .separated: return 6
-    case .square: return 0
-    }
-  }
-
+public final class KeyRecorder: _KeyRecorderBaseControl {
   /// A Boolean value that indicates whether the key recorder is
   /// drawn with a backing visual effect view.
   ///
@@ -51,6 +81,7 @@ public final class KeyRecorder: NSControl {
   ///   this property is ignored.
   ///
   /// > Default value: `true`
+  @available(*, deprecated, message: "key recorders are no longer drawn with backing visual effect views")
   public var hasBackingView = true {
     didSet {
       needsDisplay = true
@@ -59,19 +90,19 @@ public final class KeyRecorder: NSControl {
 
   /// The style of the key recorder's bezel.
   /// > Default value: ``BezelStyle-swift.enum/rounded``
-  public var bezelStyle: BezelStyle = .rounded {
-    didSet {
-      needsDisplay = true
-    }
+  public override var bezelStyle: BezelStyle {
+    get { super.bezelStyle }
+    set { super.bezelStyle = newValue }
   }
 
   /// The key command associated with the recorder.
-  public var command: KeyCommand {
+  public var keyCommand: KeyCommand {
     .init(name: segmentedControl.proxy.name)
   }
 
-  @available(*, deprecated, renamed: "command")
-  public var keyEvent: KeyEvent { command }
+  /// The key command associated with the recorder.
+  @available(*, deprecated, message: "renamed to 'keyCommand'", renamed: "keyCommand")
+  public var command: KeyCommand { keyCommand }
 
   /// A Boolean value that indicates whether the key recorder reacts
   /// to mouse events.
@@ -120,22 +151,17 @@ public final class KeyRecorder: NSControl {
   ///
   /// Whenever a new key combination is recorded, the key and modifiers
   /// of the command will be updated to match.
-  public init(command: KeyCommand) {
-    segmentedControl = .init(command: command)
-    super.init(frame: segmentedControl.frame)
-    translatesAutoresizingMaskIntoConstraints = false
-    widthAnchor.constraint(
-      equalToConstant: segmentedControl.frame.width
-    ).isActive = true
-    heightAnchor.constraint(
-      equalToConstant: segmentedControl.frame.height
-    ).isActive = true
-    addSubview(segmentedControl)
+  public init(keyCommand: KeyCommand) {
+    super.init(_keyCommand: keyCommand)
   }
 
-  @available(*, deprecated, renamed: "init(command:)")
-  public convenience init(keyEvent: KeyEvent) {
-    self.init(command: keyEvent)
+  /// Creates a key recorder for the given key command.
+  ///
+  /// Whenever a new key combination is recorded, the key and modifiers
+  /// of the command will be updated to match.
+  @available(*, deprecated, message: "replaced by 'init(keyCommand:)'", renamed: "init(keyCommand:)")
+  public init(command: KeyCommand) {
+    super.init(_keyCommand: command)
   }
 
   /// Creates a key recorder for the key command with the given name.
@@ -144,63 +170,13 @@ public final class KeyRecorder: NSControl {
   /// As soon as the key recorder records a key combination, the command will
   /// assume that combination's value.
   public convenience init(name: KeyCommand.Name) {
-    self.init(command: .init(name: name))
-  }
-
-  @available(*, unavailable)
-  override init(frame frameRect: NSRect) {
-    fatalError("init(frame:) is unavailable.")
-  }
-
-  @available(*, unavailable)
-  required init?(coder: NSCoder) {
-    fatalError("KeyRecorder must be created programmatically.")
-  }
-
-  public override func draw(_ dirtyRect: NSRect) {
-    super.draw(dirtyRect)
-
-    wantsLayer = true
-    layer?.cornerRadius = cornerRadius
-
-    segmentedControl.segmentStyle = bezelStyle.rawValue
-    backingView?.removeFromSuperview()
-
-    if
-      hasBackingView,
-      bezelStyle != .separated
-    {
-      let backingView = NSVisualEffectView(frame: frame)
-      self.backingView = backingView
-
-      backingView.blendingMode = .behindWindow
-      backingView.material = .sidebar
-      backingView.wantsLayer = true
-      backingView.layer?.cornerRadius = cornerRadius
-
-      backingView.translatesAutoresizingMaskIntoConstraints = false
-      addSubview(backingView, positioned: .below, relativeTo: self)
-      backingView.centerXAnchor.constraint(
-        equalTo: centerXAnchor
-      ).isActive = true
-      backingView.centerYAnchor.constraint(
-        equalTo: centerYAnchor
-      ).isActive = true
-      backingView.widthAnchor.constraint(
-        equalTo: widthAnchor,
-        constant: bezelStyle.widthConstant
-      ).isActive = true
-      backingView.heightAnchor.constraint(
-        equalTo: heightAnchor,
-        constant: bezelStyle.heightConstant
-      ).isActive = true
-    }
+    self.init(keyCommand: .init(name: name))
   }
 }
 
 // MARK: - KeyRecorderSegmentedControl
 
-extension KeyRecorder {
+extension _KeyRecorderBaseControl {
   class KeyRecorderSegmentedControl: NSSegmentedControl {
 
     // MARK: Properties
@@ -296,8 +272,8 @@ extension KeyRecorder {
 
     // MARK: Initializers
 
-    init(command: KeyCommand) {
-      proxy = command.proxy
+    init(keyCommand: KeyCommand) {
+      proxy = keyCommand.proxy
       super.init(frame: .init(origin: .zero, size: .init(width: 140, height: 24)))
       target = self
       action = #selector(controlWasPressed(_:))
@@ -312,7 +288,13 @@ extension KeyRecorder {
       setWidth(frame.height, forSegment: 1)
 
       proxy.observeRegistrationState { [weak self] in
-        self?.updateVisualAppearance()
+        guard
+          let self,
+          !self.proxy.menuIsOpen
+        else {
+          return
+        }
+        self.updateVisualAppearance()
       }
       proxy.register()
 
@@ -499,7 +481,7 @@ extension KeyRecorder {
 
 // MARK: - RecordingState
 
-extension KeyRecorder.KeyRecorderSegmentedControl {
+extension _KeyRecorderBaseControl.KeyRecorderSegmentedControl {
   enum RecordingState {
     case recording
     case idle
@@ -508,7 +490,7 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
 
 // MARK: Label
 
-extension KeyRecorder.KeyRecorderSegmentedControl {
+extension _KeyRecorderBaseControl.KeyRecorderSegmentedControl {
   enum Label: String {
     case typeShortcut = "Type shortcut"
     case recordShortcut = "Record shortcut"
@@ -518,7 +500,7 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
 
 // MARK: FailureReason
 
-extension KeyRecorder.KeyRecorderSegmentedControl {
+extension _KeyRecorderBaseControl.KeyRecorderSegmentedControl {
   struct FailureReason {
     let messageText: String
     let infoText: String
@@ -560,7 +542,7 @@ extension KeyRecorder.KeyRecorderSegmentedControl {
   }
 }
 
-extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason {
+extension _KeyRecorderBaseControl.KeyRecorderSegmentedControl.FailureReason {
   static let noFailure = Self(
     messageText: "",
     infoText: "No failure.")
@@ -599,7 +581,7 @@ extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason {
   }
 }
 
-extension KeyRecorder.KeyRecorderSegmentedControl.FailureReason: Equatable {
+extension _KeyRecorderBaseControl.KeyRecorderSegmentedControl.FailureReason: Equatable {
   static func == (lhs: Self, rhs: Self) -> Bool {
     lhs.messageText == rhs.messageText &&
     lhs.infoText == rhs.infoText

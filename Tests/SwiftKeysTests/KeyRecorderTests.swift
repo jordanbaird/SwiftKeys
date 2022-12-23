@@ -20,16 +20,6 @@ final class KeyRecorderTests: TestCase {
     recorder.removeFromSuperview()
     window.contentView?.addSubview(recorder)
     recorder.isEnabled = true
-    recorder.hasBackingView = true
-  }
-
-  func testRecorder() {
-    XCTAssert(recorder.isEnabled)
-    recorder.isEnabled = false
-    XCTAssertFalse(recorder.isEnabled)
-    XCTAssert(recorder.hasBackingView)
-    recorder.hasBackingView = false
-    XCTAssertFalse(recorder.hasBackingView)
   }
 
   func testSimulatePress() {

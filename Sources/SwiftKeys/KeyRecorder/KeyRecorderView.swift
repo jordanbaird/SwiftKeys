@@ -56,7 +56,7 @@ public struct KeyRecorderView: View {
   /// Styles that a key recorder view's bezel can be drawn in.
   public typealias BezelStyle = KeyRecorder.BezelStyle
 
-  let command: KeyCommand
+  let keyCommand: KeyCommand
 
   var bodyConstructor: () -> AnyView
 
@@ -65,32 +65,32 @@ public struct KeyRecorderView: View {
   }
 
   private init(
-    command: KeyCommand,
+    keyCommand: KeyCommand,
     @ViewBuilder bodyConstructor: @escaping () -> some View
   ) {
-    self.command = command
+    self.keyCommand = keyCommand
     self.bodyConstructor = {
       AnyView(bodyConstructor())
     }
   }
 
   /// Creates a key recorder view for the given key command.
-  public init(command: KeyCommand) {
-    self.init(command: command) {
+  public init(keyCommand: KeyCommand) {
+    self.init(keyCommand: keyCommand) {
       _KeyRecorderView {
-        KeyRecorder(command: command)
+        KeyRecorder(keyCommand: keyCommand)
       }
     }
   }
 
   /// Creates a key recorder view for the given key command.
-  public init(_ command: KeyCommand) {
-    self.init(command: command)
+  public init(_ keyCommand: KeyCommand) {
+    self.init(keyCommand: keyCommand)
   }
 
   /// Creates a key recorder view for the key command with the given name.
   public init(name: KeyCommand.Name) {
-    self.init(command: .init(name: name))
+    self.init(keyCommand: .init(name: name))
   }
 
   func withBodyConstructor(
@@ -159,9 +159,17 @@ public struct KeyRecorderView: View {
   ) -> Self {
     withBodyConstructor {
       onAppear {
-        command.observe(type, handler: handler)
+        keyCommand.observe(type, handler: handler)
       }
     }
+  }
+}
+
+@available(macOS 10.15, *)
+extension KeyRecorderView {
+  @available(*, deprecated, message: "replaced by 'init(keyCommand:)'", renamed: "init(keyCommand:)")
+  public init(command: KeyCommand) {
+    self.init(keyCommand: command)
   }
 }
 #endif
