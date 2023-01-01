@@ -25,31 +25,33 @@ Add the following dependency to your `Package.swift` file:
 
 [Read the full documentation here](https://swiftpackageindex.com/jordanbaird/SwiftKeys/documentation)
 
-Start by creating an instance of `KeyCommand`.
+### Creating and Observing
 
-Observe it and perform actions on `keyDown`, `keyUp`, or both:
+Start by creating an instance of `KeyCommand`. Observe it, and perform actions on `keyDown`, `keyUp`, and `doubleTap(_:)`:
 
 ```swift
 let command = KeyCommand(name: "ToggleMainWindow")
 
 command.observe(.keyDown) {
-    if mainWindow.isVisible {
-        mainWindow.orderOut(command)
-    } else {
-        mainWindow.makeKeyAndOrderFront(command)
-    }
+    myCustomKeyDownAction()
 }
 
 command.observe(.keyUp) {
-    if Int.random(in: 0..<10) == 7 {
-        performJumpScare()
-    }
+    myCustomKeyUpAction()
+}
+
+command.observe(.doubleTap(0.2)) {
+    myCustomDoubleTapAction()
 }
 ```
 
+> `doubleTap(_:)` allows you to specify a maximum time interval that the two key presses must fall within to be considered a "double-tap".
+
+### Adding a Key Recorder
+
 Use the key command's name to create a key recorder. Then, add it to a view (note the use of `KeyRecorderView` for SwiftUI and `KeyRecorder` for Cocoa):
 
-### SwiftUI
+#### SwiftUI
 
 ```swift
 struct SettingsView: View {
@@ -59,7 +61,7 @@ struct SettingsView: View {
 }
 ```
 
-### Cocoa
+#### Cocoa
 
 ```swift
 class SettingsViewController: NSViewController {
@@ -122,7 +124,7 @@ extension KeyCommand.Name {
 
 ## License
 
-SwiftKeys is available under the MIT license. See the LICENSE file for more info.
+SwiftKeys is available under the [MIT license](LICENSE).
 
 [recorder-window]: Sources/SwiftKeys/Documentation.docc/Resources/recorder-window.png
 [recorder-window~dark]: Sources/SwiftKeys/Documentation.docc/Resources/recorder-window~dark.png
