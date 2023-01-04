@@ -81,7 +81,7 @@ public final class KeyRecorder: _KeyRecorderBaseControl {
   ///   this property is ignored.
   ///
   /// > Default value: `true`
-  @available(*, deprecated, message: "key recorders are no longer drawn with backing visual effect views")
+  @available(*, deprecated, message: "Key recorders are no longer drawn with backing visual effect views.")
   public var hasBackingView = true {
     didSet {
       needsDisplay = true

@@ -9,7 +9,7 @@
 import Carbon.HIToolbox
 import Cocoa
 
-@available(*, deprecated, renamed: "KeyCommand")
+@available(*, deprecated, message: "Renamed to 'KeyCommand'", renamed: "KeyCommand")
 public typealias KeyEvent = KeyCommand
 
 public struct KeyCommand {
