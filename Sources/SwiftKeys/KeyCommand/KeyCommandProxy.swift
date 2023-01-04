@@ -342,54 +342,14 @@ final class KeyCommandProxy {
   }
 }
 
-extension KeyCommandProxy {
-  class NotificationCenterObserver {
-    private var handlers = [Notification.Name: [VoidHandler]]()
-
-    init() { }
-
-    @discardableResult
-    func observe(_ name: Notification.Name, block: @escaping () -> Void) -> NotificationCenterObserver {
-      let handler = VoidHandler(block: block)
-      if var handlersForName = handlers[name] {
-        handlersForName.append(handler)
-        handlers[name] = handlersForName
-      } else {
-        handlers[name] = [handler]
-        NotificationCenter.default.addObserver(
-          self,
-          selector: #selector(didReceiveNotification(_:)),
-          name: name,
-          object: nil)
-      }
-      return self
-    }
-
-    func removeObservations(for name: Notification.Name) {
-      handlers.removeValue(forKey: name)
-    }
-
-    func isObserving(_ name: Notification.Name) -> Bool {
-      handlers[name] != nil
-    }
-
-    @objc
-    private func didReceiveNotification(_ notification: Notification) {
-      for handler in handlers[notification.name, default: []] {
-        handler.perform()
-      }
-    }
-  }
-}
-
-// MARK: - Protocol conformances
-
+// MARK: KeyCommandProxy Equatable
 extension KeyCommandProxy: Equatable {
   static func == (lhs: KeyCommandProxy, rhs: KeyCommandProxy) -> Bool {
     ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
   }
 }
 
+// MARK: KeyCommandProxy Hashable
 extension KeyCommandProxy: Hashable {
   func hash(into hasher: inout Hasher) {
     hasher.combine(ObjectIdentifier(self))
