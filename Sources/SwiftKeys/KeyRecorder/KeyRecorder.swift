@@ -183,6 +183,8 @@ extension _KeyRecorderBaseControl {
 
     var keyDownMonitor: EventMonitor?
 
+    var mouseDownMonitor: EventMonitor?
+
     let proxy: KeyCommandProxy
 
     var windowVisibilityObservation: NSKeyValueObservation?
@@ -219,12 +221,18 @@ extension _KeyRecorderBaseControl {
           setSelected(true, forSegment: 0)
           failureReason = .noFailure
           keyDownMonitor?.start()
+          mouseDownMonitor?.start()
           observeWindowVisibility()
         } else if recordingState == .idle {
           keyDownMonitor?.stop()
+          mouseDownMonitor?.stop()
           windowVisibilityObservation = nil
         }
       }
+    }
+
+    var frameConvertedToWindow: NSRect {
+      superview?.convert(frame, to: nil) ?? frame
     }
 
     // MARK: Image properties
@@ -328,6 +336,17 @@ extension _KeyRecorderBaseControl {
         self.setFailureReason(.noFailure)
         return nil
       }
+
+      mouseDownMonitor = EventMonitor(mask: .leftMouseDown) { [weak self] event in
+        guard let self else {
+          return event
+        }
+        if !self.frameConvertedToWindow.contains(event.locationInWindow) {
+          self.recordingState = .idle
+          self.updateBasedOnNewRecordingState()
+        }
+        return event
+      }
     }
 
     @available(*, unavailable)
@@ -377,6 +396,7 @@ extension _KeyRecorderBaseControl {
         }
         if !newValue {
           self.keyDownMonitor?.stop()
+          self.mouseDownMonitor?.stop()
         }
       }
     }
@@ -475,6 +495,7 @@ extension _KeyRecorderBaseControl {
 
     deinit {
       keyDownMonitor?.stop()
+      mouseDownMonitor?.stop()
     }
   }
 }
