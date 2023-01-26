@@ -2,8 +2,6 @@
 //
 // Prefix.swift
 //
-// Created: 2022. Author: Jordan Baird.
-//
 //===----------------------------------------------------------------------===//
 
 extension KeyCommand.Name {

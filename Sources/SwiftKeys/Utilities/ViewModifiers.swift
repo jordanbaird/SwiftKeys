@@ -2,8 +2,6 @@
 //
 // ViewModifiers.swift
 //
-// Created: 2022. Author: Jordan Baird.
-//
 //===----------------------------------------------------------------------===//
 
 #if canImport(SwiftUI)

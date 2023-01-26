@@ -2,8 +2,6 @@
 //
 // Utilities.swift
 //
-// Created: 2022. Author: Jordan Baird.
-//
 //===----------------------------------------------------------------------===//
 
 import Carbon.HIToolbox
