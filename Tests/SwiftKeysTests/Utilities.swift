@@ -4,18 +4,17 @@
 //
 //===----------------------------------------------------------------------===//
 
-import Carbon.HIToolbox
 import XCTest
 @testable import SwiftKeys
 
 /// An `XCTestCase` class, customized for `SwiftKeys`.
-class TestCase: XCTestCase {
+class SKTestCase: XCTestCase {
     override func tearDownWithError() throws {
         try KeyCommandProxy.uninstall()
     }
 }
 
-extension TestCase {
+extension SKTestCase {
     private func _unwrap<T>(
         _ block: () throws -> T?,
         _ message: () -> String,
@@ -65,8 +64,7 @@ extension TestCase {
 
     func assertAllEqual<T: Equatable>(
         to expression: @autoclosure () throws -> T,
-        @Builder<T>
-        _ block: () throws -> [T],
+        @Builder _ block: () throws -> [T],
         _ message: @autoclosure () -> String = "",
         file: StaticString = #filePath,
         line: UInt = #line
@@ -99,8 +97,7 @@ extension TestCase {
     /// Asserts that the result of a block of code is equal
     /// to `OSStatus.noErr`.
     func assertNoErr(
-        @Builder<OSStatus>
-        _ block: () throws -> [OSStatus],
+        @Builder _ block: () throws -> [OSStatus],
         _ message: @autoclosure () -> String = "",
         file: StaticString = #filePath,
         line: UInt = #line
@@ -132,8 +129,8 @@ struct TestError: Error {
 }
 
 @resultBuilder
-struct Builder<T> {
-    static func buildBlock(_ components: T...) -> [T] {
+struct Builder {
+    static func buildBlock<T>(_ components: T...) -> [T] {
         components
     }
 }

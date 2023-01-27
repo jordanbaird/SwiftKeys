@@ -101,13 +101,14 @@ extension KeyCommand {
     }
 }
 
-// MARK: - Protocol conformances
-
+// MARK: Codable
 extension KeyCommand.Name: Codable { }
 
+// MARK: CustomDebugStringConvertible
 extension KeyCommand.Name: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "\(Self.self)("
+        "\(Self.self)"
+        + "("
         + "rawValue: \(rawValue), "
         + "prefix: \(prefix), "
         + "separator: \(separator)"
@@ -115,14 +116,17 @@ extension KeyCommand.Name: CustomDebugStringConvertible {
     }
 }
 
+// MARK: CustomStringConvertible
 extension KeyCommand.Name: CustomStringConvertible {
     public var description: String {
         combinedValue
     }
 }
 
+// MARK: Equatable
 extension KeyCommand.Name: Equatable { }
 
+// MARK: ExpressibleByStringInterpolation
 extension KeyCommand.Name: ExpressibleByStringInterpolation {
     /// Creates a name using a string literal.
     public init(stringLiteral value: String) {
@@ -130,4 +134,5 @@ extension KeyCommand.Name: ExpressibleByStringInterpolation {
     }
 }
 
+// MARK: Hashable
 extension KeyCommand.Name: Hashable { }

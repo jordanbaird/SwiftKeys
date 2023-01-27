@@ -15,10 +15,12 @@ final class KeyCommandProxy {
     private static let eventTypes = [
         EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
-            eventKind: UInt32(kEventHotKeyPressed)),
+            eventKind: UInt32(kEventHotKeyPressed)
+        ),
         EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
-            eventKind: UInt32(kEventHotKeyReleased)),
+            eventKind: UInt32(kEventHotKeyReleased)
+        ),
     ]
 
     private static var proxyCount: UInt32 = 0
@@ -29,13 +31,11 @@ final class KeyCommandProxy {
         eventHandlerRef != nil
     }
 
-    // MARK: Properties (Carbon stuff)
+    // MARK: Instance properties
 
-    fileprivate var hotKeyRef: EventHotKeyRef?
+    private var hotKeyRef: EventHotKeyRef?
 
     fileprivate let identifier = EventHotKeyID(signature: signature, id: proxyCount)
-
-    // MARK: Properties (handlers)
 
     var keyAndModifierChangeHandlers = Set<VoidHandler>()
 
@@ -45,8 +45,6 @@ final class KeyCommandProxy {
 
     let notificationCenterObserver = NotificationCenterObserver()
 
-    // MARK: Properties (misc)
-
     private var blockRegistrationChanges = false
 
     private var lastKeyUpDate = Date()
@@ -54,8 +52,6 @@ final class KeyCommandProxy {
     var menuIsOpen = false
 
     let name: KeyCommand.Name
-
-    // MARK: Properties (observers)
 
     var isRegistered = false {
         didSet {
@@ -116,7 +112,8 @@ final class KeyCommandProxy {
                 nil,
                 MemoryLayout<EventHotKeyID>.size,
                 nil,
-                &identifier)
+                &identifier
+            )
 
             // Make sure the creation was successful.
             guard status == noErr else {
@@ -178,7 +175,8 @@ final class KeyCommandProxy {
             eventTypes.count,
             eventTypes,
             nil,
-            &eventHandlerRef)
+            &eventHandlerRef
+        )
     }
 
     static func uninstall() throws {
@@ -222,11 +220,12 @@ final class KeyCommandProxy {
 
         status = RegisterEventHotKey(
             key.unsigned(),
-            modifiers.carbonFlags,
+            modifiers.unsigned(),
             identifier,
             GetEventDispatcherTarget(),
             0,
-            &hotKeyRef)
+            &hotKeyRef
+        )
 
         guard status == noErr else {
             KeyCommandError.registrationFailed(status: status).log()

@@ -312,3 +312,15 @@ extension Storage {
         }
     }
 }
+
+// MARK: - NSKeyValueObservation
+
+extension NSKeyValueObservation {
+    func store<C: RangeReplaceableCollection<NSKeyValueObservation>>(in collection: inout C) {
+        collection.append(self)
+    }
+
+    func store(in set: inout Set<NSKeyValueObservation>) {
+        set.insert(self)
+    }
+}

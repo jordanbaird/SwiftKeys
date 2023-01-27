@@ -7,7 +7,7 @@
 import XCTest
 @testable import SwiftKeys
 
-final class KeyCommandTests: TestCase {
+final class KeyCommandTests: SKTestCase {
     typealias EventType = KeyCommand.EventType
 
     typealias Observation = KeyCommand.Observation
@@ -35,7 +35,8 @@ final class KeyCommandTests: TestCase {
         let command1 = KeyCommand(
             name: "TestCommand1",
             key: .b,
-            modifiers: [.command])
+            modifiers: [.command]
+        )
 
         XCTAssertEqual(KeyCommand(name: "TestCommand1").key, .b)
         XCTAssertEqual(KeyCommand(name: "TestCommand1").modifiers, [.command])
@@ -43,7 +44,8 @@ final class KeyCommandTests: TestCase {
         let command2 = KeyCommand(
             name: "TestCommand1",
             key: .l,
-            modifiers: [.option])
+            modifiers: [.option]
+        )
 
         XCTAssertEqual(command1, command2)
         XCTAssertEqual(KeyCommand(name: "TestCommand1").key, .l)
@@ -54,43 +56,51 @@ final class KeyCommandTests: TestCase {
         let command = KeyCommand(
             name: "TestCommand2",
             key: .a,
-            modifiers: .option, .shift)
+            modifiers: .option, .shift
+        )
 
         XCTAssertFalse(
             command.isEnabled,
-            "A key command that has just been created should not be enabled.")
+            "A key command that has just been created should not be enabled."
+        )
 
         command.observe(.keyDown) { }
         XCTAssert(
             command.isEnabled,
-            "Observing a key command should enable it.")
+            "Observing a key command should enable it."
+        )
 
         command.disable()
         XCTAssertFalse(
             command.isEnabled,
-            "Calling `disable()` on a key command should disable it.")
+            "Calling `disable()` on a key command should disable it."
+        )
 
         XCTAssertNotNil(
             command.key,
-            "Nothing has changed with the command. Its key should not be nil.")
+            "Nothing has changed with the command. Its key should not be nil."
+        )
         XCTAssertFalse(
             command.modifiers.isEmpty,
-            "Nothing has changed with the command. Its modifiers should not be empty.")
+            "Nothing has changed with the command. Its modifiers should not be empty."
+        )
 
         command.remove()
 
         XCTAssertNil(
             command.key,
-            "Calling `remove()` on a key command should set its key to nil.")
+            "Calling `remove()` on a key command should set its key to nil."
+        )
         XCTAssert(
             command.modifiers.isEmpty,
-            "Calling `remove()` on a key command should remove all of its modifiers.")
+            "Calling `remove()` on a key command should remove all of its modifiers."
+        )
     }
 
     func testObservation() {
         var lastRunEventType: EventType?
 
-        @Builder<Observation> var observations: [Observation] {
+        @Builder var observations: [Observation] {
             Observation(.keyDown) {
                 lastRunEventType = .keyDown
             }

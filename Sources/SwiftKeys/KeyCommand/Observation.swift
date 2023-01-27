@@ -57,22 +57,21 @@ extension KeyCommand {
     }
 }
 
-// MARK: - Protocol conformances
-
+// MARK: Equatable
 extension KeyCommand.Observation: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.handler == rhs.handler
     }
 }
 
+// MARK: Hashable
 extension KeyCommand.Observation: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(handler)
     }
 }
 
-// MARK: - Helpers
-
+// MARK: Array Helpers
 extension [KeyCommand.Observation] {
     func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
         for observation in self where try predicate(observation.eventType) {

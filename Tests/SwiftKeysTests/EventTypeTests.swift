@@ -8,7 +8,7 @@ import Carbon.HIToolbox
 import XCTest
 @testable import SwiftKeys
 
-final class EventTypeTests: TestCase {
+final class EventTypeTests: SKTestCase {
     typealias EventType = KeyCommand.EventType
 
     func testInitWithCarbonConstant() {
@@ -42,13 +42,15 @@ final class EventTypeTests: TestCase {
             CGEvent(
                 keyboardEventSource: .init(stateID: .hidSystemState),
                 virtualKey: 6,
-                keyDown: true)
+                keyDown: true
+            )
         }
         let keyUpEvent = unwrap {
             CGEvent(
                 keyboardEventSource: .init(stateID: .hidSystemState),
                 virtualKey: 6,
-                keyDown: false)
+                keyDown: false
+            )
         }
 
         var keyDownRef: EventRef?
@@ -59,12 +61,14 @@ final class EventTypeTests: TestCase {
                 nil,
                 keyDownEvent,
                 UInt32(kEventAttributeNone),
-                &keyDownRef)
+                &keyDownRef
+            )
             CreateEventWithCGEvent(
                 nil,
                 keyUpEvent,
                 UInt32(kEventAttributeNone),
-                &keyUpRef)
+                &keyUpRef
+            )
         }
 
         XCTAssertEqual(EventType(unwrap(keyDownRef)), .keyDown)
@@ -85,7 +89,8 @@ final class EventTypeTests: TestCase {
                 wheelCount: 1,
                 wheel1: 0,
                 wheel2: 0,
-                wheel3: 0)
+                wheel3: 0
+            )
         }
 
         var eventRef: EventRef?
@@ -95,7 +100,8 @@ final class EventTypeTests: TestCase {
                 nil,
                 event,
                 UInt32(kEventAttributeNone),
-                &eventRef)
+                &eventRef
+            )
         }
 
         let eventType = EventType(unwrap(eventRef))

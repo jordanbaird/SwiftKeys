@@ -363,8 +363,8 @@ extension KeyCommand {
         ///
         /// - Note: Do not use this property to set the key equivalent of a
         ///   menu item. The value it returns may be different from what the
-        ///   menu item expects. To get the key's canonical key equivalent,
-        ///   (i.e. the key equivalent used throughout the rest of macOS)
+        ///   menu item expects. To get the key's canonical key equivalent
+        ///   (i.e. the key equivalent used throughout the rest of macOS),
         ///   use the ``keyEquivalent`` property.
         public var stringValue: String {
             switch self {
@@ -506,7 +506,8 @@ extension KeyCommand {
                 &deadKeyState,
                 4,
                 &length,
-                &chars)
+                &chars
+            )
 
             guard result == noErr else {
                 return ""
@@ -543,7 +544,7 @@ extension KeyCommand {
 
         /// An unsigned version of the key's raw value.
         func unsigned<U: UnsignedInteger>(type: U.Type = U.self) -> U {
-            .init(rawValue)
+            U(rawValue)
         }
     }
 }

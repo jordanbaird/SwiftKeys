@@ -7,7 +7,7 @@
 import XCTest
 @testable import SwiftKeys
 
-final class KeyRecorderTests: TestCase {
+final class KeyRecorderTests: SKTestCase {
     var recorder: KeyRecorder!
     let window = NSWindow()
 

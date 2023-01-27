@@ -65,17 +65,22 @@ extension KeyCommand {
 
         /// An integer value associated with the modifier, as
         /// defined by the `Carbon` framework.
-        var carbonFlag: UInt32 {
+        var carbonFlag: Int {
             switch self {
             case .control:
-                return .init(controlKey)
+                return controlKey
             case .option:
-                return .init(optionKey)
+                return optionKey
             case .shift:
-                return .init(shiftKey)
+                return shiftKey
             case .command:
-                return .init(cmdKey)
+                return cmdKey
             }
+        }
+
+        /// An unsigned version of the modifier's `carbonFlag`.
+        func unsigned<U: UnsignedInteger>(type: U.Type = U.self) -> U {
+            U(carbonFlag)
         }
     }
 }
@@ -104,7 +109,8 @@ extension [KeyCommand.Modifier] {
         ]
         assert(
             canonicalOrder.count == Element.allCases.count,
-            "Canonical order of \(Element.self) does not contain all cases.")
+            "Canonical order of [\(Element.self)] does not contain all cases."
+        )
         return canonicalOrder
     }()
 
@@ -115,8 +121,8 @@ extension [KeyCommand.Modifier] {
 
     /// The flags for the modifiers, as defined by the `Carbon` framework, or'd
     /// together into a single unsigned integer.
-    var carbonFlags: UInt32 {
-        var converted: UInt32 = 0
+    var carbonFlags: Int {
+        var converted = 0
         for modifier in Self.canonicalOrder where contains(modifier) {
             converted |= modifier.carbonFlag
         }
@@ -126,30 +132,31 @@ extension [KeyCommand.Modifier] {
     /// The `NSEvent.ModifierFlags` value for the modifiers, reduced into
     /// a single value.
     var cocoaFlags: NSEvent.ModifierFlags {
-        reduce(into: .init()) {
-            $0.insert($1.cocoaFlag)
-        }
+        reduce(into: []) { $0.insert($1.cocoaFlag) }
     }
 
     /// Creates an array of modifiers based on the given `Carbon` value.
-    init(carbonModifiers modifiers: UInt32) {
-        self = Self.canonicalOrder.filter {
-            modifiers.containsModifier($0)
-        }
+    init(carbonModifiers modifiers: Int) {
+        self = Self.canonicalOrder.filter(modifiers.bitwiseContains)
+    }
+
+    /// An unsigned version of the modifiers' `carbonFlags`.
+    func unsigned<U: UnsignedInteger>(type: U.Type = U.self) -> U {
+        U(carbonFlags)
     }
 }
 
-extension UInt32 {
-    /// Returns a Boolean value indicating whether the bits
-    /// of this integer contain the bits of another integer.
-    func bitwiseContains(_ other: Self) -> Bool {
-        other & self == other
+extension BinaryInteger {
+    /// Returns a Boolean value indicating whether the bits of this
+    /// integer contain the bits of another integer.
+    func bitwiseContains<Other: BinaryInteger>(_ other: Other) -> Bool {
+        let other = Self(other)
+        return other & self == other
     }
 
-    /// Returns a Boolean value indicating whether the bits
-    /// of this integer contain the bits of the given modifier's
-    /// carbon flag value.
-    func containsModifier(_ modifier: KeyCommand.Modifier) -> Bool {
+    /// Returns a Boolean value indicating whether the bits of this
+    /// integer contain the bits of the given modifier's `carbonFlag`.
+    func bitwiseContains(modifier: KeyCommand.Modifier) -> Bool {
         bitwiseContains(modifier.carbonFlag)
     }
 }

@@ -7,18 +7,7 @@
 import Carbon.HIToolbox
 import Cocoa
 
-@available(*, deprecated, message: "Renamed to 'KeyCommand'", renamed: "KeyCommand")
-public typealias KeyEvent = KeyCommand
-
 public struct KeyCommand {
-
-    // MARK: Nested types
-
-    private enum CodingKeys: CodingKey {
-        case key
-        case modifiers
-        case name
-    }
 
     // MARK: Static properties
 
@@ -159,15 +148,6 @@ public struct KeyCommand {
         self.init(name: name, key: key, modifiers: modifiers)
     }
 
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        name = try container.decode(Name.self, forKey: .name)
-        try proxy.withoutChangingRegistrationState {
-            $0.key = try container.decode(Key.self, forKey: .key)
-            $0.modifiers = try container.decode([Modifier].self, forKey: .modifiers)
-        }
-    }
-
     // MARK: Static methods
 
     static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
@@ -176,12 +156,12 @@ public struct KeyCommand {
                 let isEnabled = $0[kHISymbolicHotKeyEnabled] as? Bool,
                 isEnabled,
                 let keyCode = $0[kHISymbolicHotKeyCode] as? Int,
-                let modifierCode = $0[kHISymbolicHotKeyModifiers] as? UInt32
+                let carbonModifiers = $0[kHISymbolicHotKeyModifiers] as? Int
             else {
                 return false
             }
 
-            let reservedModifiers = [Modifier](carbonModifiers: modifierCode)
+            let reservedModifiers = [Modifier](carbonModifiers: carbonModifiers)
 
             guard
                 modifiers.count == reservedModifiers.count,
@@ -197,13 +177,6 @@ public struct KeyCommand {
     }
 
     // MARK: Methods
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(key, forKey: .key)
-        try container.encode(modifiers, forKey: .modifiers)
-        try container.encode(name, forKey: .name)
-    }
 
     /// Adds the given observation to the key command, if the command does
     /// not already contain it.
@@ -393,7 +366,50 @@ public struct KeyCommand {
     }
 }
 
-// MARK: - EventType
+// MARK: KeyCommand Codable
+extension KeyCommand: Codable {
+    private enum CodingKeys: CodingKey {
+        case key
+        case modifiers
+        case name
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(Name.self, forKey: .name)
+        try proxy.withoutChangingRegistrationState {
+            $0.key = try container.decode(Key.self, forKey: .key)
+            $0.modifiers = try container.decode([Modifier].self, forKey: .modifiers)
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(key, forKey: .key)
+        try container.encode(modifiers, forKey: .modifiers)
+        try container.encode(name, forKey: .name)
+    }
+}
+
+// MARK: KeyCommand CustomStringConvertible
+extension KeyCommand: CustomStringConvertible {
+    public var description: String {
+        "\(Self.self)"
+        + "("
+        + "name: \(name), "
+        + "key: \(key.map { "\($0)" } ?? "nil"), "
+        + "modifiers: \(modifiers)"
+        + ")"
+    }
+}
+
+// MARK: KeyCommand Equatable
+extension KeyCommand: Equatable { }
+
+// MARK: KeyCommand Hashable
+extension KeyCommand: Hashable { }
+
+// MARK: - KeyCommand EventType
 
 extension KeyCommand {
     /// Constants that specify the event type of a key command.
@@ -450,29 +466,16 @@ extension KeyCommand {
     }
 }
 
-// MARK: - Protocol conformances
-
-extension KeyCommand: Codable { }
-
-extension KeyCommand: CustomStringConvertible {
-    public var description: String {
-        var keyString = "nil"
-        if let key {
-            keyString = "\(key)"
-        }
-        return "\(Self.self)("
-        + "name: \(name), "
-        + "key: \(keyString), "
-        + "modifiers: \(modifiers))"
-    }
-}
-
-extension KeyCommand: Equatable { }
-
-extension KeyCommand: Hashable { }
-
+// MARK: EventType Codable
 extension KeyCommand.EventType: Codable { }
 
+// MARK: EventType Equatable
 extension KeyCommand.EventType: Equatable { }
 
+// MARK: EventType Hashable
 extension KeyCommand.EventType: Hashable { }
+
+// MARK: - KeyEvent (Deprecated)
+
+@available(*, deprecated, message: "Renamed to 'KeyCommand'", renamed: "KeyCommand")
+public typealias KeyEvent = KeyCommand
