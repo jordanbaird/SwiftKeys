@@ -6,42 +6,99 @@ A straightforward global key command API for macOS.
 
 `SwiftKeys` allows you to create, observe, and record global hotkeys.
 
-Start by creating an instance of ``KeyCommand``. Then, use it to initialize a ``KeyRecorder`` instance. The key recorder's state is bound to the key command, so when it records a new key combination, the command will be updated. You can also observe the command and perform actions on both key-down and key-up.
+### Creating and Observing
+
+Start by creating an instance of ``KeyCommand``. Observe it, and perform actions on ``KeyCommand/EventType/keyDown``, ``KeyCommand/EventType/keyUp``, and ``KeyCommand/EventType/doubleTap(_:)``:
 
 ```swift
-let command = KeyCommand(name: "SomeCommand")
-let recorder = KeyRecorder(keyCommand: command)
+let command = KeyCommand(name: "ToggleMainWindow")
 
 command.observe(.keyDown) {
-    print("DOWN")
+    myCustomKeyDownAction()
 }
+
 command.observe(.keyUp) {
-    print("UP")
+    myCustomKeyUpAction()
+}
+
+command.observe(.doubleTap(0.2)) {
+    myCustomDoubleTapAction()
 }
 ```
 
-For improved type safety, you can create hard-coded key command names that can be referenced across your app.
+> ``KeyCommand/EventType/doubleTap(_:)`` allows you to specify a maximum time interval that the two key presses must fall within to be considered a "double-tap".
+
+### Adding a Key Recorder
+
+Use the key command's name to create a key recorder. Then, add it to a view (note the use of ``KeyRecorderView`` for SwiftUI and ``KeyRecorder`` for Cocoa):
+
+#### SwiftUI
 
 ```swift
-extension KeyCommand.Name {
-    static let showPreferences = Self("ShowPreferences")
+struct SettingsView: View {
+    var body: some View {
+        KeyRecorderView(name: "ToggleMainWindow")
+    }
 }
-let command = KeyCommand(name: .showPreferences)
 ```
 
-Key commands are automatically stored `UserDefaults`. The name of the command serves as its key. You can provide a custom prefix that will be combined with each name to create the keys.
+#### Cocoa
+
+```swift
+class SettingsViewController: NSViewController {
+    let recorder = KeyRecorder(name: "ToggleMainWindow")
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.addSubview(recorder)
+    }
+}
+```
+
+The result should look something like this:
+
+![](recorder-window)
+
+The recorder and command will stay synchronized with each other, so when the user records a new key combination, the command will be updated to match the new value.
+
+---
+
+For improved type safety, you can create hard-coded command names that can be referenced across your app.
+
+`Misc.swift`
+```swift
+extension KeyCommand.Name {
+    static let toggleMainWindow = Self("ToggleMainWindow")
+}
+```
+
+`AppDelegate.swift`
+```swift
+let command = KeyCommand(name: .toggleMainWindow)
+```
+
+`SettingsView.swift`
+```swift
+let recorder = KeyRecorder(name: .toggleMainWindow)
+```
+
+---
+
+Key commands are automatically stored in the `UserDefaults` system, using their names as keys. It's common for `UserDefaults` keys to be prefixed, or namespaced, according to their corresponding app or subsystem. To that end, `SwiftKeys` lets you provide custom prefixes that can be applied to individual names.
 
 ```swift
 extension KeyCommand.Name.Prefix {
-    public override var sharedPrefix: Self {
-        Self("SK")
-    }
+    static let settings = Self("Settings")
+    static let app = Self("MyGreatApp")
 }
 
 extension KeyCommand.Name {
-    static let showPreferences = Self("ShowPreferences")
+    // "SettingsOpen" will be the full UserDefaults key.
+    static let openSettings = Self("Open", prefix: .settings)
+
+    // "MyGreatApp_Quit" will be the full UserDefaults key.
+    static let quitApp = Self("Quit", prefix: .app, separator: "_")
 }
-// The name above will become "SKShowPreferences" when used as a defaults key.
 ```
 
 You can find `SwiftKeys` [on GitHub](https://github.com/jordanbaird/SwiftKeys)

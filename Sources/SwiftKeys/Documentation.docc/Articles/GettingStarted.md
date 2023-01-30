@@ -8,7 +8,7 @@ There are two top-level types in this package: ``KeyCommand`` and ``KeyRecorder`
 
 #### KeyCommand
 
-``KeyCommand`` is quite powerful, yet simple to understand. To create one, all you need is a name, which will be used to store the command in `UserDefaults`.
+To create a ``KeyCommand``, all you need is a name, which will be used to store the command in `UserDefaults`.
 
 ```swift
 let command = KeyCommand(name: "OpenPreferences")
@@ -79,7 +79,7 @@ In addition to operating on the key command itself, you can perform similar chan
 
 ``KeyRecorder`` is a subclass of `NSControl` that enables you to record new keys and modifiers for a key command. Passing a command into ``KeyRecorder/init(keyCommand:)`` creates a key recorder whose state is bound to that command. You can also create a key recorder using ``KeyRecorder/init(name:)``, a convenience initializer which automatically creates a key command based on the name you provide.
 
-![A window containing a KeyRecorder.](recorder-window.png)
+![A window containing a KeyRecorder.](recorder-window)
 
 Using a key recorder is extremely simple. Clicking inside puts it into "recording" mode, where it awaits a key-down message. As soon as a key combination is pressed, the recorder updates its key command and enters "idle" mode. In idle mode, a "clear" button appears, which resets the key command to an empty state.
 
