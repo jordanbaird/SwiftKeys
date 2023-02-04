@@ -4,6 +4,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// MARK: - KeyCommand Name
+
 extension KeyCommand {
     /// A type that represents the name of a key command.
     ///
@@ -101,10 +103,10 @@ extension KeyCommand {
     }
 }
 
-// MARK: Codable
+// MARK: Name: Codable
 extension KeyCommand.Name: Codable { }
 
-// MARK: CustomDebugStringConvertible
+// MARK: Name: CustomDebugStringConvertible
 extension KeyCommand.Name: CustomDebugStringConvertible {
     public var debugDescription: String {
         "\(Self.self)"
@@ -116,17 +118,17 @@ extension KeyCommand.Name: CustomDebugStringConvertible {
     }
 }
 
-// MARK: CustomStringConvertible
+// MARK: Name: CustomStringConvertible
 extension KeyCommand.Name: CustomStringConvertible {
     public var description: String {
         combinedValue
     }
 }
 
-// MARK: Equatable
+// MARK: Name: Equatable
 extension KeyCommand.Name: Equatable { }
 
-// MARK: ExpressibleByStringInterpolation
+// MARK: Name: ExpressibleByStringInterpolation
 extension KeyCommand.Name: ExpressibleByStringInterpolation {
     /// Creates a name using a string literal.
     public init(stringLiteral value: String) {
@@ -134,5 +136,5 @@ extension KeyCommand.Name: ExpressibleByStringInterpolation {
     }
 }
 
-// MARK: Hashable
+// MARK: Name: Hashable
 extension KeyCommand.Name: Hashable { }

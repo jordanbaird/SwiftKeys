@@ -7,6 +7,8 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
+// MARK: - _KeyRecorderView
+
 @available(macOS 10.15, *)
 private struct _KeyRecorderView: NSViewRepresentable {
     let constructor: () -> KeyRecorder
@@ -23,6 +25,8 @@ private struct _KeyRecorderView: NSViewRepresentable {
         nsView.bezelStyle = context.environment.keyRecorderBezelStyle
     }
 }
+
+// MARK: - KeyRecorderView
 
 /// A `SwiftUI` view that can record key commands.
 ///
@@ -163,9 +167,10 @@ public struct KeyRecorderView: View {
     }
 }
 
+// MARK: KeyRecorderView Deprecated
 @available(macOS 10.15, *)
 extension KeyRecorderView {
-    @available(*, deprecated, message: "replaced by 'init(keyCommand:)'", renamed: "init(keyCommand:)")
+    @available(*, deprecated, renamed: "init(keyCommand:)")
     public init(command: KeyCommand) {
         self.init(keyCommand: command)
     }

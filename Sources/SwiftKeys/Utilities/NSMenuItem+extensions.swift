@@ -1,10 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
-// NSMenuItemExt.swift
+// NSMenuItem+extensions.swift
 //
 //===----------------------------------------------------------------------===//
 
 import AppKit
+
+// MARK: - NSMenuItem
 
 extension NSMenuItem {
     private static let keyCommandNameStorage = Storage<KeyCommand.Name>()
@@ -93,7 +95,7 @@ extension NSMenuItem {
     }
 }
 
-// MARK: Deprecated
+// MARK: NSMenuItem Deprecated
 extension NSMenuItem {
     /// A key command associated with the menu item.
     ///
@@ -106,7 +108,7 @@ extension NSMenuItem {
     ///   disable the command before the menu opens, otherwise the
     ///   menu will block the command's handlers from running until
     ///   it closes.
-    @available(*, deprecated, message: "renamed to 'keyCommand'", renamed: "keyCommand")
+    @available(*, deprecated, renamed: "keyCommand")
     public var command: KeyCommand? {
         get { keyCommand }
         set { keyCommand = newValue }

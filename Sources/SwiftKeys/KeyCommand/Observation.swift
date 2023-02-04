@@ -4,6 +4,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// MARK: - KeyCommand Observation
+
 extension KeyCommand {
     /// The result type of a call to ``KeyCommand/observe(_:handler:)``.
     ///
@@ -57,21 +59,22 @@ extension KeyCommand {
     }
 }
 
-// MARK: Equatable
+// MARK: Observation: Equatable
 extension KeyCommand.Observation: Equatable {
     public static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.handler == rhs.handler
     }
 }
 
-// MARK: Hashable
+// MARK: Observation: Hashable
 extension KeyCommand.Observation: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(handler)
     }
 }
 
-// MARK: Array Helpers
+// MARK: - Array<Observation>
+
 extension [KeyCommand.Observation] {
     func performObservations(where predicate: (KeyCommand.EventType) throws -> Bool) rethrows {
         for observation in self where try predicate(observation.eventType) {

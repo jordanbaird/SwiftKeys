@@ -17,13 +17,13 @@ command.observe(.keyUp) {
 }
 ```
 
-You can also initialize a command with a predefined key and modifiers. In the following example, the command's observations will be triggered when the key combination "⇧⌥␣" (Shift-Option-Space) is pressed.
+You can also initialize a command with a predefined key and modifiers. In the following example, the command's observations will be triggered when the key combination "⌥⇧␣" (Option + Shift + Space) is pressed.
 
 ```swift
 let command = KeyCommand(
     name: "SomeCommand",
     key: .space,
-    modifiers: [.shift, .option]
+    modifiers: [.option, .shift]
 )
 ```
 
@@ -33,7 +33,7 @@ If a key command is created with the same name as one that has been created prev
 let originalCommand = KeyCommand(
     name: "SomeCommand",
     key: .space,
-    modifiers: [.shift, .option]
+    modifiers: [.option, .shift]
 )
 
 let duplicateCommand = KeyCommand(name: "SomeCommand")
@@ -45,7 +45,7 @@ print(duplicateCommand.key)
 // Prints: "space"
 
 print(duplicateCommand.modifiers)
-// Prints: "shift, option"
+// Prints: "option, shift"
 ```
 
 If the example above were to provide a new key and new modifiers in `duplicateCommand`'s initializer, both `duplicateCommand` _and_ `originalCommand` have those values.
@@ -54,7 +54,7 @@ If the example above were to provide a new key and new modifiers in `duplicateCo
 let originalCommand = KeyCommand(
     name: "SomeCommand",
     key: .space,
-    modifiers: [.shift, .option]
+    modifiers: [.option, .shift]
 )
 
 let duplicateCommand = KeyCommand(

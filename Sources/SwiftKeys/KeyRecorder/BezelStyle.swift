@@ -6,60 +6,77 @@
 
 import AppKit
 
+// MARK: - KeyRecorder BezelStyle
+
 extension KeyRecorder {
-    /// Styles that a key recorder's bezel can be drawn in.
+    /// A type that represents the visual style used to display a
+    /// ``KeyRecorder``'s bezel.
     public enum BezelStyle: CaseIterable, Hashable {
-        /// The default style.
+        /// The key recorder is displayed with a rounded rectangular
+        /// bezel.
         case rounded
 
-        /// A rounded, rectangular style with a flat appearance and a solid line border.
-        case flatBordered
+        /// The key recorder is displayed with a small capsule-like
+        /// bezel with a flat appearance and a solid line border.
+        case capsule
 
-        /// A style where the individual segments of the recorder do not touch.
+        /// The key recorder is displayed with a rounded rectangular
+        /// bezel with a flat appearance and a solid line border.
+        case flat
+
+        /// The key recorder is displayed so that the individual sections
+        /// of its bezel do not touch.
         case separated
 
-        /// A square style.
+        /// The key recorder is displayed with a square bezel.
         case square
 
-        // MARK: Properties
+        /// The key recorder is displayed with a flat appearance and
+        /// a solid line border.
+        @available(*, deprecated, renamed: "capsule")
+        public static let flatBordered: Self = .capsule
+    }
+}
 
-        var rawValue: NSSegmentedControl.Style {
-            switch self {
-            case .rounded: return .rounded
-            case .flatBordered: return .roundRect
-            case .separated: return .separated
-            case .square: return .smallSquare
-            }
+// MARK: BezelStyle Properties
+extension KeyRecorder.BezelStyle {
+    var cocoaValue: NSSegmentedControl.Style {
+        switch self {
+        case .rounded, .flat:
+            return .rounded
+        case .capsule:
+            return .roundRect
+        case .separated:
+            return .separated
+        case .square:
+            return .smallSquare
         }
+    }
+}
 
-        var widthConstant: CGFloat {
-            switch self {
-            case .rounded: return -4
-            case .flatBordered: return -4
-            case .separated: return -2
-            case .square: return -2
-            }
+// MARK: BezelStyle Initializers
+extension KeyRecorder.BezelStyle {
+    init(cocoaValue: NSSegmentedControl.Style, default defaultStyle: @autoclosure () -> Self) {
+        let style = Self.allCases.first {
+            $0.cocoaValue == cocoaValue
         }
+        self = style ?? defaultStyle()
+    }
+}
 
-        var heightConstant: CGFloat {
-            switch self {
-            case .rounded: return -2
-            case .flatBordered: return -6
-            case .separated: return 0
-            case .square: return -4
-            }
-        }
-
-        // MARK: Initializers
-
-        init?(_ rawValue: NSSegmentedControl.Style) {
-            let style = Self.allCases.first {
-                $0.rawValue == rawValue
-            }
-            guard let style else {
-                return nil
-            }
-            self = style
+// MARK: BezelStyle Methods
+extension KeyRecorder.BezelStyle {
+    func apply(to control: KeyRecorderSegmentedControl) {
+        control.segmentStyle = cocoaValue
+        switch self {
+        case .flat:
+            control.cell?.isBezeled = false
+            control.borderLayer = .roundedRectBorder(for: control)
+            control.splitterLayer = .segmentSplitter(for: control, afterSegment: 0)
+        default:
+            control.cell?.isBezeled = true
+            control.borderLayer = nil
+            control.splitterLayer = nil
         }
     }
 }

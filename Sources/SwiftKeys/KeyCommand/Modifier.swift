@@ -7,6 +7,8 @@
 import Carbon.HIToolbox
 import Cocoa
 
+// MARK: - KeyCommand Modifier
+
 extension KeyCommand {
     /// Constants that represent modifier keys associated with a key command.
     public enum Modifier {
@@ -78,6 +80,8 @@ extension KeyCommand {
             }
         }
 
+        // MARK: Methods
+
         /// An unsigned version of the modifier's `carbonFlag`.
         func unsigned<U: UnsignedInteger>(type: U.Type = U.self) -> U {
             U(carbonFlag)
@@ -85,17 +89,19 @@ extension KeyCommand {
     }
 }
 
-// MARK: - Protocol conformances
-
+// MARK: Modifier: CaseIterable
 extension KeyCommand.Modifier: CaseIterable { }
 
+// MARK: Modifier: Codable
 extension KeyCommand.Modifier: Codable { }
 
+// MARK: Modifier: Equatable
 extension KeyCommand.Modifier: Equatable { }
 
+// MARK: Modifier: Hashable
 extension KeyCommand.Modifier: Hashable { }
 
-// MARK: - Helpers
+// MARK: - Array<Modifier>
 
 extension [KeyCommand.Modifier] {
     /// The order that macOS represents its hotkeys, according to
@@ -145,6 +151,8 @@ extension [KeyCommand.Modifier] {
         U(carbonFlags)
     }
 }
+
+// MARK: - BinaryInteger
 
 extension BinaryInteger {
     /// Returns a Boolean value indicating whether the bits of this

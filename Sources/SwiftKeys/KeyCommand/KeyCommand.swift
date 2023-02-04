@@ -9,7 +9,7 @@ import Cocoa
 
 public struct KeyCommand {
 
-    // MARK: Static properties
+    // MARK: Static Properties
 
     static var reservedHotKeys: [[String: Any]] {
         var reservedHotKeys: Unmanaged<CFArray>?
@@ -148,7 +148,7 @@ public struct KeyCommand {
         self.init(name: name, key: key, modifiers: modifiers)
     }
 
-    // MARK: Static methods
+    // MARK: Static Methods
 
     static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
         reservedHotKeys.contains {
@@ -366,7 +366,7 @@ public struct KeyCommand {
     }
 }
 
-// MARK: KeyCommand Codable
+// MARK: KeyCommand: Codable
 extension KeyCommand: Codable {
     private enum CodingKeys: CodingKey {
         case key
@@ -391,7 +391,7 @@ extension KeyCommand: Codable {
     }
 }
 
-// MARK: KeyCommand CustomStringConvertible
+// MARK: KeyCommand: CustomStringConvertible
 extension KeyCommand: CustomStringConvertible {
     public var description: String {
         "\(Self.self)"
@@ -403,10 +403,10 @@ extension KeyCommand: CustomStringConvertible {
     }
 }
 
-// MARK: KeyCommand Equatable
+// MARK: KeyCommand: Equatable
 extension KeyCommand: Equatable { }
 
-// MARK: KeyCommand Hashable
+// MARK: KeyCommand: Hashable
 extension KeyCommand: Hashable { }
 
 // MARK: - KeyCommand EventType
@@ -466,16 +466,16 @@ extension KeyCommand {
     }
 }
 
-// MARK: EventType Codable
+// MARK: EventType: Codable
 extension KeyCommand.EventType: Codable { }
 
-// MARK: EventType Equatable
+// MARK: EventType: Equatable
 extension KeyCommand.EventType: Equatable { }
 
-// MARK: EventType Hashable
+// MARK: EventType: Hashable
 extension KeyCommand.EventType: Hashable { }
 
 // MARK: - KeyEvent (Deprecated)
 
-@available(*, deprecated, message: "Renamed to 'KeyCommand'", renamed: "KeyCommand")
+@available(*, deprecated, renamed: "KeyCommand")
 public typealias KeyEvent = KeyCommand

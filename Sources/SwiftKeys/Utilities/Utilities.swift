@@ -7,6 +7,67 @@
 import Cocoa
 import OSLog
 
+// MARK: - CALayer
+
+extension CALayer {
+    static func roundedRectBorder(
+        frame: CGRect,
+        color: NSColor,
+        lineWidth: CGFloat = 1,
+        cornerRadius: CGFloat
+    ) -> CALayer {
+        let layer = CAShapeLayer()
+        layer.frame = frame
+        layer.fillColor = .clear
+        layer.strokeColor = color.cgColor
+        layer.lineWidth = lineWidth
+        layer.path = .init(
+            roundedRect: frame.insetBy(dx: lineWidth, dy: lineWidth),
+            cornerWidth: cornerRadius,
+            cornerHeight: cornerRadius,
+            transform: nil
+        )
+        return layer
+    }
+
+    static func roundedRectBorder(for control: NSSegmentedControl) -> CALayer {
+        roundedRectBorder(frame: control.bounds, color: .controlColor, lineWidth: 1, cornerRadius: 6)
+    }
+
+    static func segmentSplitter(for control: NSSegmentedControl, afterSegment segment: Int) -> CALayer {
+        let layer = CAShapeLayer()
+        layer.frame = control.bounds
+        layer.lineWidth = 1
+        if #available(macOS 10.14, *) {
+            layer.strokeColor = NSColor.separatorColor.cgColor
+        } else {
+            layer.strokeColor = NSColor.quaternaryLabelColor.cgColor
+        }
+
+        let path = CGMutablePath()
+
+        let segment = max(min(segment, control.segmentCount), 0)
+        let xPosition: CGFloat = (0...segment).reduce(into: 0) {
+            $0 += control.width(forSegment: $1)
+        }
+
+        path.move(
+            to: .init(
+                x: xPosition,
+                y: (layer.frame.midY + layer.frame.maxY) / 2)
+        )
+        path.addLine(
+            to: .init(
+                x: xPosition,
+                y: (layer.frame.minY + layer.frame.midY) / 2)
+        )
+
+        layer.path = path
+
+        return layer
+    }
+}
+
 // MARK: - EventMonitor
 
 struct EventMonitor {
@@ -53,6 +114,7 @@ protocol HandlerWrapper: Equatable, Hashable {
     func perform() -> Value
 }
 
+// MARK: HandlerWrapper Initializers
 extension HandlerWrapper {
     /// Creates a handler with the given code block.
     init(block: @escaping () -> Value) {
@@ -60,12 +122,14 @@ extension HandlerWrapper {
     }
 }
 
+// MARK: HandlerWrapper: Equatable
 extension HandlerWrapper {
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.id == rhs.id
     }
 }
 
+// MARK: HandlerWrapper: Hashable
 extension HandlerWrapper {
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
@@ -117,6 +181,7 @@ struct KeyCommandError: Error {
     let message: String
 }
 
+// MARK: KeyCommandError Log
 extension KeyCommandError {
     /// Logs the error to the unified logging system.
     @discardableResult
@@ -125,41 +190,48 @@ extension KeyCommandError {
     }
 }
 
+// MARK: KeyCommandError Static Members
 extension KeyCommandError {
     static func encodingFailed(status: OSStatus) -> Self {
         .init(
             status: status,
-            message: "Key command encoding failed.")
+            message: "Key command encoding failed."
+        )
     }
 
     static func installationFailed(status: OSStatus) -> Self {
         .init(
             status: status,
-            message: "Event handler installation failed.")
+            message: "Event handler installation failed."
+        )
     }
 
     static func uninstallationFailed(status: OSStatus) -> Self {
         .init(
             status: status,
-            message: "Event handler uninstallation failed.")
+            message: "Event handler uninstallation failed."
+        )
     }
 
     static func registrationFailed(status: OSStatus) -> Self {
         .init(
             status: status,
-            message: "Key command registration failed.")
+            message: "Key command registration failed."
+        )
     }
 
     static func unregistrationFailed(status: OSStatus) -> Self {
         .init(
             status: status,
-            message: "Key command unregistration failed.")
+            message: "Key command unregistration failed."
+        )
     }
 
     static func systemRetrievalFailed(status: OSStatus) -> Self {
         .init(
             status: status,
-            message: "System reserved key command retrieval failed.")
+            message: "System reserved key command retrieval failed."
+        )
     }
 }
 
@@ -195,6 +267,7 @@ struct Logger {
     }
 }
 
+// MARK: Logger Static Members
 extension Logger {
     /// The default logger.
     static let `default` = Self(log: .default, level: .default)
@@ -252,6 +325,18 @@ class NotificationCenterObserver {
     }
 }
 
+// MARK: - NSKeyValueObservation
+
+extension NSKeyValueObservation {
+    func store<C: RangeReplaceableCollection<NSKeyValueObservation>>(in collection: inout C) {
+        collection.append(self)
+    }
+
+    func store(in set: inout Set<NSKeyValueObservation>) {
+        set.insert(self)
+    }
+}
+
 // MARK: - Storage
 
 /// A type that uses object association to store external values.
@@ -277,6 +362,8 @@ class Storage<Value> {
         set { objc_setAssociatedObject(object, key, newValue, policy.objcValue) }
     }
 }
+
+// MARK: - Storage AssociationPolicy
 
 extension Storage {
     /// Available policies to use for object association.
@@ -310,17 +397,5 @@ extension Storage {
                 return .OBJC_ASSOCIATION_RETAIN_NONATOMIC
             }
         }
-    }
-}
-
-// MARK: - NSKeyValueObservation
-
-extension NSKeyValueObservation {
-    func store<C: RangeReplaceableCollection<NSKeyValueObservation>>(in collection: inout C) {
-        collection.append(self)
-    }
-
-    func store(in set: inout Set<NSKeyValueObservation>) {
-        set.insert(self)
     }
 }

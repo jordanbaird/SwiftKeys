@@ -7,10 +7,14 @@
 #if canImport(SwiftUI)
 import SwiftUI
 
+// MARK: - KeyRecorderBezelStyleKey
+
 @available(macOS 10.15, *)
 struct KeyRecorderBezelStyleKey: EnvironmentKey {
     static var defaultValue = KeyRecorderView.BezelStyle.rounded
 }
+
+// MARK: - EnvironmentValues
 
 @available(macOS 10.15, *)
 extension EnvironmentValues {
@@ -20,6 +24,8 @@ extension EnvironmentValues {
     }
 }
 
+// MARK: - KeyRecorderBezelStyle
+
 @available(macOS 10.15, *)
 struct KeyRecorderBezelStyle: ViewModifier {
     let bezelStyle: KeyRecorder.BezelStyle
@@ -28,6 +34,8 @@ struct KeyRecorderBezelStyle: ViewModifier {
         content.environment(\.keyRecorderBezelStyle, bezelStyle)
     }
 }
+
+// MARK: - View Extension
 
 @available(macOS 10.15, *)
 extension View {

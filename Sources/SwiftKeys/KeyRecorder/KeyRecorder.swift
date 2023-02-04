@@ -6,35 +6,27 @@
 
 import AppKit
 
+// MARK: - _KeyRecorderBaseControl
+
 public class _KeyRecorderBaseControl: NSControl {
     let segmentedControl: KeyRecorderSegmentedControl
 
-    var cornerRadius: CGFloat {
-        switch bezelStyle {
-        case .rounded: return 5.5
-        case .flatBordered: return 5.5
-        case .separated: return 6
-        case .square: return 0
-        }
-    }
-
-    public var bezelStyle: KeyRecorder.BezelStyle {
+    var _bezelStyle: KeyRecorder.BezelStyle {
         didSet {
-            segmentedControl.segmentStyle = bezelStyle.rawValue
+            _bezelStyle.apply(to: segmentedControl)
         }
     }
 
     init(_keyCommand: KeyCommand) {
         segmentedControl = .init(keyCommand: _keyCommand)
-        bezelStyle = .init(segmentedControl.segmentStyle) ?? .rounded
+        _bezelStyle = .init(cocoaValue: segmentedControl.segmentStyle, default: .rounded)
+
         super.init(frame: segmentedControl.frame)
+
         translatesAutoresizingMaskIntoConstraints = false
-        widthAnchor.constraint(
-            equalToConstant: segmentedControl.frame.width
-        ).isActive = true
-        heightAnchor.constraint(
-            equalToConstant: segmentedControl.frame.height
-        ).isActive = true
+        widthAnchor.constraint(equalToConstant: segmentedControl.frame.width).isActive = true
+        heightAnchor.constraint(equalToConstant: segmentedControl.frame.height).isActive = true
+
         addSubview(segmentedControl)
     }
 
@@ -48,6 +40,8 @@ public class _KeyRecorderBaseControl: NSControl {
         fatalError("KeyRecorder must be created programmatically.")
     }
 }
+
+// MARK: - KeyRecorder
 
 /// A view that can record key commands.
 ///
@@ -88,9 +82,9 @@ public final class KeyRecorder: _KeyRecorderBaseControl {
 
     /// The style of the key recorder's bezel.
     /// > Default value: ``BezelStyle-swift.enum/rounded``
-    public override var bezelStyle: BezelStyle {
-        get { super.bezelStyle }
-        set { super.bezelStyle = newValue }
+    public var bezelStyle: BezelStyle {
+        get { _bezelStyle }
+        set { _bezelStyle = newValue }
     }
 
     /// The key command associated with the recorder.
@@ -99,7 +93,7 @@ public final class KeyRecorder: _KeyRecorderBaseControl {
     }
 
     /// The key command associated with the recorder.
-    @available(*, deprecated, message: "renamed to 'keyCommand'", renamed: "keyCommand")
+    @available(*, deprecated, renamed: "keyCommand")
     public var command: KeyCommand { keyCommand }
 
     /// A Boolean value that indicates whether the key recorder reacts
@@ -157,7 +151,7 @@ public final class KeyRecorder: _KeyRecorderBaseControl {
     ///
     /// Whenever a new key combination is recorded, the key and modifiers
     /// of the command will be updated to match.
-    @available(*, deprecated, message: "replaced by 'init(keyCommand:)'", renamed: "init(keyCommand:)")
+    @available(*, deprecated, renamed: "init(keyCommand:)")
     public init(command: KeyCommand) {
         super.init(_keyCommand: command)
     }
@@ -186,7 +180,7 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
 
     var observations = Set<NSKeyValueObservation>()
 
-    // MARK: Properties with observers
+    // MARK: Properties > Observed
 
     var attributedLabel: NSAttributedString? {
         didSet {
@@ -228,11 +222,31 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
         }
     }
 
-    var frameConvertedToWindow: NSRect {
-        superview?.convert(frame, to: nil) ?? frame
+    // MARK: Properties > Layers
+
+    var borderLayer: CALayer? {
+        didSet {
+            if let borderLayer {
+                wantsLayer = true
+                layer?.addSublayer(borderLayer)
+            } else {
+                oldValue?.removeFromSuperlayer()
+            }
+        }
     }
 
-    // MARK: Image properties
+    var splitterLayer: CALayer? {
+        didSet {
+            if let splitterLayer {
+                wantsLayer = true
+                layer?.addSublayer(splitterLayer)
+            } else {
+                oldValue?.removeFromSuperlayer()
+            }
+        }
+    }
+
+    // MARK: Properties > Images
 
     let deleteImage: NSImage = {
         let image = NSImage(named: NSImage.stopProgressFreestandingTemplateName)!
@@ -274,6 +288,12 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
         image.isTemplate = true
         return image
     }()
+
+    // MARK: Properties > Computed
+
+    var frameConvertedToWindow: NSRect {
+        superview?.convert(frame, to: nil) ?? frame
+    }
 
     // MARK: Initializers
 
@@ -510,7 +530,7 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
     }
 }
 
-// MARK: - RecordingState
+// MARK: - KeyRecorderSegmentedControl RecordingState
 
 extension KeyRecorderSegmentedControl {
     enum RecordingState {
@@ -519,7 +539,7 @@ extension KeyRecorderSegmentedControl {
     }
 }
 
-// MARK: Label
+// MARK: - KeyRecorderSegmentedControl Label
 
 extension KeyRecorderSegmentedControl {
     enum Label: String {
@@ -529,7 +549,7 @@ extension KeyRecorderSegmentedControl {
     }
 }
 
-// MARK: FailureReason
+// MARK: - KeyRecorderSegmentedControl FailureReason
 
 extension KeyRecorderSegmentedControl {
     struct FailureReason {
@@ -573,6 +593,7 @@ extension KeyRecorderSegmentedControl {
     }
 }
 
+// MARK: FailureReason Static Members
 extension KeyRecorderSegmentedControl.FailureReason {
     static let noFailure = Self(
         messageText: "",
@@ -619,6 +640,7 @@ extension KeyRecorderSegmentedControl.FailureReason {
     }
 }
 
+// MARK: FailureReason: Equatable
 extension KeyRecorderSegmentedControl.FailureReason: Equatable {
     static func == (lhs: Self, rhs: Self) -> Bool {
         lhs.messageText == rhs.messageText &&
@@ -626,7 +648,7 @@ extension KeyRecorderSegmentedControl.FailureReason: Equatable {
     }
 }
 
-// MARK: - Helpers
+// MARK: - ModifierFlags SwiftKeys Modifiers
 
 extension NSEvent.ModifierFlags {
     var swiftKeysModifiers: [KeyCommand.Modifier] {

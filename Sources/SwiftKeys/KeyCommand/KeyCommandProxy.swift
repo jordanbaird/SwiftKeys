@@ -8,7 +8,7 @@ import Carbon.HIToolbox
 
 final class KeyCommandProxy {
 
-    // MARK: Static properties
+    // MARK: Static Properties
 
     private static var eventHandlerRef: EventHandlerRef?
 
@@ -31,7 +31,7 @@ final class KeyCommandProxy {
         eventHandlerRef != nil
     }
 
-    // MARK: Instance properties
+    // MARK: Instance Properties
 
     private var hotKeyRef: EventHotKeyRef?
 
@@ -91,7 +91,7 @@ final class KeyCommandProxy {
         }
     }
 
-    // MARK: Install/uninstall
+    // MARK: Install/Uninstall
 
     static func install() -> OSStatus {
         guard !isInstalled else {
@@ -190,7 +190,7 @@ final class KeyCommandProxy {
         eventHandlerRef = nil
     }
 
-    // MARK: Register/unregister
+    // MARK: Register/Unregister
 
     func register() {
         guard
@@ -339,14 +339,14 @@ final class KeyCommandProxy {
     }
 }
 
-// MARK: KeyCommandProxy Equatable
+// MARK: KeyCommandProxy: Equatable
 extension KeyCommandProxy: Equatable {
     static func == (lhs: KeyCommandProxy, rhs: KeyCommandProxy) -> Bool {
         ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
     }
 }
 
-// MARK: KeyCommandProxy Hashable
+// MARK: KeyCommandProxy: Hashable
 extension KeyCommandProxy: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(self))
