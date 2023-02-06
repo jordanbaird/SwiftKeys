@@ -363,126 +363,6 @@ extension KeyCommand.Key {
         }
     }
 
-    /// A string representation of the key.
-    ///
-    /// - Note: Do not use this property to set the key equivalent of a
-    ///   menu item. The value it returns may be different from what the
-    ///   menu item expects. To get the key's canonical key equivalent
-    ///   (i.e. the key equivalent used throughout the rest of macOS),
-    ///   use the ``keyEquivalent`` property.
-    public var stringValue: String {
-        switch self {
-        case .a: return "a"
-        case .b: return "b"
-        case .c: return "c"
-        case .d: return "d"
-        case .e: return "e"
-        case .f: return "f"
-        case .g: return "g"
-        case .h: return "h"
-        case .i: return "i"
-        case .j: return "j"
-        case .k: return "k"
-        case .l: return "l"
-        case .m: return "m"
-        case .n: return "n"
-        case .o: return "o"
-        case .p: return "p"
-        case .q: return "q"
-        case .r: return "r"
-        case .s: return "s"
-        case .t: return "t"
-        case .u: return "u"
-        case .v: return "v"
-        case .w: return "w"
-        case .x: return "x"
-        case .y: return "y"
-        case .z: return "z"
-        case .zero: return "0"
-        case .one: return "1"
-        case .two: return "2"
-        case .three: return "3"
-        case .four: return "4"
-        case .five: return "5"
-        case .six: return "6"
-        case .seven: return "7"
-        case .eight: return "8"
-        case .nine: return "9"
-        case .minus: return "-"
-        case .equals: return "="
-        case .leftBracket: return "["
-        case .rightBracket: return "]"
-        case .backslash: return "\\"
-        case .semicolon: return ";"
-        case .quote: return "'"
-        case .comma: return ","
-        case .period: return "."
-        case .slash: return "/"
-        case .grave: return "`"
-        case .keypadDecimal: return "."
-        case .keypadMultiply: return "*"
-        case .keypadPlus: return "+"
-        case .keypadClear: return "⌧"
-        case .keypadDivide: return "÷"
-        case .keypadEnter: return "⌅"
-        case .keypadMinus: return "-"
-        case .keypadEquals: return "="
-        case .keypad0: return "0"
-        case .keypad1: return "1"
-        case .keypad2: return "2"
-        case .keypad3: return "3"
-        case .keypad4: return "4"
-        case .keypad5: return "5"
-        case .keypad6: return "6"
-        case .keypad7: return "7"
-        case .keypad8: return "8"
-        case .keypad9: return "9"
-        case .return: return "⏎"
-        case .tab: return "⇥"
-        case .space: return "␣"
-        case .delete: return "⌫"
-        case .forwardDelete: return "⌦"
-        case .escape: return "⎋"
-        case .volumeUp: return "􏿮"
-        case .volumeDown: return "􏿮"
-        case .mute: return "􏿮"
-        case .home: return "⇱"
-        case .end: return "⇲"
-        case .pageUp: return "⇞"
-        case .pageDown: return "⇟"
-        case .leftArrow: return "←"
-        case .rightArrow: return "→"
-        case .downArrow: return "↓"
-        case .upArrow: return "↑"
-        case .f1: return "F1"
-        case .f2: return "F2"
-        case .f3: return "F3"
-        case .f4: return "F4"
-        case .f5: return "F5"
-        case .f6: return "F6"
-        case .f7: return "F7"
-        case .f8: return "F8"
-        case .f9: return "F9"
-        case .f10: return "F10"
-        case .f11: return "F11"
-        case .f12: return "F12"
-        case .f13: return "F13"
-        case .f14: return "F14"
-        case .f15: return "F15"
-        case .f16: return "F16"
-        case .f17: return "F17"
-        case .f18: return "F18"
-        case .f19: return "F19"
-        case .f20: return "F20"
-        case .isoSection: return "§"
-        case .jisYen: return "¥"
-        case .jisUnderscore: return "_"
-        case .jisKeypadComma: return ","
-        case .jisEisu: return "英数"
-        case .jisKana: return "かな"
-        }
-    }
-
     /// A string representation of the key that can be used as a key
     /// equivalent in a menu item.
     public var keyEquivalent: String {
@@ -517,7 +397,63 @@ extension KeyCommand.Key {
             return ""
         }
 
-        return .init(utf16CodeUnits: chars, count: length)
+        return String(utf16CodeUnits: chars, count: length)
+    }
+
+    /// Returns a custom string representation for keys that don't have
+    /// a representable key equivalent.
+    var customStringValue: String? {
+        switch self {
+        case .return: return "⏎"
+        case .tab: return "⇥"
+        case .space: return "␣"
+        case .delete: return "⌫"
+        case .forwardDelete: return "⌦"
+        case .escape: return "⎋"
+        case .home: return "⇱"
+        case .end: return "⇲"
+        case .pageUp: return "⇞"
+        case .pageDown: return "⇟"
+        case .leftArrow: return "←"
+        case .rightArrow: return "→"
+        case .downArrow: return "↓"
+        case .upArrow: return "↑"
+        case .f1: return "F1"
+        case .f2: return "F2"
+        case .f3: return "F3"
+        case .f4: return "F4"
+        case .f5: return "F5"
+        case .f6: return "F6"
+        case .f7: return "F7"
+        case .f8: return "F8"
+        case .f9: return "F9"
+        case .f10: return "F10"
+        case .f11: return "F11"
+        case .f12: return "F12"
+        case .f13: return "F13"
+        case .f14: return "F14"
+        case .f15: return "F15"
+        case .f16: return "F16"
+        case .f17: return "F17"
+        case .f18: return "F18"
+        case .f19: return "F19"
+        case .f20: return "F20"
+        default: return nil
+        }
+    }
+
+    /// A string representation of the key.
+    ///
+    /// - Note: Do not use this property to set the key equivalent of a
+    ///   menu item. The value it returns may be different from what the
+    ///   menu item expects. To get the key's canonical key equivalent
+    ///   (i.e. the key equivalent used throughout the rest of macOS),
+    ///   use the ``keyEquivalent`` property.
+    public var stringValue: String {
+        if let customStringValue {
+            return customStringValue
+        }
+        return keyEquivalent
     }
 }
 
