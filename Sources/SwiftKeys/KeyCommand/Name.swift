@@ -138,3 +138,49 @@ extension KeyCommand.Name: ExpressibleByStringInterpolation {
 
 // MARK: Name: Hashable
 extension KeyCommand.Name: Hashable { }
+
+// MARK: - Name Prefix
+
+extension KeyCommand.Name {
+    /// A prefix that is applied to a key command's name when stored in `UserDefaults`.
+    public struct Prefix {
+        /// The raw value of the prefix.
+        public let rawValue: String
+
+        /// Creates a prefix with the given raw value.
+        public init(rawValue: String) {
+            self.rawValue = rawValue
+        }
+
+        /// Creates a prefix with the given raw value.
+        public init(_ rawValue: String) {
+            self.init(rawValue: rawValue)
+        }
+    }
+}
+
+// MARK: Prefix: Codable
+extension KeyCommand.Name.Prefix: Codable { }
+
+// MARK: Prefix: CustomStringConvertible
+extension KeyCommand.Name.Prefix: CustomStringConvertible {
+    /// A textual representation of the prefix.
+    public var description: String { rawValue }
+}
+
+// MARK: Prefix: Equatable
+extension KeyCommand.Name.Prefix: Equatable { }
+
+// MARK: Prefix: ExpressibleByStringInterpolation
+extension KeyCommand.Name.Prefix: ExpressibleByStringInterpolation {
+    /// Creates a prefix from a string literal.
+    public init(stringLiteral value: String) {
+        self.init(rawValue: value)
+    }
+}
+
+// MARK: Prefix: Hashable
+extension KeyCommand.Name.Prefix: Hashable { }
+
+// MARK: Prefix: RawRepresentable
+extension KeyCommand.Name.Prefix: RawRepresentable { }
