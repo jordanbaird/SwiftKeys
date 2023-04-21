@@ -36,8 +36,8 @@ public struct KeyCommand {
 
     private var trackingNotificationNamesAndBlocks: [(name: Notification.Name, blocks: [() -> Void])] {
         [
-            (NSMenu.didBeginTrackingNotification, [{ proxy.menuIsOpen = true }, disable]),
-            (NSMenu.didEndTrackingNotification, [{ proxy.menuIsOpen = false }, enable]),
+            (NSMenu.didBeginTrackingNotification, [({ proxy.menuIsOpen = true }), disable]),
+            (NSMenu.didEndTrackingNotification, [({ proxy.menuIsOpen = false }), enable]),
         ]
     }
 
@@ -72,8 +72,8 @@ public struct KeyCommand {
     /// will be disabled when a menu belonging to the app opens.
     public var disablesOnMenuOpen: Bool {
         get {
-            trackingNotificationNamesAndBlocks.allSatisfy {
-                proxy.notificationCenterObserver.isObserving($0.name)
+            trackingNotificationNamesAndBlocks.allSatisfy { tuple in
+                proxy.notificationCenterObserver.isObserving(tuple.name)
             }
         }
         nonmutating set {
@@ -128,9 +128,9 @@ public struct KeyCommand {
     ///   use ``KeyCommand/init(name:)`` instead.
     public init(name: Name, key: Key, modifiers: [Modifier]) {
         self.init(name: name)
-        proxy.withoutChangingRegistrationState {
-            $0.key = key
-            $0.modifiers = modifiers
+        proxy.withoutChangingRegistrationState { proxy in
+            proxy.key = key
+            proxy.modifiers = modifiers
         }
     }
 
@@ -150,12 +150,11 @@ public struct KeyCommand {
     // MARK: Static Methods
 
     static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
-        reservedHotKeys.contains {
+        reservedHotKeys.contains { hotKey in
             guard
-                let isEnabled = $0[kHISymbolicHotKeyEnabled] as? Bool,
-                isEnabled,
-                let keyCode = $0[kHISymbolicHotKeyCode] as? Int,
-                let carbonModifiers = $0[kHISymbolicHotKeyModifiers] as? Int
+                hotKey[kHISymbolicHotKeyEnabled] as? Bool == true,
+                let keyCode = hotKey[kHISymbolicHotKeyCode] as? Int,
+                let carbonModifiers = hotKey[kHISymbolicHotKeyModifiers] as? Int
             else {
                 return false
             }
@@ -169,9 +168,7 @@ public struct KeyCommand {
                 return false
             }
 
-            return modifiers.allSatisfy {
-                reservedModifiers.contains($0)
-            }
+            return modifiers.allSatisfy(reservedModifiers.contains)
         }
     }
 
@@ -376,9 +373,9 @@ extension KeyCommand: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decode(Name.self, forKey: .name)
-        try proxy.withoutChangingRegistrationState {
-            $0.key = try container.decode(Key.self, forKey: .key)
-            $0.modifiers = try container.decode([Modifier].self, forKey: .modifiers)
+        try proxy.withoutChangingRegistrationState { proxy in
+            proxy.key = try container.decode(Key.self, forKey: .key)
+            proxy.modifiers = try container.decode([Modifier].self, forKey: .modifiers)
         }
     }
 
@@ -393,8 +390,7 @@ extension KeyCommand: Codable {
 // MARK: KeyCommand: CustomStringConvertible
 extension KeyCommand: CustomStringConvertible {
     public var description: String {
-        "\(Self.self)"
-        + "("
+        "\(Self.self)("
         + "name: \(name), "
         + "key: \(key.map { "\($0)" } ?? "nil"), "
         + "modifiers: \(modifiers)"

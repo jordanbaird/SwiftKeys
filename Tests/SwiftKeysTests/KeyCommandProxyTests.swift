@@ -9,7 +9,10 @@ import XCTest
 final class KeyCommandProxyTests: SKTestCase {
     func testManualInstall() {
         XCTAssertFalse(KeyCommandProxy.isInstalled)
-        assertNoErr(KeyCommandProxy.install())
+        XCTAssert(
+            KeyCommandProxy.install() == noErr,
+            "Returned status code should be noErr."
+        )
         XCTAssertTrue(KeyCommandProxy.isInstalled)
     }
 
@@ -19,7 +22,7 @@ final class KeyCommandProxyTests: SKTestCase {
         command = KeyCommand(
             name: "Command1",
             key: .return,
-            modifiers: .command, .control
+            modifiers: [.command, .control]
         )
         command.observe(.keyDown) { }
         XCTAssertTrue(KeyCommandProxy.isInstalled)
@@ -31,10 +34,7 @@ final class KeyCommandProxyTests: SKTestCase {
         command.proxy.register()
         XCTAssertFalse(
             command.proxy.isRegistered,
-            """
-            Commands with no key or modifiers should not be able \
-            to be registered.
-            """
+            "Commands with no key or modifiers should not be able to be registered."
         )
         command = KeyCommand(
             name: "Command2",
@@ -44,10 +44,7 @@ final class KeyCommandProxyTests: SKTestCase {
         command.proxy.register()
         XCTAssertTrue(
             command.proxy.isRegistered,
-            """
-            Calling register() when a command has a key and \
-            modifiers should register the command.
-            """
+            "Calling register() when a command has a key and modifiers should register the command."
         )
         command.proxy.unregister()
         XCTAssertFalse(
@@ -60,8 +57,8 @@ final class KeyCommandProxyTests: SKTestCase {
         let command = KeyCommand(name: "Command3")
         XCTAssert(command.proxy.registrationStateHandlers.isEmpty)
         command.proxy.observeRegistrationState { }
-        XCTAssertEqual(
-            command.proxy.registrationStateHandlers.count, 1,
+        XCTAssert(
+            command.proxy.registrationStateHandlers.count == 1,
             "Calling observeRegistrationState(_:) should store a handler."
         )
     }

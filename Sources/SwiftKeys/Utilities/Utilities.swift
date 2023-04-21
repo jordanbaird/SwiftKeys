@@ -51,14 +51,16 @@ extension CALayer {
         }
 
         path.move(
-            to: .init(
+            to: CGPoint(
                 x: xPosition,
-                y: (layer.frame.midY + layer.frame.maxY) / 2)
+                y: (layer.frame.midY + layer.frame.maxY) / 2
+            )
         )
         path.addLine(
-            to: .init(
+            to: CGPoint(
                 x: xPosition,
-                y: (layer.frame.minY + layer.frame.midY) / 2)
+                y: (layer.frame.minY + layer.frame.midY) / 2
+            )
         )
 
         layer.path = path
@@ -85,7 +87,8 @@ struct EventMonitor {
         }
         monitor = NSEvent.addLocalMonitorForEvents(
             matching: mask,
-            handler: handler)
+            handler: handler
+        )
     }
 
     mutating func stop() {
@@ -303,7 +306,8 @@ class NotificationCenterObserver {
                 self,
                 selector: #selector(didReceiveNotification(_:)),
                 name: name,
-                object: nil)
+                object: nil
+            )
         }
         return self
     }
@@ -316,8 +320,7 @@ class NotificationCenterObserver {
         handlers[name] != nil
     }
 
-    @objc
-    private func didReceiveNotification(_ notification: Notification) {
+    @objc private func didReceiveNotification(_ notification: Notification) {
         for handler in handlers[notification.name, default: []] {
             handler.perform()
         }

@@ -58,7 +58,7 @@ final class KeyCommandProxy {
         }
     }
 
-    var key: KeyCommand.Key? = nil {
+    var key: KeyCommand.Key? {
         didSet {
             // If already registered, we need to re-register
             // for the new key.
@@ -97,7 +97,7 @@ final class KeyCommandProxy {
             return noErr
         }
 
-        let handler: EventHandlerUPP = { callRef, event, userData in
+        let handler: EventHandlerUPP = { _, event, _ in
             guard let event else {
                 return OSStatus(eventNotHandledErr)
             }
@@ -142,8 +142,8 @@ final class KeyCommandProxy {
 
             // Execute the proxy's stored observations.
             for eventType in eventTypes {
-                proxy.performObservations {
-                    switch $0 {
+                proxy.performObservations { observationEventType in
+                    switch observationEventType {
                     case .doubleTap(let requiredInterval):
                         switch eventType {
                         case .doubleTap(let realInterval):
@@ -160,7 +160,7 @@ final class KeyCommandProxy {
                             return false
                         }
                     default:
-                        return $0 == eventType
+                        return observationEventType == eventType
                     }
                 }
             }
@@ -201,8 +201,8 @@ final class KeyCommandProxy {
         }
 
         if isRegistered {
-            // If already registered, we need to unregister first,
-            // or we'll end up with two conflicting registrations.
+            // If already registered, we need to unregister first, or we'll
+            // end up with two conflicting registrations.
             unregister()
         }
 
@@ -243,10 +243,8 @@ final class KeyCommandProxy {
             let data = try JSONEncoder().encode(KeyCommand(name: name))
             UserDefaults.standard.set(data, forKey: name.combinedValue)
         } catch {
-            // Rather than return, just log the error. Everything else
-            // worked properly, the command just wasn't stored. All things
-            // considered, a relatively minor error, but one that the
-            // programmer should be made aware of nonetheless.
+            // If we made it this far, everything else worked properly,
+            // the command just wasn't stored in UserDefaults.
             KeyCommandError.encodingFailed(status: OSStatus(eventInternalErr)).log()
         }
 
@@ -300,12 +298,12 @@ final class KeyCommandProxy {
 
     /// Mutates the proxy, while blocking it from registering or unregistering.
     ///
-    /// This is useful, for example, when executing multiple pieces of code that each
-    /// would normally cause the proxy to be automatically re-registered (examples of
-    /// this include the `key` and `modifiers` properties). If we need to change both
-    /// values, one after another, it would be inefficient to have to re-register after
-    /// each change, so instead, we can make the changes inside of `block` in a call
-    /// to this function, and manually perform any registration changes afterwards.
+    /// This is useful, for example, when executing multiple pieces of code
+    /// that would normally cause the proxy to be automatically re-registered
+    /// (examples of this include the `key` and `modifiers` properties). If we
+    /// need to change both values, one after another, it would be inefficient
+    /// to have to re-register after each change, so instead, we can make the
+    /// changes inside of `block` and manually re-register afterwards.
     func withoutChangingRegistrationState(execute block: (KeyCommandProxy) throws -> Void) rethrows {
         blockRegistrationChanges = true
         defer {
@@ -315,9 +313,9 @@ final class KeyCommandProxy {
     }
 
     func removeKeyAndModifiers() {
-        withoutChangingRegistrationState {
-            $0.key = nil
-            $0.modifiers.removeAll()
+        withoutChangingRegistrationState { proxy in
+            proxy.key = nil
+            proxy.modifiers.removeAll()
         }
         if isRegistered {
             unregister(shouldReregister: true)

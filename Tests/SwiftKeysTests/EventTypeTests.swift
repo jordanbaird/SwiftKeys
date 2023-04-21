@@ -11,19 +11,11 @@ final class EventTypeTests: SKTestCase {
     typealias EventType = KeyCommand.EventType
 
     func testInitWithCarbonConstant() {
-        // kEventHotKeyPressed and kEventRawKeyDown should both
-        // initialize the keyDown EventType.
-        assertAllEqual(to: .keyDown) {
-            EventType(kEventHotKeyPressed)
-            EventType(kEventRawKeyDown)
-        }
+        XCTAssertEqual(EventType(kEventHotKeyPressed), .keyDown)
+        XCTAssertEqual(EventType(kEventRawKeyDown), .keyDown)
 
-        // kEventHotKeyReleased and kEventRawKeyUp should both
-        // initialize the keyUp EventType.
-        assertAllEqual(to: .keyUp) {
-            EventType(kEventHotKeyReleased)
-            EventType(kEventRawKeyUp)
-        }
+        XCTAssertEqual(EventType(kEventHotKeyReleased), .keyUp)
+        XCTAssertEqual(EventType(kEventRawKeyUp), .keyUp)
 
         // Any other value should initialize to nil.
         XCTAssertNil(EventType(kEventHotKeyNoOptions))
@@ -31,47 +23,41 @@ final class EventTypeTests: SKTestCase {
 
     func testInitWithValidEventRef() throws {
         //
-        // Create two CGEvents that we know will be keyDown and
-        // keyUp, respectively. Try to create instances of EventType
-        // from each of them. For this test to succeed, the created
-        // EventType should match for both keyDown and keyUp.
+        // Create two CGEvents that we know will be keyDown and keyUp,
+        // respectively. Try to create EventType instances from each of
+        // them. For this test to succeed, the created EventType should
+        // match for both keyDown and keyUp.
         //
 
-        let keyDownEvent = unwrap {
+        let keyDownEvent = try XCTUnwrap(
             CGEvent(
-                keyboardEventSource: .init(stateID: .hidSystemState),
+                keyboardEventSource: CGEventSource(stateID: .hidSystemState),
                 virtualKey: 6,
                 keyDown: true
             )
-        }
-        let keyUpEvent = unwrap {
+        )
+        let keyUpEvent = try XCTUnwrap(
             CGEvent(
-                keyboardEventSource: .init(stateID: .hidSystemState),
+                keyboardEventSource: CGEventSource(stateID: .hidSystemState),
                 virtualKey: 6,
                 keyDown: false
             )
-        }
+        )
 
         var keyDownRef: EventRef?
         var keyUpRef: EventRef?
 
-        assertNoErr {
-            CreateEventWithCGEvent(
-                nil,
-                keyDownEvent,
-                UInt32(kEventAttributeNone),
-                &keyDownRef
-            )
-            CreateEventWithCGEvent(
-                nil,
-                keyUpEvent,
-                UInt32(kEventAttributeNone),
-                &keyUpRef
-            )
-        }
+        XCTAssert(
+            CreateEventWithCGEvent(nil, keyDownEvent, UInt32(kEventAttributeNone), &keyDownRef) == noErr,
+            "Returned status code should be noErr."
+        )
+        XCTAssert(
+            CreateEventWithCGEvent(nil, keyUpEvent, UInt32(kEventAttributeNone), &keyUpRef) == noErr,
+            "Returned status code should be noErr."
+        )
 
-        XCTAssertEqual(EventType(unwrap(keyDownRef)), .keyDown)
-        XCTAssertEqual(EventType(unwrap(keyUpRef)), .keyUp)
+        try XCTAssertEqual(EventType(XCTUnwrap(keyDownRef)), .keyDown)
+        try XCTAssertEqual(EventType(XCTUnwrap(keyUpRef)), .keyUp)
     }
 
     func testInitWithInvalidEventRef() throws {
@@ -81,29 +67,16 @@ final class EventTypeTests: SKTestCase {
         // test to succeed, the EventType creation should fail.
         //
 
-        let event = unwrap {
-            CGEvent(
-                scrollWheelEvent2Source: .init(stateID: .hidSystemState),
-                units: .pixel,
-                wheelCount: 1,
-                wheel1: 0,
-                wheel2: 0,
-                wheel3: 0
-            )
-        }
+        let event = try XCTUnwrap(CGEvent(source: nil))
 
         var eventRef: EventRef?
 
-        assertNoErr {
-            CreateEventWithCGEvent(
-                nil,
-                event,
-                UInt32(kEventAttributeNone),
-                &eventRef
-            )
-        }
+        XCTAssert(
+            CreateEventWithCGEvent(nil, event, UInt32(kEventAttributeNone), &eventRef) == noErr,
+            "Returned status code should be noErr."
+        )
 
-        let eventType = EventType(unwrap(eventRef))
+        let eventType = try EventType(XCTUnwrap(eventRef))
         XCTAssertNil(eventType)
     }
 }

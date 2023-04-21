@@ -17,14 +17,17 @@ public class _KeyRecorderBaseControl: NSControl {
     }
 
     init(_keyCommand: KeyCommand) {
-        segmentedControl = .init(keyCommand: _keyCommand)
-        _bezelStyle = .init(cocoaValue: segmentedControl.segmentStyle, default: .rounded)
+        segmentedControl = KeyRecorderSegmentedControl(keyCommand: _keyCommand)
+        _bezelStyle = KeyRecorder.BezelStyle(cocoaValue: segmentedControl.segmentStyle, default: .rounded)
 
         super.init(frame: segmentedControl.frame)
 
         translatesAutoresizingMaskIntoConstraints = false
-        widthAnchor.constraint(equalToConstant: segmentedControl.frame.width).isActive = true
-        heightAnchor.constraint(equalToConstant: segmentedControl.frame.height).isActive = true
+
+        NSLayoutConstraint.activate([
+            widthAnchor.constraint(equalToConstant: segmentedControl.frame.width),
+            heightAnchor.constraint(equalToConstant: segmentedControl.frame.height),
+        ])
 
         addSubview(segmentedControl)
     }
@@ -88,7 +91,7 @@ public final class KeyRecorder: _KeyRecorderBaseControl {
 
     /// The key command associated with the recorder.
     public var keyCommand: KeyCommand {
-        .init(name: segmentedControl.proxy.name)
+        KeyCommand(name: segmentedControl.proxy.name)
     }
 
     /// The key command associated with the recorder.
@@ -116,7 +119,7 @@ public final class KeyRecorder: _KeyRecorderBaseControl {
     /// Setting this value allows you to customize the text that is
     /// displayed to the user.
     public override var attributedStringValue: NSAttributedString {
-        get { segmentedControl.attributedLabel ?? .init(string: stringValue) }
+        get { segmentedControl.attributedLabel ?? NSAttributedString(string: stringValue) }
         set { segmentedControl.attributedLabel = newValue }
     }
 
@@ -157,11 +160,11 @@ public final class KeyRecorder: _KeyRecorderBaseControl {
 
     /// Creates a key recorder for the key command with the given name.
     ///
-    /// If a command with the name does not exist, a blank command will be created.
-    /// As soon as the key recorder records a key combination, the command will
-    /// assume that combination's value.
+    /// If a command with the name does not exist, a blank command will be
+    /// created. As soon as the key recorder records a key combination, the
+    /// command will assume that combination's value.
     public convenience init(name: KeyCommand.Name) {
-        self.init(keyCommand: .init(name: name))
+        self.init(keyCommand: KeyCommand(name: name))
     }
 }
 
@@ -256,21 +259,26 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
     let escapeImage: NSImage = {
         let escapeKeyCode = 0x238B
         let string = NSString(format: "%C", escapeKeyCode)
-        var attributes: [NSAttributedString.Key: Any] = [.foregroundColor: NSColor.white]
-        attributes[.font] = NSFont.systemFont(ofSize: 16, weight: .thin)
+        let attributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: NSColor.white,
+            .font: NSFont.systemFont(ofSize: 16, weight: .thin),
+        ]
         let stringSize = string.size(withAttributes: attributes)
         let image = NSImage(
-            size: .init(width: stringSize.height, height: stringSize.height),
+            size: NSSize(width: stringSize.height, height: stringSize.height),
             flipped: false
-        ) {
+        ) { bounds in
             let centeredRect = NSRect(
-                origin: .init(
-                    x: $0.midX - stringSize.width / 2,
-                    y: $0.midY - stringSize.height / 2),
-                size: stringSize)
+                origin: NSPoint(
+                    x: bounds.midX - stringSize.width / 2,
+                    y: bounds.midY - stringSize.height / 2
+                ),
+                size: stringSize
+            )
             string.draw(
                 in: centeredRect,
-                withAttributes: attributes)
+                withAttributes: attributes
+            )
             return true
         }
         image.isTemplate = true
@@ -279,9 +287,9 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
 
     let recordImage: NSImage = {
         let size = NSSize(width: 13, height: 13)
-        let image = NSImage(size: size, flipped: false) {
-            NSBezierPath(ovalIn: $0.insetBy(dx: 2.5, dy: 2.5)).fill()
-            NSBezierPath(ovalIn: $0.insetBy(dx: 0.5, dy: 0.5)).stroke()
+        let image = NSImage(size: size, flipped: false) { bounds in
+            NSBezierPath(ovalIn: bounds.insetBy(dx: 2.5, dy: 2.5)).fill()
+            NSBezierPath(ovalIn: bounds.insetBy(dx: 0.5, dy: 0.5)).stroke()
             return true
         }
         image.isTemplate = true
@@ -298,7 +306,7 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
 
     init(keyCommand: KeyCommand) {
         proxy = keyCommand.proxy
-        super.init(frame: .init(origin: .zero, size: .init(width: 140, height: 24)))
+        super.init(frame: NSRect(origin: .zero, size: NSSize(width: 140, height: 24)))
         target = self
         action = #selector(controlWasPressed(_:))
 
@@ -432,9 +440,9 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
     }
 
     func record(key: KeyCommand.Key, modifiers: [KeyCommand.Modifier]) {
-        proxy.withoutChangingRegistrationState {
-            $0.key = key
-            $0.modifiers = modifiers
+        proxy.withoutChangingRegistrationState { proxy in
+            proxy.key = key
+            proxy.modifiers = modifiers
         }
         proxy.register()
         recordingState = .idle
@@ -461,8 +469,8 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
 
     func setLabel(_ newLabel: Label) {
         if let attributedLabel {
-            let image = NSImage(size: attributedLabel.size(), flipped: false) {
-                attributedLabel.draw(in: $0)
+            let image = NSImage(size: attributedLabel.size(), flipped: false) { bounds in
+                attributedLabel.draw(in: bounds)
                 return true
             }
             setLabel("", forSegment: 0)
@@ -557,10 +565,7 @@ extension KeyRecorderSegmentedControl {
 
         var failureCount: Int {
             didSet {
-                if
-                    self == .noFailure,
-                    failureCount != 0
-                {
+                if self == .noFailure && failureCount != 0 {
                     failureCount = 0
                 }
             }
@@ -600,39 +605,36 @@ extension KeyRecorderSegmentedControl.FailureReason {
     )
 
     static let needsModifiers = Self(
-        infoText:
-            """
+        infoText: """
             Please include at least one modifier key \
             (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
             """
     )
 
     static let onlyShift = Self(
-        infoText:
-            """
+        infoText: """
             Shift (\(KeyCommand.Modifier.shift.stringValue)) by itself is not a \
             valid modifier key. Please include at least one additional modifier \
             key (\([KeyCommand.Modifier].canonicalOrder.stringValue)).
             """
     )
 
-    static func systemReserved(
-        key: KeyCommand.Key,
-        modifiers: [KeyCommand.Modifier]
-    ) -> Self {
-        let settingsString = ProcessInfo.processInfo.isOperatingSystemAtLeast(
-            .init(
-                majorVersion: 13,
-                minorVersion: 0,
-                patchVersion: 0
-            )
-        ) ? "Settings" : "Preferences"
+    static func systemReserved(key: KeyCommand.Key, modifiers: [KeyCommand.Modifier]) -> Self {
+        let pathString: String = {
+            let settingsOrPreferencesString: String
+            if ProcessInfo.processInfo.isOperatingSystemAtLeast(
+                OperatingSystemVersion(majorVersion: 13, minorVersion: 0, patchVersion: 0)
+            ) {
+                settingsOrPreferencesString = "Settings"
+            } else {
+                settingsOrPreferencesString = "Preferences"
+            }
+            return "System \(settingsOrPreferencesString) › Keyboard › Keyboard Shortcuts"
+        }()
         return Self(
-            infoText:
-                """
-                "\(modifiers.stringValue)\(key.stringValue)" \
-                is reserved system-wide. Most system key commands can be changed \
-                from "System \(settingsString) › Keyboard › Keyboard Shortcuts".
+            infoText: """
+                "\(modifiers.stringValue)\(key.stringValue)" is reserved system-wide. \
+                Most system key commands can be changed in "\(pathString)".
                 """,
             failureCount: 3
         )

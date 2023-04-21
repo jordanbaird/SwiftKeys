@@ -55,7 +55,7 @@ final class KeyCommandTests: SKTestCase {
         let command = KeyCommand(
             name: "TestCommand2",
             key: .a,
-            modifiers: .option, .shift
+            modifiers: [.option, .shift]
         )
 
         XCTAssertFalse(
@@ -99,20 +99,12 @@ final class KeyCommandTests: SKTestCase {
     func testObservation() {
         var lastRunEventType: EventType?
 
-        @Builder var observations: [Observation] {
-            Observation(.keyDown) {
-                lastRunEventType = .keyDown
-            }
-            Observation(.keyUp) {
-                lastRunEventType = .keyUp
-            }
-            Observation(.doubleTap(1)) {
-                lastRunEventType = .doubleTap(1)
-            }
-            Observation(.doubleTap(0.1)) {
-                lastRunEventType = nil
-            }
-        }
+        let observations = [
+            Observation(.keyDown, handler: { lastRunEventType = .keyDown }),
+            Observation(.keyUp, handler: { lastRunEventType = .keyUp }),
+            Observation(.doubleTap(1), handler: { lastRunEventType = .doubleTap(1) }),
+            Observation(.doubleTap(0.1), handler: { lastRunEventType = nil }),
+        ]
 
         XCTAssertNil(lastRunEventType)
 

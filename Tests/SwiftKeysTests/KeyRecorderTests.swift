@@ -39,16 +39,16 @@ final class KeyRecorderTests: SKTestCase {
     }
 
     func testAppearance() {
-        let allAppearances: [NSAppearance] = [
-            .init(named: .aqua)!,
-            .init(named: .darkAqua)!,
-            .init(named: .vibrantLight)!,
-            .init(named: .vibrantDark)!,
+        let appearances = [
+            NSAppearance(named: .aqua),
+            NSAppearance(named: .darkAqua),
+            NSAppearance(named: .vibrantLight),
+            NSAppearance(named: .vibrantDark),
         ]
 
         XCTAssertEqual(recorder.appearance, recorder.segmentedControl.appearance)
 
-        for appearance in allAppearances {
+        for case .some(let appearance) in appearances {
             recorder.appearance = appearance
             XCTAssertEqual(recorder.appearance, recorder.segmentedControl.appearance)
             XCTAssertEqual(recorder.segmentedControl.appearance, appearance)
