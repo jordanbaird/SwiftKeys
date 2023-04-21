@@ -13,11 +13,6 @@ extension KeyCommand {
     /// remove the observation and stop the execution of its handler.
     public struct Observation {
 
-        // MARK: Typealiases
-
-        /// The type of event that an observation observes.
-        public typealias EventType = KeyCommand.EventType
-
         // MARK: Properties
 
         private let handler: VoidHandler
