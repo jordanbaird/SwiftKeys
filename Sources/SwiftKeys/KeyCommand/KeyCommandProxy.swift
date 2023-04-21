@@ -24,7 +24,7 @@ final class KeyCommandProxy {
 
     private static var proxyCount: UInt32 = 0
 
-    private static let signature = OSType.random(in: OSType.min...OSType.max)
+    private static let signature: OSType = NSHFSTypeCodeFromFileType("'SWKE'")
 
     static var isInstalled: Bool {
         eventHandlerRef != nil
