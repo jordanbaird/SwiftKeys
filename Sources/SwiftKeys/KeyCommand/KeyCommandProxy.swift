@@ -122,7 +122,7 @@ final class KeyCommandProxy {
             // Make sure the event is one of ours (a.k.a. if its signature lines up
             // with our signature), and that we have a stored proxy for the event.
             guard
-                identifier.signature == KeyCommandProxy.signature,
+                identifier.signature == KeyCommandProxy.signature, // swiftlint:disable:this all
                 let proxy = ProxyStorage.proxy(with: identifier)
             else {
                 return OSStatus(eventNotHandledErr)

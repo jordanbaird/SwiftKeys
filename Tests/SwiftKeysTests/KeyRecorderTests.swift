@@ -7,7 +7,7 @@ import XCTest
 @testable import SwiftKeys
 
 final class KeyRecorderTests: SKTestCase {
-    var recorder: KeyRecorder!
+    var recorder: KeyRecorder! // swiftlint:disable:this implicitly_unwrapped_optional
     let window = NSWindow()
 
     override func setUp() {

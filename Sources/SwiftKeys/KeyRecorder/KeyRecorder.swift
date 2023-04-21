@@ -251,6 +251,8 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
     // MARK: Properties > Images
 
     let deleteImage: NSImage = {
+        // Force unwrap is okay here, as the image is an AppKit builtin.
+        // swiftlint:disable:next force_unwrapping
         let image = NSImage(named: NSImage.stopProgressFreestandingTemplateName)!
         image.isTemplate = true
         return image
