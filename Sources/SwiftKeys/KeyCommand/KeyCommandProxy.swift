@@ -60,8 +60,7 @@ final class KeyCommandProxy {
 
     var key: KeyCommand.Key? {
         didSet {
-            // If already registered, we need to re-register
-            // for the new key.
+            // If already registered, we need to re-register for the new key.
             if isRegistered {
                 unregister(shouldReregister: true)
             }
@@ -71,8 +70,7 @@ final class KeyCommandProxy {
 
     var modifiers = [KeyCommand.Modifier]() {
         didSet {
-            // If already registered, we need to re-register
-            // for the new modifiers.
+            // If already registered, we need to re-register for the new modifiers.
             if isRegistered {
                 unregister(shouldReregister: true)
             }
@@ -122,7 +120,8 @@ final class KeyCommandProxy {
             // Make sure the event is one of ours (a.k.a. if its signature lines up
             // with our signature), and that we have a stored proxy for the event.
             guard
-                identifier.signature == KeyCommandProxy.signature, // swiftlint:disable:this all
+                // swiftlint:disable:next prefer_self_in_static_references
+                identifier.signature == KeyCommandProxy.signature,
                 let proxy = ProxyStorage.proxy(with: identifier)
             else {
                 return OSStatus(eventNotHandledErr)
@@ -201,15 +200,12 @@ final class KeyCommandProxy {
         }
 
         if isRegistered {
-            // If already registered, we need to unregister first, or we'll
-            // end up with two conflicting registrations.
+            // If already registered, we need to unregister first, or we'll end up
+            // with two conflicting registrations.
             unregister()
         }
 
-        // Always try to install. The first thing the install() method
-        // does is check whether we're already installed, so this will
-        // be quick. Note that if we're already installed, the install()
-        // method returns noErr.
+        // Always try to install. If we're already installed, this will return noErr.
         var status = Self.install()
 
         guard status == noErr else {
@@ -231,20 +227,19 @@ final class KeyCommandProxy {
             return
         }
 
-        // We need to retain a reference to each proxy instance. The C
-        // function inside of the `install()` method can't deal with
-        // context, so we can't inject or reference `self`. We _do_ have
-        // a way to access the proxy's identifier, so we can use that
-        // to store the proxy, then access the storage from inside the
-        // C function.
+        // We need to retain a reference to each proxy instance. The C function inside
+        // of the `install()` method can't deal with context, so we can't inject or
+        // reference `self`. We _do_ have a way to access the proxy's identifier, so we
+        // can use that to store the proxy, then access the storage from inside the C
+        // function.
         ProxyStorage.store(self)
 
         do {
             let data = try JSONEncoder().encode(KeyCommand(name: name))
             UserDefaults.standard.set(data, forKey: name.combinedValue)
         } catch {
-            // If we made it this far, everything else worked properly,
-            // the command just wasn't stored in UserDefaults.
+            // If we made it this far, everything else worked properly, the command just
+            // wasn't stored in UserDefaults.
             KeyCommandError.encodingFailed(status: OSStatus(eventInternalErr)).log()
         }
 
@@ -298,12 +293,12 @@ final class KeyCommandProxy {
 
     /// Mutates the proxy, while blocking it from registering or unregistering.
     ///
-    /// This is useful, for example, when executing multiple pieces of code
-    /// that would normally cause the proxy to be automatically re-registered
-    /// (examples of this include the `key` and `modifiers` properties). If we
-    /// need to change both values, one after another, it would be inefficient
-    /// to have to re-register after each change, so instead, we can make the
-    /// changes inside of `block` and manually re-register afterwards.
+    /// This is useful, for example, when executing multiple pieces of code that would
+    /// normally cause the proxy to be automatically re-registered (examples of this
+    /// include the `key` and `modifiers` properties). If we need to change both values,
+    /// one after another, it would be inefficient to have to re-register after each
+    /// change, so instead, we can make the changes inside of `block` and manually
+    /// re-register afterwards.
     func withoutChangingRegistrationState(execute block: (KeyCommandProxy) throws -> Void) rethrows {
         blockRegistrationChanges = true
         defer {

@@ -182,8 +182,6 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
 
     var observations = Set<NSKeyValueObservation>()
 
-    // MARK: Properties > Observed
-
     var attributedLabel: NSAttributedString? {
         didSet {
             updateVisualAppearance()
@@ -224,8 +222,6 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
         }
     }
 
-    // MARK: Properties > Layers
-
     var borderLayer: CALayer? {
         didSet {
             if let borderLayer {
@@ -247,8 +243,6 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
             }
         }
     }
-
-    // MARK: Properties > Images
 
     let deleteImage: NSImage = {
         // Force unwrap is okay here, as the image is an AppKit builtin.
@@ -277,10 +271,7 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
                 ),
                 size: stringSize
             )
-            string.draw(
-                in: centeredRect,
-                withAttributes: attributes
-            )
+            string.draw(in: centeredRect, withAttributes: attributes)
             return true
         }
         image.isTemplate = true
@@ -297,8 +288,6 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
         image.isTemplate = true
         return image
     }()
-
-    // MARK: Properties > Computed
 
     var frameConvertedToWindow: NSRect {
         superview?.convert(frame, to: nil) ?? frame
@@ -382,8 +371,7 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
 
     // MARK: Methods
 
-    @objc
-    func controlWasPressed(_ sender: KeyRecorderSegmentedControl) {
+    @objc func controlWasPressed(_ sender: KeyRecorderSegmentedControl) {
         switch recordingState {
         case .recording:
             if sender.selectedSegment == 1 {
