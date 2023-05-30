@@ -174,9 +174,9 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
 
     // MARK: Properties
 
-    var keyDownMonitor: EventMonitor?
+    var keyDownMonitor: LocalEventMonitor?
 
-    var mouseDownMonitor: EventMonitor?
+    var mouseDownMonitor: LocalEventMonitor?
 
     let proxy: KeyCommandProxy
 
@@ -321,7 +321,7 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
         }
         proxy.register()
 
-        keyDownMonitor = EventMonitor(mask: .keyDown) { [weak self] event in
+        keyDownMonitor = LocalEventMonitor(mask: .keyDown) { [weak self] event in
             guard let self else {
                 return event
             }
@@ -352,7 +352,7 @@ class KeyRecorderSegmentedControl: NSSegmentedControl {
             return nil
         }
 
-        mouseDownMonitor = EventMonitor(mask: .leftMouseDown) { [weak self] event in
+        mouseDownMonitor = LocalEventMonitor(mask: .leftMouseDown) { [weak self] event in
             guard let self else {
                 return event
             }

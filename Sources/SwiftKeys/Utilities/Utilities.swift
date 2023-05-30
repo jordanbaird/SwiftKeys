@@ -69,34 +69,37 @@ extension CALayer {
     }
 }
 
-// MARK: - EventMonitor
+// MARK: - LocalEventMonitor
 
-struct EventMonitor {
+class LocalEventMonitor {
+    private let mask: NSEvent.EventTypeMask
+
+    private let handler: (NSEvent) -> NSEvent?
+
     private var monitor: Any?
-    private var mask: NSEvent.EventTypeMask
-    private var handler: (NSEvent) -> NSEvent?
 
     init(mask: NSEvent.EventTypeMask, handler: @escaping (NSEvent) -> NSEvent?) {
         self.mask = mask
         self.handler = handler
     }
 
-    mutating func start() {
+    deinit {
+        stop()
+    }
+
+    func start() {
         guard monitor == nil else {
             return
         }
-        monitor = NSEvent.addLocalMonitorForEvents(
-            matching: mask,
-            handler: handler
-        )
+        monitor = NSEvent.addLocalMonitorForEvents(matching: mask, handler: handler)
     }
 
-    mutating func stop() {
-        guard monitor != nil else {
+    func stop() {
+        guard let monitor else {
             return
         }
-        NSEvent.removeMonitor(monitor as Any)
-        monitor = nil
+        NSEvent.removeMonitor(monitor)
+        self.monitor = nil
     }
 }
 
