@@ -9,10 +9,9 @@ extension KeyCommand {
     /// A type that represents the name of a key command.
     ///
     /// Key commands are automatically stored in the `UserDefaults` system using
-    /// their ``KeyCommand/name-swift.property`` property. You can
-    /// provide a custom prefix to help differentiate between command types. For
-    /// example, you might use "Settings" to indicate that the name is associated
-    /// with a setting.
+    /// their ``KeyCommand/name-swift.property`` property. You can provide a custom
+    /// prefix to help differentiate between command types. For example, you might
+    /// use "Settings" to indicate that the name is associated with a setting.
     ///
     /// ```swift
     /// extension KeyCommand.Name {
@@ -47,16 +46,14 @@ extension KeyCommand {
         /// The raw value of the name.
         public let rawValue: String
 
-        /// A prefix that will be applied to the name when it is stored
-        /// in `UserDefaults`.
+        /// A prefix that will be applied to the name when it is stored in `UserDefaults`.
         public let prefix: Prefix
 
-        /// A string that separates the name's raw value from its prefix
-        /// when the name is combined in the `combinedValue` property.
+        /// A string that separates the name's raw value from its prefix when the name is
+        /// combined in the `combinedValue` property.
         public let separator: String
 
-        /// The name's raw value, combined with its prefix and separated
-        /// by its separator.
+        /// The name's raw value, combined with its prefix and separated by its separator.
         ///
         /// ```swift
         /// let name = KeyCommand.Name("Toggle", prefix: "Trigger", separator: "_")
@@ -81,11 +78,9 @@ extension KeyCommand {
             self.separator = separator()
         }
 
-        /// Creates a name from another name, using the given prefix
-        /// and separator.
+        /// Creates a name from another name, using the given prefix and separator.
         ///
-        /// If `prefix` is `nil`, the prefix belonging to `name` will
-        /// be used.
+        /// If `prefix` is `nil`, the prefix belonging to `name` will be used.
         public init(
             _ name: @autoclosure () -> Self,
             prefix: @autoclosure () -> Prefix? = nil,
@@ -108,12 +103,11 @@ extension KeyCommand.Name: Codable { }
 // MARK: Name: CustomDebugStringConvertible
 extension KeyCommand.Name: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "\(Self.self)"
-        + "("
-        + "rawValue: \(rawValue), "
-        + "prefix: \(prefix), "
-        + "separator: \(separator)"
-        + ")"
+        "\(Self.self)(" +
+        "rawValue: \(rawValue), " +
+        "prefix: \(prefix), " +
+        "separator: \(separator)" +
+        ")"
     }
 }
 

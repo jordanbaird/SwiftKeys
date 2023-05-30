@@ -13,7 +13,7 @@ final class KeyRecorderTests: SKTestCase {
     override func setUp() {
         super.setUp()
         KeyCommand(name: "SomeKeyCommand").remove()
-        recorder = .init(name: "SomeKeyCommand")
+        recorder = KeyRecorder(name: "SomeKeyCommand")
         recorder.removeFromSuperview()
         window.contentView?.addSubview(recorder)
         recorder.isEnabled = true

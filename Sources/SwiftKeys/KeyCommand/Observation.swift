@@ -8,9 +8,9 @@
 extension KeyCommand {
     /// The result type of a call to ``KeyCommand/observe(_:handler:)``.
     ///
-    /// You can pass an instance of this type into the
-    /// ``KeyCommand/removeObservation(_:)`` method, or similar, to permanently
-    /// remove the observation and stop the execution of its handler.
+    /// You can pass an instance of this type into the ``KeyCommand/removeObservation(_:)``
+    /// method, or similar, to permanently remove the observation and stop the execution
+    /// of its handler.
     public struct Observation {
 
         // MARK: Properties
@@ -22,14 +22,12 @@ extension KeyCommand {
 
         // MARK: Initializers
 
-        /// Creates an observation that executes the given handler when
-        /// it receives the given event type.
+        /// Creates an observation that executes the given handler when it receives the
+        /// given event type.
         ///
-        /// Pass the returned instance into the ``KeyCommand`` type's
-        /// ``KeyCommand/addObservation(_:)`` method. Note, however that the
-        /// alternative method of creation, the ``KeyCommand`` type's
-        /// ``KeyCommand/observe(_:handler:)`` method is generally preferred
-        /// over this.
+        /// Pass the returned instance into the ``KeyCommand`` type's ``KeyCommand/addObservation(_:)``
+        /// method. Note, however that the alternative method of creation, the ``KeyCommand`` type's
+        /// ``KeyCommand/observe(_:handler:)`` method is generally preferred over this.
         ///
         /// ```swift
         /// let keyCommand = KeyCommand(name: "ToggleSettings")
@@ -42,7 +40,7 @@ extension KeyCommand {
         /// ```
         public init(_ eventType: EventType, handler: @escaping () -> Void) {
             self.eventType = eventType
-            self.handler = .init(block: handler)
+            self.handler = VoidHandler(block: handler)
         }
 
         // MARK: Methods
@@ -77,8 +75,8 @@ extension [KeyCommand.Observation] {
     }
 
     func performObservations(matching eventType: KeyCommand.EventType?) {
-        performObservations {
-            $0 == eventType
+        performObservations { type in
+            type == eventType
         }
     }
 }

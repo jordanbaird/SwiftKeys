@@ -20,7 +20,7 @@ extension CALayer {
         layer.fillColor = .clear
         layer.strokeColor = color.cgColor
         layer.lineWidth = lineWidth
-        layer.path = .init(
+        layer.path = CGPath(
             roundedRect: frame.insetBy(dx: lineWidth, dy: lineWidth),
             cornerWidth: cornerRadius,
             cornerHeight: cornerRadius,
@@ -146,6 +146,7 @@ extension HandlerWrapper {
 /// A concrete type for an identifiable wrapper around a block of code.
 struct Handler<Value>: HandlerWrapper {
     let id: AnyHashable
+
     private let block: () -> Value
 
     init(id: AnyHashable, block: @escaping () -> Value) {
@@ -198,42 +199,42 @@ extension KeyCommandError {
 // MARK: KeyCommandError Static Members
 extension KeyCommandError {
     static func encodingFailed(status: OSStatus) -> Self {
-        .init(
+        Self(
             status: status,
             message: "Key command encoding failed."
         )
     }
 
     static func installationFailed(status: OSStatus) -> Self {
-        .init(
+        Self(
             status: status,
             message: "Event handler installation failed."
         )
     }
 
     static func uninstallationFailed(status: OSStatus) -> Self {
-        .init(
+        Self(
             status: status,
             message: "Event handler uninstallation failed."
         )
     }
 
     static func registrationFailed(status: OSStatus) -> Self {
-        .init(
+        Self(
             status: status,
             message: "Key command registration failed."
         )
     }
 
     static func unregistrationFailed(status: OSStatus) -> Self {
-        .init(
+        Self(
             status: status,
             message: "Key command unregistration failed."
         )
     }
 
     static func systemRetrievalFailed(status: OSStatus) -> Self {
-        .init(
+        Self(
             status: status,
             message: "System reserved key command retrieval failed."
         )
@@ -354,10 +355,7 @@ class Storage<Value> {
 
     /// Creates a storage object that stores values of the given type,
     /// using the given association policy.
-    init(
-        _ type: Value.Type = Value.self,
-        _ policy: AssociationPolicy = .retainNonatomic
-    ) {
+    init(policy: AssociationPolicy = .retainNonatomic) {
         self.policy = policy
     }
 

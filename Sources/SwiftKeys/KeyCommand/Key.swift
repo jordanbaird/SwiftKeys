@@ -628,7 +628,7 @@ extension KeyCommand.Key {
 // MARK: Key Methods
 extension KeyCommand.Key {
     /// An unsigned version of the key's raw value.
-    func unsigned<U: UnsignedInteger>(type: U.Type = U.self) -> U {
+    func unsigned<U: UnsignedInteger>(type _: U.Type = U.self) -> U {
         U(rawValue)
     }
 }

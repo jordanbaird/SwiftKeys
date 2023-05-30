@@ -29,10 +29,10 @@ private struct _KeyRecorderView: NSViewRepresentable {
 
 /// A `SwiftUI` view that can record key commands.
 ///
-/// Start by creating a ``KeyCommand``. You can then use it to initialize
-/// a key recorder view, which will update the command whenever a new key
-/// combination is recorded. You can also observe the command, and perform
-/// actions on key-down, key-up, and double-tap.
+/// Start by creating a ``KeyCommand``. You can then use it to initialize a key
+/// recorder view, which will update the command whenever a new key combination
+/// is recorded. You can also observe the command, and perform actions on key-down,
+/// key-up, and double-tap.
 ///
 /// ```swift
 /// struct ContentView: View {
@@ -59,16 +59,13 @@ public struct KeyRecorderView: View {
 
     let keyCommand: KeyCommand
 
-    var bodyConstructor: () -> AnyView
+    let bodyConstructor: () -> AnyView
 
     public var body: some View {
         bodyConstructor()
     }
 
-    private init(
-        keyCommand: KeyCommand,
-        @ViewBuilder bodyConstructor: @escaping () -> some View
-    ) {
+    private init(keyCommand: KeyCommand, @ViewBuilder bodyConstructor: @escaping () -> some View) {
         self.keyCommand = keyCommand
         self.bodyConstructor = {
             AnyView(bodyConstructor())
@@ -91,34 +88,29 @@ public struct KeyRecorderView: View {
 
     /// Creates a key recorder view for the key command with the given name.
     public init(name: KeyCommand.Name) {
-        self.init(keyCommand: .init(name: name))
+        self.init(keyCommand: KeyCommand(name: name))
     }
 
-    func withBodyConstructor(
-        @ViewBuilder bodyConstructor: @escaping () -> some View
-    ) -> Self {
-        var new = self
-        new.bodyConstructor = {
-            AnyView(bodyConstructor())
-        }
-        return new
+    func settingBodyConstructor(@ViewBuilder bodyConstructor: @escaping () -> some View) -> Self {
+        Self(keyCommand: keyCommand, bodyConstructor: bodyConstructor)
     }
 
     /// Adds the given observation to the recorder view's key command.
     ///
-    /// This modifier is useful when working with bindings and state.
-    /// Applying it in a custom view gives you access to that view's
-    /// internal properties. If you don't need this access, you can
-    /// simply call ``KeyCommand/observe(_:handler:)`` on an instance
-    /// of ``KeyCommand``.
+    /// This modifier is useful when working with bindings and state. Applying it in a
+    /// custom view gives you access to that view's internal properties. If you don't
+    /// need this access, you can simply call ``KeyCommand/observe(_:handler:)`` on an
+    /// instance of ``KeyCommand``.
     ///
     /// ```swift
     /// struct ContentView: View {
     ///     @AppStorage("muteSound") var muteSound = false
     ///
+    ///     let muteSoundName = KeyCommand.Name("muteSound", prefix: "keyCommand")
+    ///
     ///     var body: some View {
     ///         VStack {
-    ///             KeyRecorderView(name: .init("muteSound", prefix: "keyCommand"))
+    ///             KeyRecorderView(name: muteSoundName)
     ///                 .onKeyCommand(type: .keyDown) {
     ///                     muteSound.toggle()
     ///                 }
@@ -130,9 +122,9 @@ public struct KeyRecorderView: View {
     /// }
     /// ```
     ///
-    /// - Tip: Since this modifier returns another ``KeyRecorderView``,
-    ///   you can chain it together with additional ``onKeyCommand(_:type:perform:)``
-    ///   modifiers to add multiple observations.
+    /// - Tip: Since this modifier returns another ``KeyRecorderView``, you can chain
+    ///   it together with additional ``onKeyCommand(_:type:perform:)`` modifiers to
+    ///   add multiple observations.
     ///
     /// ```swift
     /// struct ContentView: View {
@@ -158,7 +150,7 @@ public struct KeyRecorderView: View {
         type: KeyCommand.EventType,
         perform handler: @escaping () -> Void
     ) -> Self {
-        withBodyConstructor {
+        settingBodyConstructor {
             onAppear {
                 keyCommand.observe(type, handler: handler)
             }

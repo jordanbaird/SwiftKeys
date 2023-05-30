@@ -38,7 +38,7 @@ extension NSMenuItem {
             guard let name = Self.keyCommandNameStorage[self] else {
                 return nil
             }
-            return .init(name: name)
+            return KeyCommand(name: name)
         }
         set {
             observations.removeAll()

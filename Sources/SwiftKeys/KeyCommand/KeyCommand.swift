@@ -96,10 +96,6 @@ public struct KeyCommand {
 
     // MARK: Initializers
 
-    init(proxy: KeyCommandProxy) {
-        name = proxy.name
-    }
-
     /// Creates a key command with the given name.
     ///
     /// If a key command has already been created with the same name, this

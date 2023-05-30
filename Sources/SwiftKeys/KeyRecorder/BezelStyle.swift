@@ -8,30 +8,29 @@ import AppKit
 // MARK: - KeyRecorder BezelStyle
 
 extension KeyRecorder {
-    /// A type that represents the visual style used to display a
-    /// ``KeyRecorder``'s bezel.
+    /// A type that represents the visual style used to display a ``KeyRecorder``'s
+    /// bezel.
     public enum BezelStyle: CaseIterable, Hashable {
-        /// The key recorder is displayed with a rounded rectangular
-        /// bezel.
+        /// The key recorder is displayed with a rounded rectangular bezel.
         case rounded
 
-        /// The key recorder is displayed with a small capsule-like
-        /// bezel with a flat appearance and a solid line border.
+        /// The key recorder is displayed with a small capsule-like bezel with a flat
+        /// appearance and a solid line border.
         case capsule
 
-        /// The key recorder is displayed with a rounded rectangular
-        /// bezel with a flat appearance and a solid line border.
+        /// The key recorder is displayed with a rounded rectangular bezel with a flat
+        /// appearance and a solid line border.
         case flat
 
-        /// The key recorder is displayed so that the individual sections
-        /// of its bezel do not touch.
+        /// The key recorder is displayed so that the individual sections of its bezel
+        /// do not touch.
         case separated
 
         /// The key recorder is displayed with a square bezel.
         case square
 
-        /// The key recorder is displayed with a flat appearance and
-        /// a solid line border.
+        /// The key recorder is displayed with a flat appearance and a solid line
+        /// border.
         @available(*, deprecated, renamed: "capsule")
         public static let flatBordered: Self = .capsule
     }
@@ -56,8 +55,8 @@ extension KeyRecorder.BezelStyle {
 // MARK: BezelStyle Initializers
 extension KeyRecorder.BezelStyle {
     init(cocoaValue: NSSegmentedControl.Style, default defaultStyle: @autoclosure () -> Self) {
-        let style = Self.allCases.first {
-            $0.cocoaValue == cocoaValue
+        let style = Self.allCases.first { style in
+            style.cocoaValue == cocoaValue
         }
         self = style ?? defaultStyle()
     }

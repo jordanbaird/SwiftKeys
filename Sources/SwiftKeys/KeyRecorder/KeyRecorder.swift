@@ -83,7 +83,8 @@ public final class KeyRecorder: _KeyRecorderBaseControl {
     }
 
     /// The style of the key recorder's bezel.
-    /// > Default value: ``BezelStyle-swift.enum/rounded``
+    ///
+    /// Default value: ``BezelStyle-swift.enum/rounded``
     public var bezelStyle: BezelStyle {
         get { _bezelStyle }
         set { _bezelStyle = newValue }

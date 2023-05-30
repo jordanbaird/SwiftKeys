@@ -82,14 +82,6 @@ extension KeyCommand.Modifier {
     }
 }
 
-// MARK: Modifier Methods
-extension KeyCommand.Modifier {
-    /// An unsigned version of the modifier key's `carbonFlag`.
-    func unsigned<U: UnsignedInteger>(type: U.Type = U.self) -> U {
-        U(carbonFlag)
-    }
-}
-
 // MARK: Modifier: CaseIterable
 extension KeyCommand.Modifier: CaseIterable { }
 
@@ -149,7 +141,7 @@ extension [KeyCommand.Modifier] {
     }
 
     /// An unsigned version of the modifier keys' `carbonFlags`.
-    func unsigned<U: UnsignedInteger>(type: U.Type = U.self) -> U {
+    func unsigned<U: UnsignedInteger>(type _: U.Type = U.self) -> U {
         U(carbonFlags)
     }
 }

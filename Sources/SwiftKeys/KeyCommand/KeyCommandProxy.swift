@@ -268,13 +268,6 @@ final class KeyCommandProxy {
     // MARK: Observing
 
     @discardableResult
-    func observeKeyAndModifierChanges(_ block: @escaping () -> Void) -> VoidHandler {
-        let handler = VoidHandler(block: block)
-        keyAndModifierChangeHandlers.update(with: handler)
-        return handler
-    }
-
-    @discardableResult
     func observeRegistrationState(_ block: @escaping () -> Void) -> VoidHandler {
         let handler = VoidHandler(block: block)
         registrationStateHandlers.update(with: handler)

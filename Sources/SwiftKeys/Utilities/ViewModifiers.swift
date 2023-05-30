@@ -118,7 +118,7 @@ extension View {
         type: KeyCommand.EventType,
         perform handler: @escaping () -> Void
     ) -> some View {
-        onKeyCommand(.init(name: name), type: type, perform: handler)
+        onKeyCommand(KeyCommand(name: name), type: type, perform: handler)
     }
 }
 #endif
