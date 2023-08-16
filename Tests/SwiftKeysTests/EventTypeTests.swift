@@ -1,6 +1,6 @@
 //
-// EventTypeTests.swift
-// SwiftKeys
+//  EventTypeTests.swift
+//  SwiftKeys
 //
 
 import Carbon.HIToolbox

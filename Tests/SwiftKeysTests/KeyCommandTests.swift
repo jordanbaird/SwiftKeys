@@ -1,6 +1,6 @@
 //
-// KeyCommandTests.swift
-// SwiftKeys
+//  KeyCommandTests.swift
+//  SwiftKeys
 //
 
 import XCTest

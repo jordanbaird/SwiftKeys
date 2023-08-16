@@ -1,6 +1,6 @@
 //
-// Name.swift
-// SwiftKeys
+//  Name.swift
+//  SwiftKeys
 //
 
 // MARK: - KeyCommand Name

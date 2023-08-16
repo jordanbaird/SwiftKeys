@@ -1,6 +1,6 @@
 //
-// Modifier.swift
-// SwiftKeys
+//  Modifier.swift
+//  SwiftKeys
 //
 
 import Carbon.HIToolbox

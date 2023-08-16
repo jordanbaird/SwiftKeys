@@ -1,6 +1,6 @@
 //
-// Key.swift
-// SwiftKeys
+//  Key.swift
+//  SwiftKeys
 //
 
 import Carbon.HIToolbox

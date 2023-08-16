@@ -1,6 +1,6 @@
 //
-// KeyRecorderView.swift
-// SwiftKeys
+//  KeyRecorderView.swift
+//  SwiftKeys
 //
 
 #if canImport(SwiftUI)

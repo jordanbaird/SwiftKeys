@@ -1,6 +1,6 @@
 //
-// Observation.swift
-// SwiftKeys
+//  Observation.swift
+//  SwiftKeys
 //
 
 // MARK: - KeyCommand Observation

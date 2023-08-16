@@ -1,6 +1,6 @@
 //
-// Utilities.swift
-// SwiftKeys
+//  Utilities.swift
+//  SwiftKeys
 //
 
 import Cocoa

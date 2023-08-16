@@ -1,6 +1,6 @@
 //
-// ViewModifiers.swift
-// SwiftKeys
+//  ViewModifiers.swift
+//  SwiftKeys
 //
 
 #if canImport(SwiftUI)

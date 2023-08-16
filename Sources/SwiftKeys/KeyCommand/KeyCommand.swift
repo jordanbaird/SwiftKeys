@@ -1,6 +1,6 @@
 //
-// KeyCommand.swift
-// SwiftKeys
+//  KeyCommand.swift
+//  SwiftKeys
 //
 
 import Carbon.HIToolbox

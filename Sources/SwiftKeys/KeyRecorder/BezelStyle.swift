@@ -1,6 +1,6 @@
 //
-// BezelStyle.swift
-// SwiftKeys
+//  BezelStyle.swift
+//  SwiftKeys
 //
 
 import AppKit

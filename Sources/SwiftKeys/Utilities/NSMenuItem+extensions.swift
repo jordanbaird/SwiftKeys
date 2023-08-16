@@ -1,6 +1,6 @@
 //
-// NSMenuItem+extensions.swift
-// SwiftKeys
+//  NSMenuItem+extensions.swift
+//  SwiftKeys
 //
 
 import AppKit

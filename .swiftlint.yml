@@ -54,8 +54,8 @@ custom_rules:
 file_header:
   required_pattern: |
     //
-    // SWIFTLINT_CURRENT_FILENAME
-    // SwiftKeys
+    //  SWIFTLINT_CURRENT_FILENAME
+    //  SwiftKeys
     //
 
 modifier_order:

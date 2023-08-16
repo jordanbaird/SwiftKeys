@@ -1,6 +1,6 @@
 //
-// KeyRecorder.swift
-// SwiftKeys
+//  KeyRecorder.swift
+//  SwiftKeys
 //
 
 import AppKit

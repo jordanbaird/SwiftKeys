@@ -1,6 +1,6 @@
 //
-// KeyCommandProxyTests.swift
-// SwiftKeys
+//  KeyCommandProxyTests.swift
+//  SwiftKeys
 //
 
 import XCTest

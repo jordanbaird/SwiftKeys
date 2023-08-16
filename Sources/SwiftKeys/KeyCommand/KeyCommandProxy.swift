@@ -1,6 +1,6 @@
 //
-// KeyCommandProxy.swift
-// SwiftKeys
+//  KeyCommandProxy.swift
+//  SwiftKeys
 //
 
 import Carbon.HIToolbox
