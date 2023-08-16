@@ -145,7 +145,19 @@ public struct KeyCommand {
 
     // MARK: Static Methods
 
-    static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
+    /// Returns a Boolean value that indicates whether the given key-modifier
+    /// combination is reserved for system use.
+    ///
+    /// This can be useful when you need to determine if a key-modifier combination
+    /// is available for use as a key command before actually creating the command.
+    ///
+    /// - Parameters:
+    ///   - key: The key to look for in the system.
+    ///   - modifiers: The modifiers to look for in the system.
+    ///
+    /// - Returns: `true` if the system reserves the given key-modifier combination
+    ///   for its own use. `false` otherwise.
+    public static func isReservedBySystem(key: Key, modifiers: [Modifier]) -> Bool {
         reservedHotKeys.contains { hotKey in
             guard
                 hotKey[kHISymbolicHotKeyEnabled] as? Bool == true,
