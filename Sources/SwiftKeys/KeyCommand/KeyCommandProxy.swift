@@ -214,8 +214,8 @@ final class KeyCommandProxy {
         }
 
         status = RegisterEventHotKey(
-            key.unsigned(),
-            modifiers.unsigned(),
+            UInt32(key.rawValue),
+            UInt32(modifiers.carbonFlags),
             identifier,
             GetEventDispatcherTarget(),
             0,

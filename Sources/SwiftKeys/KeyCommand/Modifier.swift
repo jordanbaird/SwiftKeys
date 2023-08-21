@@ -6,8 +6,6 @@
 import Carbon.HIToolbox
 import Cocoa
 
-// MARK: - KeyCommand Modifier
-
 extension KeyCommand {
     /// Constants that represent the modifier keys of a key command.
     public enum Modifier {
@@ -22,7 +20,7 @@ extension KeyCommand {
     }
 }
 
-// MARK: Modifier Properties
+// MARK: Properties
 extension KeyCommand.Modifier {
     /// The modifier key's string representation.
     public var stringValue: String {
@@ -82,20 +80,19 @@ extension KeyCommand.Modifier {
     }
 }
 
-// MARK: Modifier: CaseIterable
+// MARK: CaseIterable
 extension KeyCommand.Modifier: CaseIterable { }
 
-// MARK: Modifier: Codable
+// MARK: Codable
 extension KeyCommand.Modifier: Codable { }
 
-// MARK: Modifier: Equatable
+// MARK: Equatable
 extension KeyCommand.Modifier: Equatable { }
 
-// MARK: Modifier: Hashable
+// MARK: Hashable
 extension KeyCommand.Modifier: Hashable { }
 
-// MARK: - [Modifier]
-
+// MARK: Array<Modifier>
 extension [KeyCommand.Modifier] {
     /// The order that macOS represents its modifier keys, according
     /// to the Apple Style Guide.
@@ -139,16 +136,10 @@ extension [KeyCommand.Modifier] {
     init(carbonModifiers: Int) {
         self = Self.canonicalOrder.filter(carbonModifiers.bitwiseContains)
     }
-
-    /// An unsigned version of the modifier keys' `carbonFlags`.
-    func unsigned<U: UnsignedInteger>(type _: U.Type = U.self) -> U {
-        U(carbonFlags)
-    }
 }
 
-// MARK: - BinaryInteger
-
-extension BinaryInteger {
+// MARK: BinaryInteger
+private extension BinaryInteger {
     /// Returns a Boolean value indicating whether the bits of this
     /// integer contain the bits of another integer.
     func bitwiseContains<Other: BinaryInteger>(_ other: Other) -> Bool {
