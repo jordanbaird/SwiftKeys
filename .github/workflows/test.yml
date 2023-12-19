@@ -1,0 +1,25 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/test.yml"
+      - "**/*.swift"
+  pull_request:
+    paths:
+      - ".github/workflows/test.yml"
+      - "**/*.swift"
+
+jobs:
+  test:
+    if: '!github.event.pull_request.merged'
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: swift-actions/setup-swift@v1
+    - name: Check Swift Version
+      run: swift --version
+    - name: Run Tests
+      run: swift test -v
